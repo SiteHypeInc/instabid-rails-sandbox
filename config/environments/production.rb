@@ -61,9 +61,13 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
-  # Secret key base — no credentials.yml.enc in sandbox; use env var.
-  config.secret_key_base = ENV.fetch("SECRET_KEY_BASE") do
-    raise "SECRET_KEY_BASE env var must be set in production"
+  # Secret key base — no credentials.yml.enc in sandbox.
+  # SECRET_KEY_BASE_DUMMY=1 is set during Docker image build (asset precompile only).
+  # At runtime on Railway, SECRET_KEY_BASE env var must be present.
+  unless ENV["SECRET_KEY_BASE_DUMMY"].present?
+    config.secret_key_base = ENV.fetch("SECRET_KEY_BASE") {
+      raise "SECRET_KEY_BASE env var must be set in production"
+    }
   end
 
   # Enable DNS rebinding protection and other `Host` header attacks.
