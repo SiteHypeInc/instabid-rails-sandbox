@@ -32,8 +32,8 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential git libpq-dev libyaml-dev pkg-config && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Install application gems
-COPY vendor/* ./vendor/
+# Install application gems (use vendor/ directory copy to handle empty/dotfile-only case)
+COPY vendor/ ./vendor/
 COPY Gemfile Gemfile.lock ./
 
 RUN bundle install && \
