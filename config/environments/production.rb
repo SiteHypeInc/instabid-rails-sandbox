@@ -61,6 +61,11 @@ Rails.application.configure do
   # Only use :id for inspections in production.
   config.active_record.attributes_for_inspect = [ :id ]
 
+  # Secret key base — no credentials.yml.enc in sandbox; use env var.
+  config.secret_key_base = ENV.fetch("SECRET_KEY_BASE") do
+    raise "SECRET_KEY_BASE env var must be set in production"
+  end
+
   # Enable DNS rebinding protection and other `Host` header attacks.
   # config.hosts.clear  # allow any host
   config.hosts << ENV.fetch("APP_HOST", "instabid-rails-sandbox-production.up.railway.app")
