@@ -1,0 +1,193 @@
+<%# Admin — Material Prices — read-only view of BigBox webhook data %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Material Prices — InstaBid Sandbox Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0d1117; color: #e6edf3; font-size: 13px; }
+    .header { background: #161b22; border-bottom: 1px solid #30363d; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+    .header h1 { font-size: 16px; font-weight: 600; }
+    .badge { background: #1f6feb; color: #fff; border-radius: 12px; padding: 2px 8px; font-size: 11px; }
+    .badge.partial { background: #9a6700; }
+    .badge.error { background: #b91c1c; }
+    .badge.success { background: #1a7f37; }
+    .container { padding: 16px 20px; }
+    .stats { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .stat { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 10px 16px; min-width: 120px; }
+    .stat .label { color: #8b949e; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+    .stat .value { font-size: 20px; font-weight: 600; margin-top: 2px; }
+    .receipts { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 12px 16px; margin-bottom: 16px; }
+    .receipts h2 { font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #8b949e; }
+    .receipt-row { display: flex; gap: 12px; align-items: center; padding: 4px 0; border-bottom: 1px solid #21262d; font-size: 12px; }
+    .receipt-row:last-child { border-bottom: none; }
+    .filters { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+    .filters select, .filters a { background: #21262d; border: 1px solid #30363d; color: #e6edf3; border-radius: 4px; padding: 4px 8px; font-size: 12px; cursor: pointer; text-decoration: none; }
+    .filters a:hover { background: #30363d; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #161b22; border-bottom: 2px solid #30363d; padding: 8px 10px; text-align: left; color: #8b949e; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+    th a { color: inherit; text-decoration: none; }
+    th a:hover { color: #e6edf3; }
+    td { padding: 7px 10px; border-bottom: 1px solid #21262d; vertical-align: middle; }
+    tr:hover td { background: #161b22; }
+    .trade-badge { background: #21262d; border: 1px solid #30363d; border-radius: 4px; padding: 2px 6px; font-size: 11px; }
+    .price { font-variant-numeric: tabular-nums; font-weight: 500; }
+    .delta-up { color: #f85149; font-size: 11px; }
+    .delta-down { color: #3fb950; font-size: 11px; }
+    .delta-none { color: #8b949e; font-size: 11px; }
+    .sku { font-family: monospace; font-size: 12px; color: #8b949e; }
+    .confidence-high { color: #3fb950; }
+    .confidence-medium { color: #ffc107; }
+    .confidence-low { color: #f85149; }
+    .pagination { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
+    .pagination a { background: #21262d; border: 1px solid #30363d; color: #e6edf3; border-radius: 4px; padding: 4px 10px; font-size: 12px; text-decoration: none; }
+    .pagination a:hover { background: #30363d; }
+    .empty { padding: 40px; text-align: center; color: #8b949e; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Material Prices</h1>
+  <span>InstaBid Sandbox</span>
+  <% if @last_receipt %>
+    <span class="badge <%= @last_receipt.status %>">
+      Last sync: <%= @last_receipt.received_at.strftime("%b %-d %H:%M") %>
+      &mdash; <%= @last_receipt.products_upserted %> upserted
+    </span>
+  <% else %>
+    <span class="badge" style="background:#484f58">No syncs yet</span>
+  <% end %>
+</div>
+
+<div class="container">
+
+  <%# Stats row %>
+  <div class="stats">
+    <div class="stat">
+      <div class="label">Total prices</div>
+      <div class="value"><%= number_with_delimiter(@total_count) %></div>
+    </div>
+    <div class="stat">
+      <div class="label">Trades</div>
+      <div class="value"><%= @trades.size %></div>
+    </div>
+    <% if @last_receipt %>
+      <div class="stat">
+        <div class="label">Last received</div>
+        <div class="value" style="font-size:13px"><%= @last_receipt.products_received %> products</div>
+      </div>
+      <div class="stat">
+        <div class="label">Last failed</div>
+        <div class="value <%= @last_receipt.products_failed > 0 ? 'delta-up' : '' %>">
+          <%= @last_receipt.products_failed %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Recent webhook receipts %>
+  <% if @receipt_history.any? %>
+    <div class="receipts">
+      <h2>Recent sync receipts</h2>
+      <% @receipt_history.each do |r| %>
+        <div class="receipt-row">
+          <span class="badge <%= r.status %>"><%= r.status %></span>
+          <span><%= r.received_at.strftime("%Y-%m-%d %H:%M:%S UTC") %></span>
+          <span>received: <strong><%= r.products_received %></strong></span>
+          <span>upserted: <strong><%= r.products_upserted %></strong></span>
+          <% if r.products_failed > 0 %>
+            <span class="delta-up">failed: <strong><%= r.products_failed %></strong></span>
+          <% end %>
+          <span style="color:#8b949e"><%= number_with_delimiter(r.payload_bytes) %> bytes</span>
+          <% if r.error_summary.present? %>
+            <span style="color:#f85149;font-size:11px" title="<%= r.error_summary %>">⚠ errors</span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Filters + sort links %>
+  <div class="filters">
+    <span style="color:#8b949e">Filter by trade:</span>
+    <%= link_to "All", admin_material_prices_path(sort: params[:sort], dir: params[:dir]) %>
+    <% @trades.each do |trade| %>
+      <%= link_to trade.capitalize,
+            admin_material_prices_path(trade: trade, sort: params[:sort], dir: params[:dir]),
+            style: (params[:trade] == trade ? "background:#1f6feb;border-color:#1f6feb" : "") %>
+    <% end %>
+  </div>
+
+  <%# Main table %>
+  <% if @prices.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th><%= sort_link "trade", "Trade" %></th>
+          <th><%= sort_link "name", "Product" %></th>
+          <th><%= sort_link "sku", "SKU" %></th>
+          <th>Zip</th>
+          <th>Unit</th>
+          <th><%= sort_link "price", "Price" %></th>
+          <th>Delta</th>
+          <th>Conf</th>
+          <th><%= sort_link "fetched_at", "Fetched At" %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @prices.each do |mp| %>
+          <tr>
+            <td><span class="trade-badge"><%= mp.trade %></span></td>
+            <td><%= mp.name %></td>
+            <td><span class="sku"><%= mp.sku %></span></td>
+            <td><%= mp.zip_code %></td>
+            <td><%= mp.unit %></td>
+            <td class="price">$<%= "%.2f" % mp.price if mp.price %></td>
+            <td>
+              <% delta = mp.price_delta %>
+              <% if delta.nil? %>
+                <span class="delta-none">—</span>
+              <% elsif delta > 0 %>
+                <span class="delta-up">▲ $<%= "%.2f" % delta.abs %> (<%= mp.price_delta_pct %>%)</span>
+              <% elsif delta < 0 %>
+                <span class="delta-down">▼ $<%= "%.2f" % delta.abs %> (<%= mp.price_delta_pct.abs %>%)</span>
+              <% else %>
+                <span class="delta-none">no change</span>
+              <% end %>
+            </td>
+            <td class="confidence-<%= mp.confidence %>"><%= mp.confidence %></td>
+            <td style="color:#8b949e"><%= mp.fetched_at&.strftime("%b %-d %H:%M") %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%# Pagination %>
+    <% current_page = [params[:page].to_i, 1].max %>
+    <div class="pagination">
+      <% if current_page > 1 %>
+        <%= link_to "← Prev",
+              admin_material_prices_path(page: current_page - 1, trade: params[:trade],
+                                         sort: params[:sort], dir: params[:dir]) %>
+      <% end %>
+      <span style="color:#8b949e">Page <%= current_page %> &middot; showing up to 100 per page</span>
+      <% if @prices.size == 100 %>
+        <%= link_to "Next →",
+              admin_material_prices_path(page: current_page + 1, trade: params[:trade],
+                                         sort: params[:sort], dir: params[:dir]) %>
+      <% end %>
+    </div>
+
+  <% else %>
+    <div class="empty">
+      <p>No material prices yet.</p>
+      <p style="margin-top:8px;font-size:12px">Configure BigBox Collections webhook → POST /webhooks/bigbox</p>
+    </div>
+  <% end %>
+
+</div>
+</body>
+</html>
