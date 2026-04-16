@@ -1,0 +1,330 @@
+@import "tailwindcss";
+
+/* ============================================================
+   INSTABID THEME
+   All design tokens live here. To retheme the app, only
+   touch the @theme block and the :root variables below.
+   ============================================================ */
+
+@theme {
+  /* ----- Brand ----- */
+  --color-brand:       #00d4ff;
+  --color-brand-hover: #33e0ff;
+
+  /* ----- Surfaces (dark theme) ----- */
+  --color-surface:         #0d1117;
+  --color-surface-raised:  #161b22;
+  --color-surface-overlay: #1c2129;
+
+  /* ----- Text ----- */
+  --color-ink:       #e6edf3;
+  --color-ink-dim:   #8b949e;
+  --color-ink-faint: #484f58;
+
+  /* ----- Borders ----- */
+  --color-border: #30363d;
+
+  /* ----- Status ----- */
+  --color-positive: #3fb950;
+  --color-caution:  #ffc107;
+  --color-negative: #f85149;
+
+  /* ----- Typography ----- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Raw CSS vars for rgba values, gradients, and shadows
+   (Tailwind @theme doesn't support these natively) */
+:root {
+  --border-brand:        rgba(0, 212, 255, 0.3);
+  --border-brand-focus:  #00d4ff;
+  --bg-input:            rgba(22, 27, 34, 0.8);
+  --gradient-brand:      linear-gradient(135deg, #00d4ff 0%, #00a8cc 100%);
+  --gradient-purple:     linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-header:     linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+  --shadow-card:         0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-glow:         0 0 20px rgba(0, 212, 255, 0.15);
+  --shadow-glow-lg:      0 0 30px rgba(0, 212, 255, 0.45);
+  --shadow-focus:        0 0 0 3px rgba(0, 212, 255, 0.2);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  ::selection {
+    background-color: rgba(0, 212, 255, 0.25);
+    color: var(--color-ink);
+  }
+
+  ::-webkit-scrollbar       { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--color-surface); }
+  ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-ink-faint); }
+}
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+@layer components {
+
+  /* ---- Buttons ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.5rem 1.125rem;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1.5;
+    white-space: nowrap;
+    transition: transform 0.15s ease, box-shadow 0.15s ease,
+                background-color 0.15s ease, border-color 0.15s ease,
+                opacity 0.15s ease;
+  }
+
+  .btn:disabled,
+  .btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .btn-primary {
+    background: var(--gradient-brand);
+    color: #0d1117;
+    border-color: transparent;
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-glow-lg);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--color-brand);
+    border-color: var(--border-brand);
+  }
+  .btn-secondary:hover {
+    background-color: rgba(0, 212, 255, 0.08);
+    border-color: var(--color-brand);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-ink-dim);
+    border-color: var(--color-border);
+  }
+  .btn-ghost:hover {
+    color: var(--color-ink);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--color-ink-faint);
+  }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--color-negative);
+    border-color: rgba(248, 81, 73, 0.4);
+  }
+  .btn-danger:hover {
+    background-color: rgba(248, 81, 73, 0.1);
+    border-color: var(--color-negative);
+  }
+
+  .btn-sm { font-size: 0.8125rem; padding: 0.3125rem 0.875rem; }
+  .btn-lg { font-size: 1rem;      padding: 0.6875rem 1.5rem; }
+
+  /* ---- Cards ---- */
+  .card {
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--border-brand);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-hover:hover {
+    border-color: var(--color-brand);
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* ---- Form Controls ---- */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .form-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-ink-dim);
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--border-brand);
+    border-radius: 8px;
+    color: var(--color-ink);
+    font-size: 0.875rem;
+    padding: 0.5625rem 0.875rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .form-input::placeholder  { color: var(--color-ink-faint); }
+  .form-input:focus         { border-color: var(--border-brand-focus); box-shadow: var(--shadow-focus); }
+  .form-input:disabled      { opacity: 0.5; cursor: not-allowed; }
+
+  /* Bottom-border-only variant (used in settings forms) */
+  .form-input-underline {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-brand);
+    border-radius: 0;
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    padding: 0.5rem 0.25rem;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .form-input-underline::placeholder { color: var(--color-ink-faint); }
+  .form-input-underline:focus        { border-color: var(--border-brand-focus); box-shadow: 0 1px 0 0 var(--border-brand-focus); }
+
+  /* ---- Page / Section Headings ---- */
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-ink);
+  }
+
+  .section-title {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-ink);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ---- Stat Cards ---- */
+  .stat-card {
+    background-color: var(--color-surface-raised);
+    border: 1px solid var(--border-brand);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-card);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .stat-card:hover         { border-color: var(--color-brand); box-shadow: var(--shadow-glow); }
+  .stat-value              { font-size: 2rem; font-weight: 700; color: var(--color-brand); line-height: 1; }
+  .stat-label              { font-size: 0.8125rem; font-weight: 500; color: var(--color-ink-dim); margin-top: 0.375rem; }
+
+  /* ---- Data Tables ---- */
+  .data-table              { width: 100%; border-collapse: collapse; }
+  .data-table th           { text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+                             letter-spacing: 0.05em; color: var(--color-ink-faint); padding: 0.75rem 1rem;
+                             border-bottom: 1px solid var(--border-brand); white-space: nowrap; }
+  .data-table td           { padding: 0.875rem 1rem; font-size: 0.875rem; color: var(--color-ink-dim);
+                             border-bottom: 1px solid rgba(48, 54, 61, 0.5); }
+  .data-table tbody tr:hover td       { background-color: rgba(255, 255, 255, 0.02); }
+  .data-table tbody tr:last-child td  { border-bottom: none; }
+
+  /* ---- Badges ---- */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    padding: 0.1875rem 0.625rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+  .badge-success { background: rgba(63, 185, 80, 0.15);  color: var(--color-positive); border: 1px solid rgba(63, 185, 80, 0.3); }
+  .badge-warning { background: rgba(255, 193, 7, 0.15);  color: var(--color-caution);  border: 1px solid rgba(255, 193, 7, 0.3); }
+  .badge-danger  { background: rgba(248, 81, 73, 0.15);  color: var(--color-negative); border: 1px solid rgba(248, 81, 73, 0.3); }
+  .badge-info    { background: rgba(0, 212, 255, 0.1);   color: var(--color-brand);    border: 1px solid var(--border-brand); }
+
+  /* ---- Flash / Alerts ---- */
+  .alert {
+    border-radius: 8px;
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .alert-success { background: rgba(63, 185, 80, 0.1);  border: 1px solid rgba(63, 185, 80, 0.3);  color: var(--color-positive); }
+  .alert-danger  { background: rgba(248, 81, 73, 0.1);  border: 1px solid rgba(248, 81, 73, 0.3);  color: var(--color-negative); }
+  .alert-warning { background: rgba(255, 193, 7, 0.1);  border: 1px solid rgba(255, 193, 7, 0.3);  color: var(--color-caution); }
+  .alert-info    { background: rgba(0, 212, 255, 0.08); border: 1px solid var(--border-brand);      color: var(--color-brand); }
+
+  /* ---- Code / Pre ---- */
+  .code-block {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 0.8125rem;
+    color: var(--color-ink-dim);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  /* ---- Nav Links ---- */
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-ink-dim);
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.15s ease, background-color 0.15s ease;
+  }
+  .nav-link:hover  { color: var(--color-ink); background-color: rgba(255, 255, 255, 0.06); }
+  .nav-link.active { color: var(--color-brand); background-color: rgba(0, 212, 255, 0.08); }
+
+  /* ---- Toggle / Checkbox Cards ---- */
+  .toggle-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+  .toggle-card:hover          { border-color: var(--border-brand); background-color: rgba(0, 212, 255, 0.03); }
+  .toggle-card.selected       { border-color: var(--color-brand);  background-color: rgba(0, 212, 255, 0.06); }
+  .toggle-card input[type="checkbox"] {
+    accent-color: var(--color-brand);
+    margin-top: 2px;
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+}
