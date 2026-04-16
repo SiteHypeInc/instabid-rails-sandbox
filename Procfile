@@ -1,1 +1,1 @@
-web: bundle exec thrust ./bin/rails server -p $PORT
+web: bundle exec thrust ./bin/rails server
