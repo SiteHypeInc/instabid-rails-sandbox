@@ -18,8 +18,9 @@ Rails.application.configure do
   # Cache assets for far-future expiry since they are all digest stamped.
   config.public_file_server.headers = { "cache-control" => "public, max-age=#{1.year.to_i}" }
 
-  # Store uploaded files on S3 (configure AWS env vars).
-  config.active_storage.service = :amazon
+  # Sandbox: use local disk storage. No S3 needed for pricing pipeline.
+  # Upgrade to :amazon when file uploads are required.
+  config.active_storage.service = :local
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   config.assume_ssl = true
