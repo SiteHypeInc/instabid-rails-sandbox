@@ -40,6 +40,8 @@ module Admin
             before:       r.before_value&.to_f,
             after:        r.after_value&.to_f,
             change:       r.before_value && r.after_value ? (r.after_value - r.before_value).to_f.round(2) : nil,
+            material:     r.material_value&.to_f,
+            labor_adder:  r.labor_adder&.to_f,
             sku_count:    r.sku_count,
             skus:         r.skus,
             status:       r.status

@@ -2,7 +2,7 @@ class MaterialPriceSyncService
   MAPPINGS_FILE = Rails.root.join("config", "material_price_mappings.yml")
 
   # Returned for each pricing key processed
-  SyncResult = Struct.new(:trade, :pricing_key, :before_value, :after_value, :sku_count, :skus, :status, keyword_init: true)
+  SyncResult = Struct.new(:trade, :pricing_key, :before_value, :after_value, :material_value, :labor_adder, :sku_count, :skus, :status, keyword_init: true)
 
   def self.sync(trade: nil)
     new(trade: trade).sync
@@ -44,12 +44,15 @@ class MaterialPriceSyncService
       return SyncResult.new(
         trade: trade, pricing_key: pricing_key,
         before_value: current_value(trade, pricing_key),
-        after_value:  nil, sku_count: 0, skus: [], status: "skipped_no_data"
+        after_value: nil, material_value: nil, labor_adder: nil,
+        sku_count: 0, skus: [], status: "skipped_no_data"
       )
     end
 
-    new_value = aggregate(prices, aggregation).round(2)
-    skus      = scope.pluck(:sku)
+    labor_adder    = config.fetch(:labor_adder, 0).to_d
+    material_value = aggregate(prices, aggregation).round(2)
+    new_value      = (material_value + labor_adder).round(2)
+    skus           = scope.pluck(:sku)
 
     record = DefaultPricing.find_or_initialize_by(trade: trade, pricing_key: pricing_key)
     before = record.persisted? ? record.value : nil
@@ -62,6 +65,7 @@ class MaterialPriceSyncService
     SyncResult.new(
       trade: trade, pricing_key: pricing_key,
       before_value: before, after_value: new_value,
+      material_value: material_value, labor_adder: labor_adder,
       sku_count: skus.size, skus: skus, status: "updated"
     )
   end

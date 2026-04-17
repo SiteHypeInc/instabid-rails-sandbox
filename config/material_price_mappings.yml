@@ -10,19 +10,22 @@
 
 plumbing:
   plumb_faucet_kitchen:
-    description: "Kitchen faucet material cost"
+    description: "Kitchen faucet (material + labor)"
     categories:
       - kitchen_faucets
     aggregation: average
+    labor_adder: 125.00
 
   plumb_sink_kitchen:
-    description: "Kitchen sink material cost"
+    description: "Kitchen sink (material + labor)"
     categories:
       - kitchen_sinks
     aggregation: average
+    labor_adder: 150.00
 
   plumb_garbage_disposal:
-    description: "Garbage disposal material cost"
+    description: "Garbage disposal (material + labor)"
     categories:
       - garbage_disposals
     aggregation: average
+    labor_adder: 150.00
