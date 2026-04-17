@@ -34,10 +34,19 @@ class MaterialPriceSyncService
   private
 
   def sync_one(trade:, pricing_key:, config:)
-    categories  = Array(config[:categories]).map(&:to_s)
+    skus        = Array(config[:skus]).map(&:to_s).reject(&:empty?)
+    categories  = Array(config[:categories]).map(&:to_s).reject(&:empty?)
     aggregation = config.fetch(:aggregation, "average").to_s
 
-    scope  = MaterialPrice.where(category: categories).where.not(price: nil)
+    # skus: takes precedence; fall back to categories:
+    scope = if skus.any?
+      MaterialPrice.where(sku: skus)
+    elsif categories.any?
+      MaterialPrice.where(category: categories)
+    else
+      MaterialPrice.none
+    end
+    scope  = scope.where.not(price: nil)
     prices = scope.pluck(:price)
 
     if prices.empty?

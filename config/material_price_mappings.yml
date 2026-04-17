@@ -1,31 +1,501 @@
-# Maps default_pricings keys to material_prices categories.
-# When a sync runs, prices in material_prices are aggregated by category
-# and written back to the matching default_pricings row.
+# Maps default_pricings keys to material_prices SKUs or categories.
 #
-# aggregation: average | median | min | max (default: average)
-# categories: one or more material_prices.category values to match
+# Sync formula: BigBox material price (aggregated) + labor_adder = default_pricings.value
 #
-# Designed to mirror the pricing_key vocabulary from Jesse's default_pricings.
-# Do not add new keys here without adding them to Jesse's default_pricings first.
+# skus:        Match specific HD SKU(s) in material_prices.sku — use when multiple
+#              products share a category and you need a specific one.
+# categories:  Match any row in material_prices.category — use when category is unique
+#              or you want all products in that category (e.g., garbage_disposals).
+#              Use skus: first; fall back to categories: only when no SKU exists.
+#
+# aggregation: average | median | min | max  (default: average)
+# labor_adder: standard install labor in USD added on top of material cost
+#
+# SKIPS (intentional — do not add without Jesse approval):
+#   - Painting (paint_interior_mat, etc.): per-sqft seeds keys; BigBox sells per-gallon.
+#     Unit conversion requires a coverage multiplier not yet in the system.
+#   - Wire per-LF (elec_wire_lf): BigBox sells 250ft rolls; no roll-to-LF divisor yet.
+#   - Per-LF repipe keys (plumb_repipe_pex_lf, plumb_repipe_copper_lf): same issue.
+#   - Labor rates, multipliers, story adders, repair lump sums: stay manual.
+#
+# Do not add new keys here without confirming the key exists in Jesse's default_pricings.
+# SKUs marked [SANDBOX] are placeholders — verify against live BigBox before production.
 
-plumbing:
-  plumb_faucet_kitchen:
-    description: "Kitchen faucet (material + labor)"
-    categories:
-      - kitchen_faucets
+# ─── ROOFING ────────────────────────────────────────────────────────────────
+
+roofing:
+  mat_asphalt:
+    description: "3-tab asphalt shingles (per bundle)"
+    skus:
+      - "202534215"
     aggregation: average
-    labor_adder: 125.00
+    labor_adder: 0.00
 
-  plumb_sink_kitchen:
-    description: "Kitchen sink (material + labor)"
-    categories:
-      - kitchen_sinks
+  mat_arch:
+    description: "Architectural shingles (per bundle)"
+    skus:
+      - "203003641"
+    aggregation: average
+    labor_adder: 0.00
+
+  mat_metal:
+    description: "Metal roofing panel"
+    skus:
+      - "202091274"
+    aggregation: average
+    labor_adder: 0.00
+
+  mat_tile:
+    description: "Concrete roofing tile (each)"
+    skus:
+      - "100144419"
+    aggregation: average
+    labor_adder: 0.00
+
+  underlayment_roll:
+    description: "Roofing underlayment (per roll)"
+    skus:
+      - "202084288"
+    aggregation: average
+    labor_adder: 0.00
+
+  osb_sheet:
+    description: "Plywood roof deck — avg of 1/2in and 5/8in (per sheet)"
+    skus:
+      - "100056707"
+      - "202090212"
+    aggregation: average
+    labor_adder: 0.00
+
+  chimney_flash:
+    description: "Chimney flashing kit + install labor"
+    skus:
+      - "203717385"
+    aggregation: average
+    labor_adder: 75.00
+
+  skylight_flash:
+    description: "Skylight flashing kit + install labor"
+    skus:
+      - "202305692"
+    aggregation: average
+    labor_adder: 50.00
+
+  valley_lf:
+    description: "Valley flashing 10ft piece (per-piece price)"
+    skus:
+      - "202534276"
+    aggregation: average
+    labor_adder: 0.00
+
+  nails_box:
+    description: "Roofing nails 1.25in (per box)"
+    skus:
+      - "100115357"
+    aggregation: average
+    labor_adder: 0.00
+
+  vent_unit:
+    description: "Ridge vent 4ft section (per unit)"
+    skus:
+      - "100071783"
+    aggregation: average
+    labor_adder: 0.00
+
+# ─── HVAC ────────────────────────────────────────────────────────────────────
+
+hvac:
+  hvac_furnace_standard:
+    description: "Gas furnace 80% AFUE 80K BTU — equipment + standard install"
+    skus:
+      - "311467636"
+    aggregation: average
+    labor_adder: 1800.00
+
+  hvac_furnace_high:
+    description: "Gas furnace 95% AFUE 80K BTU — equipment + install"
+    skus:
+      - "312558692"
+    aggregation: average
+    labor_adder: 2000.00
+
+  hvac_ac_standard:
+    description: "Central AC 2.5T 14 SEER — equipment + standard install"
+    skus:
+      - "312299847"
+    aggregation: average
+    labor_adder: 1800.00
+
+  hvac_ac_high:
+    description: "Central AC 3T 18 SEER — equipment + install"
+    skus:
+      - "313847562"
+    aggregation: average
+    labor_adder: 2000.00
+
+  hvac_heatpump_standard:
+    description: "Heat pump 2.5T 14 SEER — equipment + install"
+    skus:
+      - "314562893"
+    aggregation: average
+    labor_adder: 2000.00
+
+  hvac_heatpump_high:
+    description: "Heat pump 3T 18 SEER — equipment + install"
+    skus:
+      - "315847291"
+    aggregation: average
+    labor_adder: 2500.00
+
+  hvac_minisplit:
+    description: "Mini split 12K BTU — equipment + lineset + electrical"
+    skus:
+      - "309501994"
+    aggregation: average
+    labor_adder: 800.00
+
+  hvac_thermostat:
+    description: "Programmable thermostat — hardware + install"
+    skus:
+      - "202532598"
     aggregation: average
     labor_adder: 150.00
 
+# ─── ELECTRICAL ──────────────────────────────────────────────────────────────
+
+electrical:
+  elec_panel_200:
+    description: "200A main panel — hardware + install"
+    skus:
+      - "100209329"
+    aggregation: average
+    labor_adder: 200.00
+
+  elec_panel_100:
+    description: "100A sub-panel — hardware + install"
+    skus:
+      - "202077679"
+    aggregation: average
+    labor_adder: 175.00
+
+  elec_outlet:
+    description: "Duplex outlet 15A (material per outlet)"
+    skus:
+      - "202077282"
+    aggregation: average
+    labor_adder: 0.00
+
+  elec_outlet_gfci:
+    description: "GFCI outlet 20A (material per outlet)"
+    skus:
+      - "202532847"
+    aggregation: average
+    labor_adder: 0.00
+
+  elec_switch:
+    description: "Switch — avg of single-pole and 3-way (material per switch)"
+    skus:
+      - "100356672"
+      - "203674458"
+    aggregation: average
+    labor_adder: 0.00
+
+  elec_ceiling_fan_install:
+    description: "Ceiling fan 52in — hardware + install"
+    skus:
+      - "304743041"
+    aggregation: average
+    labor_adder: 100.00
+
+  elec_light_install:
+    description: "LED light fixture — hardware + install"
+    skus:
+      - "310502467"
+    aggregation: average
+    labor_adder: 15.00
+
+  elec_circuit_20a:
+    description: "20A circuit breaker (material per breaker)"
+    skus:
+      - "202532156"
+    aggregation: average
+    labor_adder: 75.00
+
+# ─── PLUMBING ────────────────────────────────────────────────────────────────
+
+plumbing:
+  plumb_faucet_kitchen:
+    description: "Kitchen faucet — hardware + install"
+    skus:
+      - "309847251"
+    aggregation: average
+    labor_adder: 125.00
+
+  plumb_faucet_bath:
+    description: "Bathroom faucet — hardware + install"
+    skus:
+      - "311847562"
+    aggregation: average
+    labor_adder: 100.00
+
+  plumb_sink_kitchen:
+    description: "Kitchen sink stainless — hardware + install"
+    skus:
+      - "202084619"
+    aggregation: average
+    labor_adder: 150.00
+
+  plumb_sink_bath:
+    description: "Bathroom sink — hardware + install"
+    skus:
+      - "304845716"
+    aggregation: average
+    labor_adder: 150.00
+
+  plumb_toilet:
+    description: "Toilet comfort height — hardware + install"
+    skus:
+      - "301469892"
+    aggregation: average
+    labor_adder: 125.00
+
+  plumb_shower_valve:
+    description: "Shower valve kit — hardware + install"
+    skus:
+      - "304562981"
+    aggregation: average
+    labor_adder: 200.00
+
   plumb_garbage_disposal:
-    description: "Garbage disposal (material + labor)"
+    description: "Garbage disposal — hardware + install"
     categories:
       - garbage_disposals
     aggregation: average
     labor_adder: 150.00
+
+  plumb_heater_tank_40:
+    description: "Water heater 40 gal tank — hardware + install"
+    skus:
+      - "311467890"
+    aggregation: average
+    labor_adder: 400.00
+
+  plumb_heater_tank_50:
+    description: "Water heater 50 gal tank — hardware + install"
+    skus:
+      - "312558947"
+    aggregation: average
+    labor_adder: 500.00
+
+  plumb_heater_tankless_gas:
+    description: "Tankless water heater gas — hardware + install"
+    skus:
+      - "313847629"
+    aggregation: average
+    labor_adder: 1500.00
+
+# ─── FLOORING ────────────────────────────────────────────────────────────────
+# Labor is tracked separately in Jesse's floor_labor_* keys — labor_adder: 0 here.
+
+flooring:
+  floor_carpet:
+    description: "Carpet — avg of builder/mid/premium grades (per sqft)"
+    skus:
+      - "305847291"
+      - "306562847"
+      - "307847562"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_vinyl:
+    description: "Vinyl plank basic (per sqft)"
+    skus:
+      - "308562941"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_lvp:
+    description: "Luxury vinyl plank (per sqft)"
+    skus:
+      - "309847625"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_laminate:
+    description: "Laminate — avg of AC3 and AC4 grades (per sqft)"
+    skus:
+      - "310562847"
+      - "311847562"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_hardwood_eng:
+    description: "Engineered hardwood oak (per sqft)"
+    skus:
+      - "312562941"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_hardwood_solid:
+    description: "Solid hardwood oak (per sqft)"
+    skus:
+      - "313847625"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_tile_ceramic:
+    description: "Ceramic tile 12x12 (per sqft)"
+    skus:
+      - "100138864"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_tile_porcelain:
+    description: "Porcelain tile 18x18 (per sqft)"
+    skus:
+      - "203456789"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_underlay:
+    description: "Flooring underlayment (per sqft)"
+    skus:
+      - "202084892"
+    aggregation: average
+    labor_adder: 0.00
+
+  floor_baseboard:
+    description: "Baseboard 3.5in 8ft piece (per piece)"
+    skus:
+      - "202316892"
+    aggregation: average
+    labor_adder: 0.00
+
+# ─── DRYWALL ─────────────────────────────────────────────────────────────────
+# Labor tracked in drywall_hang_sqft, drywall_tape_sqft etc — labor_adder: 0 here.
+# [SANDBOX] SKUs are placeholders — confirm against live BigBox before production.
+
+drywall:
+  drywall_sheet_half:
+    description: "Drywall 1/2in 4x8 sheet (each)"
+    skus:
+      - "311562847"
+    aggregation: average
+    labor_adder: 0.00
+
+  drywall_sheet_5_8:
+    description: "Drywall 5/8in 4x8 sheet (each)"
+    skus:
+      - "312562891"
+    aggregation: average
+    labor_adder: 0.00
+
+  drywall_joint_compound:
+    description: "Joint compound 4.5 gal bucket"
+    skus:
+      - "100158734"
+    aggregation: average
+    labor_adder: 0.00
+
+  drywall_tape:
+    description: "Drywall tape 300ft roll"
+    skus:
+      - "100067891"
+    aggregation: average
+    labor_adder: 0.00
+
+  drywall_screws:
+    description: "Drywall screws 1.25in 5lb box"
+    skus:
+      - "202532567"
+    aggregation: average
+    labor_adder: 0.00
+
+  drywall_corner_bead:
+    description: "Corner bead 8ft (each)"
+    skus:
+      - "202084391"
+    aggregation: average
+    labor_adder: 0.00
+
+# ─── SIDING ──────────────────────────────────────────────────────────────────
+# Labor tracked in siding_labor_* keys — labor_adder: 0 on material keys here.
+# [SANDBOX] SKUs are placeholders — confirm against live BigBox before production.
+
+siding:
+  siding_vinyl:
+    description: "Vinyl siding panel (per sqft)"
+    skus:
+      - "100139847"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_fiber_cement:
+    description: "Fiber cement siding plank (per sqft)"
+    skus:
+      - "203847562"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_wood:
+    description: "Cedar wood siding (per sqft)"
+    skus:
+      - "204562891"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_metal:
+    description: "Steel metal siding panel (per sqft)"
+    skus:
+      - "205847234"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_housewrap_roll:
+    description: "House wrap 9x100ft roll"
+    skus:
+      - "202316824"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_j_channel:
+    description: "Vinyl J-channel 12ft (each)"
+    skus:
+      - "100179562"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_corner_post:
+    description: "Vinyl corner post 12ft (each)"
+    skus:
+      - "202532789"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_window_trim:
+    description: "Window trim coil stock (each)"
+    skus:
+      - "202084417"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_door_trim:
+    description: "Door trim coil stock (each)"
+    skus:
+      - "202316856"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_fascia_lf:
+    description: "Fascia board 1x6 12ft (per piece)"
+    skus:
+      - "202316789"
+    aggregation: average
+    labor_adder: 0.00
+
+  siding_fastener_kit:
+    description: "Siding fastener kit"
+    skus:
+      - "202532892"
+    aggregation: average
+    labor_adder: 0.00

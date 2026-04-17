@@ -15,11 +15,12 @@ Rails.application.routes.draw do
   namespace :admin do
     resources :material_prices, only: [:index]
 
-    # Pricing sync: seed baselines, run BigBox→default_pricings sync, check status
+    # Pricing pipeline: load BigBox data → sync to default_pricings → check status
     scope :pricing do
-      post "seed",   to: "pricing_syncs#seed",   as: :pricing_seed
-      post "sync",   to: "pricing_syncs#sync",   as: :pricing_sync
-      get  "status", to: "pricing_syncs#status", as: :pricing_status
+      post "load",   to: "bigbox_data_loads#create", as: :pricing_load    # step 1: fetch from BigBox API
+      post "seed",   to: "pricing_syncs#seed",       as: :pricing_seed    # step 2a: seed Jesse baselines
+      post "sync",   to: "pricing_syncs#sync",       as: :pricing_sync    # step 2b: run BigBox→default_pricings sync
+      get  "status", to: "pricing_syncs#status",     as: :pricing_status  # step 3: inspect results
     end
   end
 end
