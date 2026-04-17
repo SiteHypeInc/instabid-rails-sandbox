@@ -11,8 +11,15 @@ Rails.application.routes.draw do
     post "bigbox", to: "bigbox#receive"
   end
 
-  # Admin — read-only pricing data views
+  # Admin — read-only pricing data views + pricing sync
   namespace :admin do
     resources :material_prices, only: [:index]
+
+    # Pricing sync: seed baselines, run BigBox→default_pricings sync, check status
+    scope :pricing do
+      post "seed",   to: "pricing_syncs#seed",   as: :pricing_seed
+      post "sync",   to: "pricing_syncs#sync",   as: :pricing_sync
+      get  "status", to: "pricing_syncs#status", as: :pricing_status
+    end
   end
 end

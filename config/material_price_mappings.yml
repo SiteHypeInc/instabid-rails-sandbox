@@ -1,0 +1,28 @@
+# Maps default_pricings keys to material_prices categories.
+# When a sync runs, prices in material_prices are aggregated by category
+# and written back to the matching default_pricings row.
+#
+# aggregation: average | median | min | max (default: average)
+# categories: one or more material_prices.category values to match
+#
+# Designed to mirror the pricing_key vocabulary from Jesse's default_pricings.
+# Do not add new keys here without adding them to Jesse's default_pricings first.
+
+plumbing:
+  plumb_faucet_kitchen:
+    description: "Kitchen faucet material cost"
+    categories:
+      - kitchen_faucets
+    aggregation: average
+
+  plumb_sink_kitchen:
+    description: "Kitchen sink material cost"
+    categories:
+      - kitchen_sinks
+    aggregation: average
+
+  plumb_garbage_disposal:
+    description: "Garbage disposal material cost"
+    categories:
+      - garbage_disposals
+    aggregation: average
