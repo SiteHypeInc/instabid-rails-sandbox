@@ -71,14 +71,14 @@ module Webhooks
     private
 
     def authenticate_bigbox!
-      expected = ENV["BIGBOX_WEBHOOK_SECRET"]
+      expected = ENV["BIGBOX_WEBHOOK_SECRET"].to_s.strip.gsub(/\s+/, "")
 
       if expected.blank?
         Rails.logger.error("[BigboxWebhook] BIGBOX_WEBHOOK_SECRET not set — rejecting all requests")
         return head :service_unavailable
       end
 
-      received = request.headers["X-Bigbox-Secret"].to_s
+      received = request.headers["X-Bigbox-Secret"].to_s.strip
 
       unless ActiveSupport::SecurityUtils.secure_compare(expected, received)
         Rails.logger.warn("[BigboxWebhook] Auth failure from #{request.remote_ip}")
