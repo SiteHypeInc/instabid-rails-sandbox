@@ -109,25 +109,46 @@ module Admin
 
       results = {}
 
-      # Style A: POST /collections/{id}/destinations  with JSON body
-      uri_a       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/destinations")
-      uri_a.query = URI.encode_www_form(api_key: api_key)
-      http_a      = build_http(uri_a)
-      req_a       = Net::HTTP::Post.new(uri_a.request_uri)
-      req_a["Content-Type"] = "application/json"
-      req_a.body  = { type: "webhook", value: webhook_url }.to_json
-      r_a         = http_a.request(req_a)
-      results["POST /collections/{id}/destinations"] = { status: r_a.code.to_i, body: r_a.body }
+      # GET single collection to see full schema
+      uri_get       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}")
+      uri_get.query = URI.encode_www_form(api_key: api_key)
+      r_get         = build_http(uri_get).request(Net::HTTP::Get.new(uri_get.request_uri))
+      results["GET /collections/{id}"] = { status: r_get.code.to_i, body: r_get.body }
 
-      # Style B: PATCH /collections/{id} with destinations array
-      uri_b       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}")
+      # Style A: PUT /collections/{id} — full update with webhook_notification_url
+      uri_a       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}")
+      uri_a.query = URI.encode_www_form(api_key: api_key)
+      req_a       = Net::HTTP::Put.new(uri_a.request_uri)
+      req_a["Content-Type"] = "application/json"
+      req_a.body  = { webhook_notification_url: webhook_url }.to_json
+      r_a         = build_http(uri_a).request(req_a)
+      results["PUT /collections/{id} webhook_notification_url"] = { status: r_a.code.to_i, body: r_a.body }
+
+      # Style B: create NEW collection with webhook_notification_url at creation time
+      uri_b       = URI(BIGBOX_COLLECTIONS_URL)
       uri_b.query = URI.encode_www_form(api_key: api_key)
-      http_b      = build_http(uri_b)
-      req_b       = Net::HTTP::Patch.new(uri_b.request_uri)
+      req_b       = Net::HTTP::Post.new(uri_b.request_uri)
       req_b["Content-Type"] = "application/json"
-      req_b.body  = { webhook_url: webhook_url }.to_json
-      r_b         = http_b.request(req_b)
-      results["PATCH /collections/{id} webhook_url"] = { status: r_b.code.to_i, body: r_b.body }
+      req_b.body  = {
+        name: "instabid-webhook-test-#{Time.now.to_i}",
+        requests: [{ type: "product", item_id: "202534215" }],
+        webhook_notification_url: webhook_url
+      }.to_json
+      r_b         = build_http(uri_b).request(req_b)
+      results["POST /collections with webhook_notification_url"] = { status: r_b.code.to_i, body: r_b.body }
+
+      # Style C: create with schedule + webhook
+      uri_c       = URI(BIGBOX_COLLECTIONS_URL)
+      uri_c.query = URI.encode_www_form(api_key: api_key)
+      req_c       = Net::HTTP::Post.new(uri_c.request_uri)
+      req_c["Content-Type"] = "application/json"
+      req_c.body  = {
+        name: "instabid-notify-test-#{Time.now.to_i}",
+        requests: [{ type: "product", item_id: "202534215" }],
+        notification_email: "john@sitehypedesigns.com"
+      }.to_json
+      r_c         = build_http(uri_c).request(req_c)
+      results["POST /collections with notification_email"] = { status: r_c.code.to_i, body: r_c.body }
 
       render json: results
     rescue => e
