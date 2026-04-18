@@ -98,6 +98,63 @@ module Admin
       render json: { error: e.class.to_s, message: e.message }
     end
 
+    # POST — probe: add webhook destination to a collection
+    # params: collection_id, webhook_url
+    def destinations_probe
+      api_key        = ENV["BIGBOX_API_KEY"].to_s.strip
+      collection_id  = params[:collection_id].presence || "0F8E1127"
+      webhook_url    = params[:webhook_url].presence || "https://instabid-rails-sandbox-production.up.railway.app/webhooks/bigbox"
+
+      return render json: { error: "BIGBOX_API_KEY not set" }, status: :service_unavailable if api_key.blank?
+
+      results = {}
+
+      # Style A: POST /collections/{id}/destinations  with JSON body
+      uri_a       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/destinations")
+      uri_a.query = URI.encode_www_form(api_key: api_key)
+      http_a      = build_http(uri_a)
+      req_a       = Net::HTTP::Post.new(uri_a.request_uri)
+      req_a["Content-Type"] = "application/json"
+      req_a.body  = { type: "webhook", value: webhook_url }.to_json
+      r_a         = http_a.request(req_a)
+      results["POST /collections/{id}/destinations"] = { status: r_a.code.to_i, body: r_a.body }
+
+      # Style B: PATCH /collections/{id} with destinations array
+      uri_b       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}")
+      uri_b.query = URI.encode_www_form(api_key: api_key)
+      http_b      = build_http(uri_b)
+      req_b       = Net::HTTP::Patch.new(uri_b.request_uri)
+      req_b["Content-Type"] = "application/json"
+      req_b.body  = { webhook_url: webhook_url }.to_json
+      r_b         = http_b.request(req_b)
+      results["PATCH /collections/{id} webhook_url"] = { status: r_b.code.to_i, body: r_b.body }
+
+      render json: results
+    rescue => e
+      render json: { error: e.class.to_s, message: e.message }
+    end
+
+    # GET /admin/pricing/collection_run?collection_id=X — trigger a collection run
+    def collection_run
+      api_key       = ENV["BIGBOX_API_KEY"].to_s.strip
+      collection_id = params[:collection_id].presence
+
+      return render json: { error: "collection_id required" } if collection_id.blank?
+      return render json: { error: "BIGBOX_API_KEY not set" }, status: :service_unavailable if api_key.blank?
+
+      uri       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/run")
+      uri.query = URI.encode_www_form(api_key: api_key)
+      http      = build_http(uri)
+      req       = Net::HTTP::Post.new(uri.request_uri)
+      req["Content-Type"] = "application/json"
+      req.body  = {}.to_json
+      r         = http.request(req)
+
+      render json: { http_status: r.code.to_i, raw: r.body }
+    rescue => e
+      render json: { error: e.class.to_s, message: e.message }
+    end
+
     private
 
     def build_http(uri)
