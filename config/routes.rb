@@ -21,6 +21,7 @@ Rails.application.routes.draw do
       post "seed",   to: "pricing_syncs#seed",       as: :pricing_seed    # step 2a: seed Jesse baselines
       post "sync",   to: "pricing_syncs#sync",       as: :pricing_sync    # step 2b: run BigBox→default_pricings sync
       get  "status", to: "pricing_syncs#status",     as: :pricing_status  # step 3: inspect results
+      get  "debug_bigbox", to: "bigbox_debug#show",  as: :pricing_debug_bigbox  # diagnostic: raw BigBox response
     end
   end
 end
