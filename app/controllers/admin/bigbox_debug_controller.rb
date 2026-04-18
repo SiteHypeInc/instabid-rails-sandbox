@@ -171,30 +171,36 @@ module Admin
       r_r         = build_http(uri_r).request(Net::HTTP::Get.new(uri_r.request_uri))
       results["GET results"] = { status: r_r.code.to_i, body: r_r.body }
 
-      # PUT with status:running
       uri_a       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}")
       uri_a.query = URI.encode_www_form(api_key: api_key)
+
+      # PUT with just name — verify body format
       req_a       = Net::HTTP::Put.new(uri_a.request_uri)
       req_a["Content-Type"] = "application/json"
-      req_a.body  = { status: "running" }.to_json
+      req_a.body  = { name: "instabid-updated-#{Time.now.to_i}" }.to_json
       r_a         = build_http(uri_a).request(req_a)
-      results["PUT status:running"] = { status: r_a.code.to_i, body: r_a.body[0,300] }
+      results["PUT name only"] = { status: r_a.code.to_i, body: r_a.body[0,300] }
 
-      # PUT with schedule_type:immediate
-      req_b       = Net::HTTP::Put.new(uri_a.request_uri)
+      # Create new collection with schedule_type:minutes — does it auto-run?
+      uri_b       = URI(BIGBOX_COLLECTIONS_URL)
+      uri_b.query = URI.encode_www_form(api_key: api_key)
+      req_b       = Net::HTTP::Post.new(uri_b.request_uri)
       req_b["Content-Type"] = "application/json"
-      req_b.body  = { schedule_type: "immediate" }.to_json
-      r_b         = build_http(uri_a).request(req_b)
-      results["PUT schedule_type:immediate"] = { status: r_b.code.to_i, body: r_b.body[0,300] }
+      req_b.body  = {
+        name: "instabid-sched-#{Time.now.to_i}",
+        schedule_type: "minutes",
+        schedule_minutes: 1,
+        requests: [{ type: "product", item_id: "202534215" }]
+      }.to_json
+      r_b         = build_http(uri_b).request(req_b)
+      results["POST create schedule_type:minutes"] = { status: r_b.code.to_i, body: r_b.body[0,400] }
 
-      # POST to collection base URL with run:true
-      uri_c       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}")
-      uri_c.query = URI.encode_www_form(api_key: api_key)
-      req_c       = Net::HTTP::Post.new(uri_c.request_uri)
+      # PUT with run: true (after name fix confirms format)
+      req_c       = Net::HTTP::Put.new(uri_a.request_uri)
       req_c["Content-Type"] = "application/json"
-      req_c.body  = { run: true }.to_json
-      r_c         = build_http(uri_c).request(req_c)
-      results["POST {id} run:true"] = { status: r_c.code.to_i, body: r_c.body[0,300] }
+      req_c.body  = { name: "instabid-#{collection_id}", run: true }.to_json
+      r_c         = build_http(uri_a).request(req_c)
+      results["PUT name+run:true"] = { status: r_c.code.to_i, body: r_c.body[0,300] }
 
       render json: results
     rescue => e
