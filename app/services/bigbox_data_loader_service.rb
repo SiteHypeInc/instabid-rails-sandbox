@@ -107,8 +107,8 @@ class BigboxDataLoaderService
 
     http             = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl     = true
-    http.open_timeout = 10
-    http.read_timeout = 10
+    http.open_timeout = 15
+    http.read_timeout = 60
 
     response = http.request(Net::HTTP::Get.new(uri.request_uri))
 
