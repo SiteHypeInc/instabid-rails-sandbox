@@ -155,7 +155,7 @@ module Admin
       render json: { error: e.class.to_s, message: e.message }
     end
 
-    # GET /admin/pricing/collection_run?collection_id=X — probe trigger + result endpoints
+    # GET /admin/pricing/collection_run?collection_id=X — probe trigger mechanisms
     def collection_run
       api_key       = ENV["BIGBOX_API_KEY"].to_s.strip
       collection_id = params[:collection_id].presence
@@ -165,24 +165,36 @@ module Admin
 
       results = {}
 
-      [
-        ["POST", "run"],
-        ["POST", "start"],
-        ["POST", "execute"],
-        ["GET",  "result_sets"],
-        ["GET",  "results"],
-        ["GET",  "requests"]
-      ].each do |method, action|
-        uri       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/#{action}")
-        uri.query = URI.encode_www_form(api_key: api_key)
-        http      = build_http(uri)
-        req       = method == "GET" ?
-                      Net::HTTP::Get.new(uri.request_uri) :
-                      Net::HTTP::Post.new(uri.request_uri).tap { |r| r["Content-Type"] = "application/json"; r.body = {}.to_json }
-        r = http.request(req)
-        key = "#{method} /collections/{id}/#{action}"
-        results[key] = { status: r.code.to_i, body_preview: r.body.to_s[0, 200] }
-      end
+      # GET results (confirmed working)
+      uri_r       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/results")
+      uri_r.query = URI.encode_www_form(api_key: api_key)
+      r_r         = build_http(uri_r).request(Net::HTTP::Get.new(uri_r.request_uri))
+      results["GET results"] = { status: r_r.code.to_i, body: r_r.body }
+
+      # PUT with status:running
+      uri_a       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}")
+      uri_a.query = URI.encode_www_form(api_key: api_key)
+      req_a       = Net::HTTP::Put.new(uri_a.request_uri)
+      req_a["Content-Type"] = "application/json"
+      req_a.body  = { status: "running" }.to_json
+      r_a         = build_http(uri_a).request(req_a)
+      results["PUT status:running"] = { status: r_a.code.to_i, body: r_a.body[0,300] }
+
+      # PUT with schedule_type:immediate
+      req_b       = Net::HTTP::Put.new(uri_a.request_uri)
+      req_b["Content-Type"] = "application/json"
+      req_b.body  = { schedule_type: "immediate" }.to_json
+      r_b         = build_http(uri_a).request(req_b)
+      results["PUT schedule_type:immediate"] = { status: r_b.code.to_i, body: r_b.body[0,300] }
+
+      # POST to collection base URL with run:true
+      uri_c       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}")
+      uri_c.query = URI.encode_www_form(api_key: api_key)
+      req_c       = Net::HTTP::Post.new(uri_c.request_uri)
+      req_c["Content-Type"] = "application/json"
+      req_c.body  = { run: true }.to_json
+      r_c         = build_http(uri_c).request(req_c)
+      results["POST {id} run:true"] = { status: r_c.code.to_i, body: r_c.body[0,300] }
 
       render json: results
     rescue => e
