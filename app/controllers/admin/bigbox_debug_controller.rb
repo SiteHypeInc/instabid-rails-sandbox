@@ -155,7 +155,7 @@ module Admin
       render json: { error: e.class.to_s, message: e.message }
     end
 
-    # GET /admin/pricing/collection_run?collection_id=X — trigger a collection run
+    # GET /admin/pricing/collection_run?collection_id=X — probe trigger + result endpoints
     def collection_run
       api_key       = ENV["BIGBOX_API_KEY"].to_s.strip
       collection_id = params[:collection_id].presence
@@ -163,15 +163,28 @@ module Admin
       return render json: { error: "collection_id required" } if collection_id.blank?
       return render json: { error: "BIGBOX_API_KEY not set" }, status: :service_unavailable if api_key.blank?
 
-      uri       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/run")
-      uri.query = URI.encode_www_form(api_key: api_key)
-      http      = build_http(uri)
-      req       = Net::HTTP::Post.new(uri.request_uri)
-      req["Content-Type"] = "application/json"
-      req.body  = {}.to_json
-      r         = http.request(req)
+      results = {}
 
-      render json: { http_status: r.code.to_i, raw: r.body }
+      [
+        ["POST", "run"],
+        ["POST", "start"],
+        ["POST", "execute"],
+        ["GET",  "result_sets"],
+        ["GET",  "results"],
+        ["GET",  "requests"]
+      ].each do |method, action|
+        uri       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/#{action}")
+        uri.query = URI.encode_www_form(api_key: api_key)
+        http      = build_http(uri)
+        req       = method == "GET" ?
+                      Net::HTTP::Get.new(uri.request_uri) :
+                      Net::HTTP::Post.new(uri.request_uri).tap { |r| r["Content-Type"] = "application/json"; r.body = {}.to_json }
+        r = http.request(req)
+        key = "#{method} /collections/{id}/#{action}"
+        results[key] = { status: r.code.to_i, body_preview: r.body.to_s[0, 200] }
+      end
+
+      render json: results
     rescue => e
       render json: { error: e.class.to_s, message: e.message }
     end
