@@ -11,7 +11,7 @@ module Admin
     # Optional params: schedule (default: daily), notify_email
     def create
       collection_id = BigboxCollectionService.create_production_collection(
-        schedule:     params[:schedule].presence || "daily",
+        schedule:     params[:schedule].presence || "manual",
         notify_email: params[:notify_email].presence || "john@sitehypedesigns.com"
       )
 

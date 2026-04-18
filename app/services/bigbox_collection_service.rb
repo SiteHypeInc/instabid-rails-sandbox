@@ -24,7 +24,7 @@ class BigboxCollectionService
     keyword_init: true
   )
 
-  def self.create_production_collection(schedule: "daily", notify_email: "john@sitehypedesigns.com")
+  def self.create_production_collection(schedule: "manual", notify_email: "john@sitehypedesigns.com")
     new.create_collection(schedule: schedule, notify_email: notify_email)
   end
 
