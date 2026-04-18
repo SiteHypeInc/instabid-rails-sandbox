@@ -69,7 +69,7 @@ class BigboxDataLoaderService
       )
     end
 
-    price = extract_price(product)
+    price = product.delete("_price") || extract_price(product)
 
     upsert_material_price(
       sku:      sku,
@@ -124,8 +124,8 @@ class BigboxDataLoaderService
 
     results.first(5).each do |r|
       product = r["product"] || r
-      price   = extract_price(product)
-      return product if price && price > 0
+      price   = extract_price(product, offers: r["offers"])
+      return product.merge("_price" => price) if price && price > 0
     end
 
     nil
@@ -142,7 +142,13 @@ class BigboxDataLoaderService
   end
 
   # BigBox may return price as a float or as a "$45.98"-style string.
-  def extract_price(product)
+  # For search results, the real price lives at offers["primary"]["price"] — pass it via offers:.
+  def extract_price(product, offers: nil)
+    if offers.is_a?(Hash)
+      offer_price = offers.dig("primary", "price")
+      return offer_price.to_d if offer_price.present? && offer_price.to_d > 0
+    end
+
     return product["price"].to_d if product["price"].present?
 
     raw = product["price_string"] || product["price_raw"] || product["list_price"]
