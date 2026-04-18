@@ -220,8 +220,6 @@ module Admin
     public
 
     def show
-      term    = params[:term].presence || "Asphalt Shingles"
-      zip     = params[:zip_code].presence || "10001"
       api_key = ENV["BIGBOX_API_KEY"].to_s.strip
 
       if api_key.blank?
@@ -229,14 +227,24 @@ module Admin
         return
       end
 
+      # Support both search and product lookup types
+      request_type = params[:request_type].presence || "product"
+      item_id      = params[:item_id].presence || params[:sku].presence
+      term         = params[:term].presence || "Asphalt Shingles"
+      zip          = params[:zip_code].presence || "10001"
+
+      query_params = { api_key: api_key, type: request_type }
+
+      if request_type == "product" && item_id.present?
+        query_params[:item_id] = item_id
+      else
+        query_params[:search_term] = term
+        query_params[:zip_code]    = zip
+        query_params[:page]        = "1"
+      end
+
       uri       = URI(BIGBOX_BASE_URL)
-      uri.query = URI.encode_www_form(
-        api_key:     api_key,
-        type:        "search",
-        search_term: term,
-        zip_code:    zip,
-        page:        "1"
-      )
+      uri.query = URI.encode_www_form(query_params)
 
       http              = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl      = true
