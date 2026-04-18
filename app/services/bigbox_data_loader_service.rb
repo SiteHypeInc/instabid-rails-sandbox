@@ -58,18 +58,18 @@ class BigboxDataLoaderService
   def load_one(trade:, item:)
     sku = item["sku"].to_s
 
-    product = fetch_from_bigbox(item["name"])
+    product = fetch_product_by_id(sku)
 
     if product.nil?
       return LoadResult.new(
         sku: sku, name: item["name"], trade: trade,
         category: item["category"], unit: item["unit"],
         price: nil, status: "api_no_data",
-        error: "BigBox returned no search result for '#{item["name"]}'"
+        error: "BigBox returned no product for item_id '#{sku}'"
       )
     end
 
-    price = product.delete("_price") || extract_price(product)
+    price = extract_product_price(product)
 
     upsert_material_price(
       sku:      sku,
@@ -83,7 +83,7 @@ class BigboxDataLoaderService
     LoadResult.new(
       sku: sku, name: item["name"], trade: trade,
       category: item["category"], unit: item["unit"],
-      price: price, status: "loaded"
+      price: price, status: price ? "loaded" : "no_price"
     )
 
   rescue => e
@@ -95,67 +95,69 @@ class BigboxDataLoaderService
     )
   end
 
-  # BigBox search API: GET /request?api_key=KEY&type=search&search_term=NAME&zip_code=ZIP&page=1
-  # Returns data["search_results"] array; pick the first result with a valid price.
-  def fetch_from_bigbox(search_term)
+  # BigBox product API: GET /request?api_key=KEY&type=product&item_id=SKU
+  # Direct product page lookup by Home Depot item ID — more reliable than search.
+  def fetch_product_by_id(item_id)
     uri       = URI(BIGBOX_BASE_URL)
     uri.query = URI.encode_www_form(
-      api_key:     @api_key,
-      type:        "search",
-      search_term: search_term,
-      zip_code:    @zip_code,
-      page:        "1"
+      api_key: @api_key,
+      type:    "product",
+      item_id: item_id
     )
 
     http             = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl     = true
-    http.open_timeout = 8
-    http.read_timeout = 8
+    http.open_timeout = 10
+    http.read_timeout = 10
 
     response = http.request(Net::HTTP::Get.new(uri.request_uri))
 
     unless response.is_a?(Net::HTTPSuccess)
-      Rails.logger.warn("[BigboxDataLoader] HTTP #{response.code} for '#{search_term}'")
+      Rails.logger.warn("[BigboxDataLoader] HTTP #{response.code} for item_id '#{item_id}'")
       return nil
     end
 
-    data    = JSON.parse(response.body)
-    results = Array(data["search_results"])
+    data = JSON.parse(response.body)
 
-    results.first(5).each do |r|
-      product = r["product"] || r
-      price   = extract_price(product, offers: r["offers"])
-      return product.merge("_price" => price) if price && price > 0
+    unless data.dig("request_info", "success")
+      msg = data.dig("request_info", "message") || "unknown error"
+      Rails.logger.warn("[BigboxDataLoader] API error for item_id '#{item_id}': #{msg}")
+      return nil
     end
 
-    nil
+    data["product"]
 
   rescue JSON::ParserError => e
-    Rails.logger.error("[BigboxDataLoader] JSON parse error for '#{search_term}': #{e.message}")
+    Rails.logger.error("[BigboxDataLoader] JSON parse error for item_id '#{item_id}': #{e.message}")
     nil
   rescue Net::OpenTimeout, Net::ReadTimeout => e
-    Rails.logger.error("[BigboxDataLoader] Timeout for '#{search_term}': #{e.message}")
+    Rails.logger.error("[BigboxDataLoader] Timeout for item_id '#{item_id}': #{e.message}")
     nil
   rescue => e
-    Rails.logger.error("[BigboxDataLoader] Network error for '#{search_term}': #{e.message}")
+    Rails.logger.error("[BigboxDataLoader] Network error for item_id '#{item_id}': #{e.message}")
     nil
   end
 
-  # BigBox may return price as a float or as a "$45.98"-style string.
-  # For search results, the real price lives at offers["primary"]["price"] — pass it via offers:.
-  def extract_price(product, offers: nil)
-    if offers.is_a?(Hash)
-      offer_price = offers.dig("primary", "price")
-      return offer_price.to_d if offer_price.present? && offer_price.to_d > 0
+  # Extract price from a BigBox product response.
+  # Product API returns price at buybox_winner.price.value or buybox_winner.price.raw.
+  def extract_product_price(product)
+    return nil unless product.is_a?(Hash)
+
+    # Primary: buybox_winner.price.value (numeric)
+    bb_price = product.dig("buybox_winner", "price", "value")
+    return bb_price.to_d if bb_price.present? && bb_price.to_d > 0
+
+    # Fallback: buybox_winner.price.raw ("$45.98")
+    bb_raw = product.dig("buybox_winner", "price", "raw")
+    if bb_raw.present?
+      cleaned = bb_raw.to_s.gsub(/[^\d.]/, "")
+      return cleaned.to_d if cleaned.present? && cleaned.to_d > 0
     end
 
-    return product["price"].to_d if product["price"].present?
+    # Last resort: top-level price fields
+    return product["price"].to_d if product["price"].present? && product["price"].to_d > 0
 
-    raw = product["price_string"] || product["price_raw"] || product["list_price"]
-    return nil if raw.blank?
-
-    cleaned = raw.to_s.gsub(/[^\d.]/, "")
-    cleaned.present? ? cleaned.to_d : nil
+    nil
   end
 
   def upsert_material_price(sku:, name:, category:, trade:, unit:, price:)
