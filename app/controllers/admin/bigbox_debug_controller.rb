@@ -42,23 +42,24 @@ module Admin
 
       return render json: { error: "BIGBOX_API_KEY not set" }, status: :service_unavailable if api_key.blank?
 
-      uri   = URI(BIGBOX_COLLECTIONS_URL)
+      uri       = URI(BIGBOX_COLLECTIONS_URL)
+      uri.query = URI.encode_www_form(api_key: api_key)
+
       http  = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl      = true
       http.open_timeout = 15
       http.read_timeout = 15
 
-      # Attempt POST to create collection — body shape is a probe
+      # Attempt POST to create collection — probe common body shapes
       body = {
-        api_key: api_key,
-        name:    "instabid-test-#{Time.now.to_i}",
-        webhook: webhook_url,
+        name:     "instabid-test-#{Time.now.to_i}",
+        webhook:  webhook_url,
         requests: [
           { type: "product", item_id: test_sku }
         ]
       }.to_json
 
-      req = Net::HTTP::Post.new(uri.path.presence || "/collections")
+      req = Net::HTTP::Post.new(uri.request_uri)
       req["Content-Type"] = "application/json"
       req.body = body
 
