@@ -45,7 +45,7 @@
     {"name": "Toilet Comfort Height", "sku": "301469892", "category": "toilet", "unit": "each"},
     {"name": "Bathroom Sink", "sku": "304845716", "category": "sink_bath", "unit": "each"},
     {"name": "Kitchen Sink Stainless", "sku": "202084619", "category": "sink_kitchen", "unit": "each"},
-    {"name": "Bathroom Faucet", "sku": "311847562", "category": "faucet_bath", "unit": "each"},
+    {"name": "Bathroom Faucet", "sku": "316847562", "category": "faucet_bath", "unit": "each"},
     {"name": "Kitchen Faucet", "sku": "309847251", "category": "faucet_kitchen", "unit": "each"},
     {"name": "Shower Valve Kit", "sku": "304562981", "category": "shower_valve", "unit": "kit"},
     {"name": "Water Heater 40 Gal", "sku": "311467890", "category": "waterheater_40gal", "unit": "each"},

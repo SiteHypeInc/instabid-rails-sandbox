@@ -58,14 +58,14 @@ class BigboxDataLoaderService
   def load_one(trade:, item:)
     sku = item["sku"].to_s
 
-    product = fetch_from_bigbox(sku)
+    product = fetch_from_bigbox(item["name"])
 
     if product.nil?
       return LoadResult.new(
         sku: sku, name: item["name"], trade: trade,
         category: item["category"], unit: item["unit"],
         price: nil, status: "api_no_data",
-        error: "BigBox returned no product for SKU #{sku}"
+        error: "BigBox returned no search result for '#{item["name"]}'"
       )
     end
 
@@ -95,26 +95,49 @@ class BigboxDataLoaderService
     )
   end
 
-  # BigBox product API: GET /request?api_key=KEY&type=product&item_id=SKU
-  def fetch_from_bigbox(sku)
+  # BigBox search API: GET /request?api_key=KEY&type=search&search_term=NAME&zip_code=ZIP&page=1
+  # Returns data["search_results"] array; pick the first result with a valid price.
+  def fetch_from_bigbox(search_term)
     uri       = URI(BIGBOX_BASE_URL)
-    uri.query = URI.encode_www_form(api_key: @api_key, type: "product", item_id: sku)
+    uri.query = URI.encode_www_form(
+      api_key:     @api_key,
+      type:        "search",
+      search_term: search_term,
+      zip_code:    @zip_code,
+      page:        "1"
+    )
 
-    response = Net::HTTP.get_response(uri)
+    http             = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl     = true
+    http.open_timeout = 8
+    http.read_timeout = 8
+
+    response = http.request(Net::HTTP::Get.new(uri.request_uri))
 
     unless response.is_a?(Net::HTTPSuccess)
-      Rails.logger.warn("[BigboxDataLoader] HTTP #{response.code} for SKU #{sku}")
+      Rails.logger.warn("[BigboxDataLoader] HTTP #{response.code} for '#{search_term}'")
       return nil
     end
 
-    data = JSON.parse(response.body)
-    data["product"]
+    data    = JSON.parse(response.body)
+    results = Array(data["search_results"])
+
+    results.first(5).each do |r|
+      product = r["product"] || r
+      price   = extract_price(product)
+      return product if price && price > 0
+    end
+
+    nil
 
   rescue JSON::ParserError => e
-    Rails.logger.error("[BigboxDataLoader] JSON parse error for SKU #{sku}: #{e.message}")
+    Rails.logger.error("[BigboxDataLoader] JSON parse error for '#{search_term}': #{e.message}")
+    nil
+  rescue Net::OpenTimeout, Net::ReadTimeout => e
+    Rails.logger.error("[BigboxDataLoader] Timeout for '#{search_term}': #{e.message}")
     nil
   rescue => e
-    Rails.logger.error("[BigboxDataLoader] Network error for SKU #{sku}: #{e.message}")
+    Rails.logger.error("[BigboxDataLoader] Network error for '#{search_term}': #{e.message}")
     nil
   end
 
