@@ -37,7 +37,6 @@
     {"name": "3-Way Switch", "sku": "203674458", "category": "switch_3way", "unit": "each"},
     {"name": "LED Light Fixture", "sku": "310502467", "category": "light_fixture", "unit": "each"},
     {"name": "Ceiling Fan 52in", "sku": "304743041", "category": "ceiling_fan", "unit": "each"},
-    {"name": "15A Circuit Breaker", "sku": "100212074", "category": "breaker_15a", "unit": "each"},
     {"name": "20A Circuit Breaker", "sku": "202532156", "category": "breaker_20a", "unit": "each"}
   ],
 
