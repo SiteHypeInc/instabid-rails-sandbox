@@ -1,0 +1,207 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+#
+# bin/refresh_skus — rebuild db/data/material_skus.json from BigBox search.
+#
+# For each pricing_key in material_skus.json, hit BigBox /request?type=search
+# with the item name, take the top-3 candidates, pick top-1 as the new SKU,
+# and write the refreshed seed file. Also emits a Markdown review table to
+# tmp/sku_refresh_report.md so reviewers can spot grade mismatches
+# (e.g. contractor-standard vs. UltraLight drywall) before merging.
+#
+# Usage:
+#   BIGBOX_API_KEY=xxx bin/refresh_skus            # refresh all
+#   BIGBOX_API_KEY=xxx bin/refresh_skus --trade roofing
+#
+# Why this exists: HD item_ids rotate every ~60-90 days. The seed file
+# goes stale and direct /request?type=product lookups return "Product
+# not found". Run this quarterly, or whenever the loader starts flagging
+# api_no_data for everything.
+#
+# Credits: 1 search credit per pricing_key (~89 for full refresh).
+#
+require "json"
+require "net/http"
+require "optparse"
+require "pathname"
+require "uri"
+
+BASE   = "https://api.bigboxapi.com/request"
+ZIP    = "10001"                  # national baseline — intentionally generic
+WORKERS = 4                       # BigBox rate limits, stay conservative
+RETRIES = 3
+
+ROOT        = Pathname.new(__dir__).parent.expand_path
+SEED_FILE   = ROOT.join("db", "data", "material_skus.json")
+REPORT_FILE = ROOT.join("tmp", "sku_refresh_report.md")
+
+options = { trade: nil }
+OptionParser.new do |opts|
+  opts.banner = "Usage: bin/refresh_skus [options]"
+  opts.on("--trade TRADE", "Refresh only this trade (e.g. roofing)") { |v| options[:trade] = v }
+end.parse!
+
+api_key = ENV["BIGBOX_API_KEY"].to_s.strip
+abort "BIGBOX_API_KEY env var not set" if api_key.empty?
+
+def search(api_key, term, attempt: 0)
+  uri = URI(BASE)
+  uri.query = URI.encode_www_form(
+    api_key:     api_key,
+    type:        "search",
+    search_term: term,
+    zip_code:    ZIP,
+    page:        "1"
+  )
+
+  http              = Net::HTTP.new(uri.host, uri.port)
+  http.use_ssl      = true
+  http.open_timeout = 15
+  http.read_timeout = 90
+
+  response = http.request(Net::HTTP::Get.new(uri.request_uri))
+
+  unless response.is_a?(Net::HTTPSuccess)
+    return retry_or_fail(api_key, term, attempt, "http #{response.code}")
+  end
+
+  data = JSON.parse(response.body)
+  unless data.dig("request_info", "success")
+    return retry_or_fail(api_key, term, attempt, "api success=false")
+  end
+
+  results = data["search_results"] || []
+  return { error: "no results" } if results.empty?
+
+  candidates = results.first(3).map do |r|
+    {
+      item_id: r.dig("product", "item_id"),
+      title:   r.dig("product", "title"),
+      price:   r.dig("offers", "primary", "price")
+    }
+  end
+  { candidates: candidates }
+
+rescue => e
+  retry_or_fail(api_key, term, attempt, "exception: #{e.message}")
+end
+
+def retry_or_fail(api_key, term, attempt, reason)
+  return { error: reason } if attempt >= RETRIES
+  sleep(3 + attempt * 3)
+  search(api_key, term, attempt: attempt + 1)
+end
+
+# Mismatch flag: title doesn't share any meaningful keyword with the want-name.
+# Crude but effective at catching "Ridge Vent 4ft -> GAF Timberline Shingles".
+STOP = %w[the a an and or of for with in on at to from kit set bundle box roll
+          ft in inch inches gal gallon lb lbs sheet each sqft].to_set rescue Set.new(%w[the a an and or of for with in on at to from kit set bundle box roll ft in inch inches gal gallon lb lbs sheet each sqft])
+def flag_mismatch(want, got_title)
+  return "" if got_title.to_s.empty?
+  want_words = want.downcase.gsub(/[^a-z0-9 ]/, " ").split.reject { |w| STOP.include?(w) || w.length < 3 }
+  title_low  = got_title.downcase
+  hits = want_words.count { |w| title_low.include?(w) }
+  hits.zero? ? "⚠️" : ""
+end
+
+seed = JSON.parse(SEED_FILE.read)
+
+tasks = []
+seed.each do |trade, items|
+  next if options[:trade] && options[:trade] != trade
+  items.each_with_index { |item, idx| tasks << [trade, idx, item] }
+end
+
+puts "Refreshing #{tasks.size} pricing_keys via BigBox search (workers=#{WORKERS})..."
+
+results = {}
+mutex   = Mutex.new
+queue   = Queue.new
+tasks.each { |t| queue << t }
+
+threads = WORKERS.times.map do
+  Thread.new do
+    loop do
+      trade, idx, item = begin
+        queue.pop(true)
+      rescue ThreadError
+        break
+      end
+      res = search(api_key, item["name"])
+      mutex.synchronize { results[[trade, idx]] = res }
+    end
+  end
+end
+threads.each(&:join)
+
+# Build new seed + review table
+rows = []
+stats = { found: 0, no_results: 0, error: 0, flagged: 0 }
+
+seed.each do |trade, items|
+  items.each_with_index do |item, idx|
+    res = results[[trade, idx]]
+    next unless res  # skipped via --trade
+
+    want = item["name"]
+
+    if res[:error]
+      stats[:error] += 1
+      chosen = nil
+      note   = res[:error]
+    elsif res[:candidates].nil? || res[:candidates].empty?
+      stats[:no_results] += 1
+      chosen = nil
+      note   = "no results"
+    else
+      stats[:found] += 1
+      chosen = res[:candidates].first
+      note   = ""
+    end
+
+    if chosen && chosen[:item_id]
+      item["sku"] = chosen[:item_id]
+    end
+
+    flag = chosen ? flag_mismatch(want, chosen[:title]) : ""
+    stats[:flagged] += 1 if flag == "⚠️"
+
+    alts = (res[:candidates] || [])[1..] || []
+    rows << {
+      trade: trade, want: want, pricing_key: item["category"],
+      new_sku: chosen ? chosen[:item_id] : "—",
+      new_title: chosen ? chosen[:title] : note,
+      new_price: chosen ? chosen[:price] : nil,
+      alt1: alts[0], alt2: alts[1], flag: flag
+    }
+  end
+end
+
+# Write clean seed (no debug keys)
+SEED_FILE.write(JSON.pretty_generate(seed) + "\n")
+
+# Build report
+REPORT_FILE.parent.mkpath
+md = []
+md << "# SKU refresh report — #{Time.now.utc.iso8601}"
+md << ""
+md << "Stats: found=#{stats[:found]} no_results=#{stats[:no_results]} error=#{stats[:error]} flagged_mismatch=#{stats[:flagged]}"
+md << ""
+md << "Columns: `flag` is ⚠️ when the picked title shares no keywords with the wanted name — almost always a wrong grade/category. Reviewer should pick alt1 or alt2 (or replace manually)."
+md << ""
+md << "| flag | trade | pricing_key | want | picked | $ | new_sku | alt1 | alt2 |"
+md << "|---|---|---|---|---|---|---|---|---|"
+trunc = ->(s, n) { s = s.to_s; s.length > n ? s[0, n - 1] + "…" : s }
+
+rows.each do |r|
+  price = r[:new_price].is_a?(Numeric) ? format("$%.2f", r[:new_price]) : "—"
+  alt1 = r[:alt1] ? "#{trunc.call(r[:alt1][:title], 32)} \\`#{r[:alt1][:item_id]}\\`" : ""
+  alt2 = r[:alt2] ? "#{trunc.call(r[:alt2][:title], 32)} \\`#{r[:alt2][:item_id]}\\`" : ""
+  md << "| #{r[:flag]} | #{r[:trade]} | `#{r[:pricing_key]}` | #{trunc.call(r[:want], 28)} | #{trunc.call(r[:new_title], 50)} | #{price} | `#{r[:new_sku]}` | #{alt1} | #{alt2} |"
+end
+
+REPORT_FILE.write(md.join("\n") + "\n")
+
+puts "Wrote #{SEED_FILE} (#{rows.size} items refreshed)"
+puts "Wrote #{REPORT_FILE}"
+puts "Stats: found=#{stats[:found]} no_results=#{stats[:no_results]} error=#{stats[:error]} flagged_mismatch=#{stats[:flagged]}"
