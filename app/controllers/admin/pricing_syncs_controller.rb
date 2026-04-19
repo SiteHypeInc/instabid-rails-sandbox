@@ -27,12 +27,23 @@ module Admin
 
     # POST /admin/pricing/sync
     # Runs MaterialPriceSyncService and returns before/after for each pricing key.
+    #
+    # Params:
+    #   trade  — optional. Limit sync to a single trade (e.g. "plumbing").
+    #   force  — optional, truthy to bypass the 50%/200% guardrail. Use only after
+    #            reviewing guardrail-tripped warnings in the logs.
     def sync
-      results = MaterialPriceSyncService.sync
+      trade_param = params[:trade].presence
+      force_param = ActiveModel::Type::Boolean.new.cast(params[:force])
+      results     = MaterialPriceSyncService.sync(trade: trade_param, force: force_param)
+
+      summary = results.each_with_object(Hash.new(0)) { |r, h| h[r.status] += 1 }
 
       render json: {
         status:  "done",
+        forced:  force_param,
         synced:  results.size,
+        summary: summary,
         results: results.map do |r|
           {
             trade:        r.trade,
@@ -42,6 +53,7 @@ module Admin
             change:       r.before_value && r.after_value ? (r.after_value - r.before_value).to_f.round(2) : nil,
             material:     r.material_value&.to_f,
             labor_adder:  r.labor_adder&.to_f,
+            delta_ratio:  r.delta_ratio&.to_f,
             sku_count:    r.sku_count,
             skus:         r.skus,
             status:       r.status

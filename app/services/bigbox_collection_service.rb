@@ -104,7 +104,16 @@ class BigboxCollectionService
     # Build lookup: bigbox_item_id → our SKU metadata
     sku_lookup = build_sku_lookup
 
-    results_raw.map { |row| ingest_one(row, sku_lookup) }
+    ingest_results = results_raw.map { |row| ingest_one(row, sku_lookup) }
+
+    # Explicitly sync material_prices → default_pricings after a successful ingest.
+    # TEA-158: one entrypoint writes to material_prices (this service), one entrypoint
+    # then flows those prices through to default_pricings. No ActiveRecord callbacks.
+    # Guardrail trips inside MaterialPriceSyncService keep anomalous BigBox deltas
+    # from overwriting Jesse's baselines silently.
+    sync_default_pricings_if_loaded(ingest_results)
+
+    ingest_results
 
   rescue JSON::ParserError => e
     raise "BigBox Collections results parse error: #{e.message}"
@@ -119,6 +128,27 @@ class BigboxCollectionService
   end
 
   private
+
+  # Runs the material_prices → default_pricings sync if at least one row was
+  # loaded this batch. Logs a compact summary of the result; individual guardrail
+  # trips are already logged as structured JSON by MaterialPriceSyncService.
+  def sync_default_pricings_if_loaded(ingest_results)
+    loaded = ingest_results.count { |r| r.status == "loaded" }
+    return if loaded.zero?
+
+    sync_results = MaterialPriceSyncService.sync
+    summary      = sync_results.each_with_object(Hash.new(0)) { |r, h| h[r.status] += 1 }
+
+    Rails.logger.info(
+      "[BigboxCollection] default_pricings sync after ingest: " \
+      "#{sync_results.size} keys processed, summary=#{summary.to_h}"
+    )
+  rescue => e
+    # Never let a sync failure roll back a successful material_prices ingest.
+    Rails.logger.error(
+      "[BigboxCollection] default_pricings sync failed after ingest: #{e.class}: #{e.message}"
+    )
+  end
 
   def build_requests
     @skus_data.flat_map do |_trade, items|
