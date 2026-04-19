@@ -13,7 +13,14 @@ Rails.application.routes.draw do
 
   # Admin — read-only pricing data views + pricing sync
   namespace :admin do
-    resources :material_prices, only: [:index]
+    resources :material_prices, only: [:index] do
+      collection do
+        # TEA-164: mirrors bigbox:purge_junk_rows rake. Dry-run by default;
+        # pass confirm=yes to actually delete. Same fingerprint as the rake:
+        # source = "bigbox_loader" AND price IS NULL.
+        post "purge_junk", to: "material_price_purges#create", as: :purge_junk
+      end
+    end
 
     # Pricing pipeline: load BigBox data → sync to default_pricings → check status
     scope :pricing do
