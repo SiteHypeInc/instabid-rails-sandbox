@@ -9,6 +9,14 @@ module Admin
   #   zip_code: HD regional pricing ZIP (default "10001")
   #
   # Requires BIGBOX_API_KEY env var.
+  #
+  # === DISABLED BY DEFAULT (TEA-157) ===
+  # The underlying BigboxDataLoaderService is gated by ALLOW_BIGBOX_ONDEMAND.
+  # When the flag is off, this endpoint returns 503 and does not hit BigBox.
+  # The blessed writer for `material_prices` is the Collections webhook
+  # receiver (Webhooks::BigboxController + BigboxCollectionService). Do not
+  # flip this back on without deleting any residue it leaves in material_prices
+  # first — see TEA-157 for the fingerprint query.
   class BigboxDataLoadsController < ActionController::Base
     protect_from_forgery with: :null_session
 
@@ -41,6 +49,11 @@ module Admin
         end
       }
 
+    rescue BigboxDataLoaderService::OnDemandDisabledError => e
+      render json: {
+        error: e.message,
+        hint:  "Set ALLOW_BIGBOX_ONDEMAND=true to re-enable. Prefer BigBox Collections (POST /admin/pricing/collection) instead."
+      }, status: :service_unavailable
     rescue ArgumentError => e
       render json: { error: e.message }, status: :service_unavailable
     end
