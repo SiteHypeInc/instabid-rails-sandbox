@@ -13,10 +13,30 @@ require "json"
 #   BigboxDataLoaderService.load(trade: "roofing")      # one trade
 #   BigboxDataLoaderService.load(zip_code: "90210")     # regional pricing
 #
+# === DISABLED BY DEFAULT (TEA-157) ===
+# This on-demand path was superseded by the BigBox Collections webhook pipeline
+# (Webhooks::BigboxController + BigboxCollectionService). It leaked junk rows
+# into `material_prices` (rows with price IS NULL and miscategorized trades —
+# see admin /admin/material_prices, 2026-04-19) because it upserts the BigBox
+# API's returned title under our own trade/category metadata even when no price
+# is found, and writes at zip_code "10001" which is not our blessed "national"
+# partition.
+#
+# The service now refuses to run unless ENV["ALLOW_BIGBOX_ONDEMAND"] == "true".
+# When disabled it raises OnDemandDisabledError loudly so no rake task, console
+# invocation, or admin endpoint can silently re-poison the table.
+#
+# To re-enable (only for one-off recon with John's explicit go-ahead):
+#   ALLOW_BIGBOX_ONDEMAND=true bin/rails runner 'BigboxDataLoaderService.load(trade: "roofing")'
+#
+# Long-term: prefer BigBox Collections (batch webhook) — it's the blessed writer.
 class BigboxDataLoaderService
   SKUS_FILE       = Rails.root.join("db", "data", "material_skus.json")
   BIGBOX_BASE_URL = "https://api.bigboxapi.com/request"
   PER_REQUEST_PAUSE = 0.1   # seconds — stay well under BigBox rate limits
+
+  # Raised when the on-demand path is invoked while disabled (default).
+  class OnDemandDisabledError < RuntimeError; end
 
   LoadResult = Struct.new(
     :sku, :name, :trade, :category, :unit,
@@ -24,11 +44,29 @@ class BigboxDataLoaderService
     keyword_init: true
   )
 
+  # True only when ENV["ALLOW_BIGBOX_ONDEMAND"] is explicitly set to "true".
+  # Any other value (including unset, blank, "false", "0") keeps the path off.
+  def self.enabled?
+    ENV["ALLOW_BIGBOX_ONDEMAND"].to_s.strip.downcase == "true"
+  end
+
   def self.load(trade: nil, zip_code: "10001")
+    ensure_enabled!
     new(trade: trade, zip_code: zip_code).load
   end
 
+  def self.ensure_enabled!
+    return if enabled?
+
+    msg = "BigboxDataLoaderService is disabled. Set ALLOW_BIGBOX_ONDEMAND=true " \
+          "to re-enable the on-demand API path. See TEA-157 / file header for why."
+    Rails.logger.error("[BigboxDataLoader] #{msg}")
+    raise OnDemandDisabledError, msg
+  end
+
   def initialize(trade: nil, zip_code: "10001")
+    self.class.ensure_enabled!
+
     @trade_filter = trade&.to_s
     @zip_code     = zip_code.to_s
     @api_key      = ENV["BIGBOX_API_KEY"].to_s.strip
