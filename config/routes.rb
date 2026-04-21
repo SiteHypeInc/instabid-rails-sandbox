@@ -13,6 +13,10 @@ Rails.application.routes.draw do
 
   # Admin — read-only pricing data views + pricing sync
   namespace :admin do
+    # TEA-198: read-only dashboard over default_pricings + material_prices,
+    # grouped by trade/section with TYPE badges and BigBox live indicator.
+    get "pricing_dashboard", to: "pricing_dashboards#index", as: :pricing_dashboard
+
     resources :material_prices, only: [:index] do
       collection do
         # TEA-164: mirrors bigbox:purge_junk_rows rake. Dry-run by default;

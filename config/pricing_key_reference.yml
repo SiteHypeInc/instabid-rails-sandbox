@@ -1,0 +1,438 @@
+# Pricing Key Reference — drives /admin/pricing_dashboard
+#
+# Canonical source: docs/tea-198/PRICING_KEY_TYPE_REFERENCE.md
+# Mockup reference:  docs/tea-198/pricing-dashboard-mockup.jsx
+#
+# Each trade is grouped into sections. Each section has one TYPE classification
+# that applies to every item in the section. Adding a new key: put it in the
+# right section; type, unit, and label flow from there.
+#
+# Types: MATERIAL, INSTALLED, EQUIPMENT, LABOR_RATE, LABOR_PER_UNIT,
+#        MULTIPLIER, LUMP_SUM, DISPOSAL, PERMIT
+
+roofing:
+  icon: "🏠"
+  sections:
+    - title: "Pitch Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — decimal factor applied to roof cost based on pitch"
+      items:
+        - { key: pitch_3_12, label: "Pitch 3/12",  unit: "×" }
+        - { key: pitch_4_12, label: "Pitch 4/12",  unit: "×" }
+        - { key: pitch_5_12, label: "Pitch 5/12",  unit: "×" }
+        - { key: pitch_6_12, label: "Pitch 6/12",  unit: "×" }
+        - { key: pitch_7_12, label: "Pitch 7/12",  unit: "×" }
+        - { key: pitch_8_12, label: "Pitch 8/12",  unit: "×" }
+        - { key: pitch_9_12, label: "Pitch 9/12",  unit: "×" }
+        - { key: pitch_10_12, label: "Pitch 10/12", unit: "×" }
+        - { key: pitch_11_12, label: "Pitch 11/12", unit: "×" }
+        - { key: pitch_12_12, label: "Pitch 12/12", unit: "×" }
+    - title: "Shingles & Panels"
+      type: MATERIAL
+      type_label: "Material Only — raw material cost per unit; labor calculated separately"
+      items:
+        - { key: mat_asphalt,     label: "3-Tab Shingles",      unit: "/bundle" }
+        - { key: mat_arch,        label: "Architectural Shingles", unit: "/bundle" }
+        - { key: mat_metal,       label: "Metal Roofing",       unit: "/sqft" }
+        - { key: mat_tile,        label: "Concrete/Clay Tile",  unit: "/sqft" }
+        - { key: mat_wood_shake,  label: "Wood Shake",          unit: "/sqft" }
+    - title: "Underlayment & Accessories"
+      type: MATERIAL
+      type_label: "Material Only — raw material cost per unit"
+      items:
+        - { key: underlayment_roll, label: "Synthetic Underlayment", unit: "/roll" }
+        - { key: nails_box,         label: "Roofing Nails",          unit: "/box" }
+        - { key: starter_lf,        label: "Starter Strip",          unit: "/lf" }
+        - { key: ridge_lf,          label: "Ridge Cap",              unit: "/lf" }
+        - { key: drip_edge_lf,      label: "Drip Edge",              unit: "/lf" }
+        - { key: ice_shield_lf,     label: "Ice & Water Shield",     unit: "/lf" }
+        - { key: vent_unit,         label: "Box Vent",               unit: "each" }
+        - { key: ridge_vent_lf,     label: "Ridge Vent",             unit: "/lf" }
+        - { key: osb_sheet,         label: "OSB Sheathing 4x8",      unit: "/sheet" }
+        - { key: chimney_flash,     label: "Chimney Flashing Kit",   unit: "/kit" }
+        - { key: skylight_flash,    label: "Skylight Flashing Kit",  unit: "/kit" }
+        - { key: valley_lf,         label: "Valley Flashing",        unit: "/lf" }
+    - title: "Disposal"
+      type: DISPOSAL
+      type_label: "Disposal — removal cost per sqft, regional"
+      items:
+        - { key: disposal_asphalt_sqft, label: "Asphalt Tear-off", unit: "/sqft" }
+        - { key: disposal_wood_sqft,    label: "Wood Tear-off",    unit: "/sqft" }
+        - { key: disposal_metal_sqft,   label: "Metal Tear-off",   unit: "/sqft" }
+        - { key: disposal_tile_sqft,    label: "Tile Tear-off",    unit: "/sqft" }
+    - title: "Labor (Per Unit)"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — labor hours/cost per unit of work"
+      items:
+        - { key: labor_rate_sqft,    label: "Base Labor Hours",     unit: "/sqft" }
+        - { key: chimney_labor_hrs,  label: "Chimney Labor",        unit: "hrs" }
+        - { key: skylight_labor_hrs, label: "Skylight Labor",       unit: "hrs" }
+
+siding:
+  icon: "🏗️"
+  sections:
+    - title: "Siding Materials"
+      type: MATERIAL
+      type_label: "Material Only — raw material cost per sqft"
+      items:
+        - { key: siding_vinyl,         label: "Vinyl Siding",        unit: "/sqft" }
+        - { key: siding_fiber_cement,  label: "Fiber Cement",        unit: "/sqft" }
+        - { key: siding_wood,          label: "Wood/Cedar",          unit: "/sqft" }
+        - { key: siding_metal,         label: "Steel/Aluminum",      unit: "/sqft" }
+        - { key: siding_stucco,        label: "Stucco",              unit: "/sqft" }
+    - title: "Siding Labor"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — install labor per sqft"
+      items:
+        - { key: siding_labor_vinyl,  label: "Vinyl Labor",        unit: "/sqft" }
+        - { key: siding_labor_fiber,  label: "Fiber Cement Labor", unit: "/sqft" }
+        - { key: siding_labor_wood,   label: "Wood Labor",         unit: "/sqft" }
+        - { key: siding_labor_metal,  label: "Metal Labor",        unit: "/sqft" }
+        - { key: siding_labor_stucco, label: "Stucco Labor",       unit: "/sqft" }
+    - title: "Labor Rate"
+      type: LABOR_RATE
+      type_label: "Hourly Rate — what you charge per hour"
+      items:
+        - { key: siding_labor_rate, label: "Hourly Rate", unit: "/hr" }
+    - title: "Accessories & Trim"
+      type: MATERIAL
+      type_label: "Material Only — accessories and trim"
+      items:
+        - { key: siding_housewrap_roll, label: "House Wrap 9x100",  unit: "/roll" }
+        - { key: siding_j_channel,      label: "J-Channel Trim",    unit: "/12ft" }
+        - { key: siding_corner_post,    label: "Corner Posts",      unit: "each" }
+        - { key: siding_window_trim,    label: "Window Trim Coil",  unit: "each" }
+        - { key: siding_door_trim,      label: "Door Trim Coil",    unit: "each" }
+        - { key: siding_soffit_sqft,    label: "Soffit Panels",     unit: "/sqft" }
+        - { key: siding_fascia_lf,      label: "Fascia Board",      unit: "/lf" }
+        - { key: siding_fastener_kit,   label: "Fastener Package",  unit: "/kit" }
+    - title: "Disposal"
+      type: DISPOSAL
+      type_label: "Disposal — old siding removal cost per sqft"
+      items:
+        - { key: siding_removal_sqft, label: "Old Siding Removal", unit: "/sqft" }
+    - title: "Story Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — adjusts total cost for multi-story homes"
+      items:
+        - { key: siding_story_2, label: "2-Story", unit: "×" }
+        - { key: siding_story_3, label: "3-Story", unit: "×" }
+
+electrical:
+  icon: "⚡"
+  sections:
+    - title: "Wire & Materials"
+      type: MATERIAL
+      type_label: "Material Only — raw material cost per unit"
+      items:
+        - { key: elec_wire_lf,       label: "Romex Wire",     unit: "/lf" }
+        - { key: elec_outlet,        label: "Duplex Outlet",  unit: "each" }
+        - { key: elec_outlet_gfci,   label: "GFCI Outlet",    unit: "each" }
+        - { key: elec_switch,        label: "Single-Pole Switch", unit: "each" }
+        - { key: elec_switch_dimmer, label: "Dimmer Switch",  unit: "each" }
+    - title: "Panel Installations"
+      type: INSTALLED
+      type_label: "Installed Price — panel + install labor bundled"
+      items:
+        - { key: elec_panel_100, label: "100A Sub Panel",   unit: "each" }
+        - { key: elec_panel_200, label: "200A Main Panel",  unit: "each" }
+        - { key: elec_panel_400, label: "400A Panel",       unit: "each" }
+    - title: "Fixture & Device Installations"
+      type: INSTALLED
+      type_label: "Installed Price — fixture + install labor"
+      items:
+        - { key: elec_ceiling_fan_install, label: "Ceiling Fan",     unit: "each" }
+        - { key: elec_light_install,       label: "Light Fixture",   unit: "each" }
+        - { key: elec_recessed,            label: "Recessed Light",  unit: "each" }
+        - { key: elec_ev_charger,          label: "EV Charger",      unit: "each" }
+    - title: "Circuits & Rewire"
+      type: INSTALLED
+      type_label: "Installed Price — labor-heavy; BigBox sync disabled"
+      items:
+        - { key: elec_rewire_sqft,  label: "Full Rewire",   unit: "/sqft" }
+        - { key: elec_circuit_20a,  label: "20A Circuit",   unit: "each" }
+        - { key: elec_circuit_30a,  label: "30A Circuit",   unit: "each" }
+        - { key: elec_circuit_50a,  label: "50A Circuit",   unit: "each" }
+    - title: "Permits"
+      type: PERMIT
+      type_label: "Permit — flat municipal fee"
+      items:
+        - { key: elec_permit, label: "Electrical Permit", unit: "flat" }
+
+plumbing:
+  icon: "🔧"
+  sections:
+    - title: "Labor Rates"
+      type: LABOR_RATE
+      type_label: "Hourly Rate — what you charge per hour"
+      items:
+        - { key: plumb_labor_rate,      label: "Standard Labor",   unit: "/hr" }
+        - { key: plumb_labor_emergency, label: "Emergency Labor",  unit: "/hr" }
+        - { key: plumb_service_call,    label: "Service Call Fee", unit: "flat" }
+    - title: "Fixture Installation"
+      type: INSTALLED
+      type_label: "Installed Price — fixture + install labor bundled"
+      items:
+        - { key: plumb_toilet,           label: "Toilet Install",           unit: "each" }
+        - { key: plumb_sink_bath,        label: "Bathroom Sink Install",    unit: "each" }
+        - { key: plumb_sink_kitchen,     label: "Kitchen Sink Install",     unit: "each" }
+        - { key: plumb_faucet_bath,      label: "Bathroom Faucet Install",  unit: "each" }
+        - { key: plumb_faucet_kitchen,   label: "Kitchen Faucet Install",   unit: "each" }
+        - { key: plumb_shower_valve,     label: "Shower Valve Install",     unit: "each" }
+        - { key: plumb_tub,              label: "Tub Install",              unit: "each" }
+        - { key: plumb_dishwasher,       label: "Dishwasher Hookup",        unit: "each" }
+        - { key: plumb_garbage_disposal, label: "Garbage Disposal Install", unit: "each" }
+        - { key: plumb_ice_maker,        label: "Ice Maker Line",           unit: "each" }
+    - title: "Water Heaters"
+      type: INSTALLED
+      type_label: "Installed Price — unit + install labor"
+      items:
+        - { key: plumb_heater_tank_40,       label: "Tank 40 gal",        unit: "each" }
+        - { key: plumb_heater_tank_50,       label: "Tank 50 gal",        unit: "each" }
+        - { key: plumb_heater_tankless_gas,  label: "Tankless Gas",       unit: "each" }
+        - { key: plumb_heater_tankless_elec, label: "Tankless Electric",  unit: "each" }
+    - title: "Water Systems"
+      type: INSTALLED
+      type_label: "Installed Price — equipment + install labor"
+      items:
+        - { key: plumb_water_softener, label: "Water Softener", unit: "each" }
+        - { key: plumb_sump_pump,      label: "Sump Pump",      unit: "each" }
+    - title: "Repipe"
+      type: MATERIAL
+      type_label: "Material Only — labor calculated separately from labor rate × hours"
+      items:
+        - { key: plumb_repipe_pex_lf,    label: "PEX Pipe",     unit: "/lf" }
+        - { key: plumb_repipe_copper_lf, label: "Copper Pipe",  unit: "/lf" }
+    - title: "Major Jobs"
+      type: LUMP_SUM
+      type_label: "Flat Rate — fixed price regardless of specifics"
+      items:
+        - { key: plumb_main_line,    label: "Main Line Replacement", unit: "flat" }
+        - { key: plumb_gas_line_new, label: "New Gas Line",          unit: "flat" }
+    - title: "Access Type Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — adjusts total cost based on access difficulty"
+      items:
+        - { key: plumb_access_basement,   label: "Basement (easy)",  unit: "×" }
+        - { key: plumb_access_crawlspace, label: "Crawlspace",        unit: "×" }
+        - { key: plumb_access_slab,       label: "Slab (hardest)",    unit: "×" }
+    - title: "Water Heater Location Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — adjusts water heater install cost by location"
+      items:
+        - { key: plumb_location_garage,   label: "Garage",   unit: "×" }
+        - { key: plumb_location_basement, label: "Basement", unit: "×" }
+        - { key: plumb_location_closet,   label: "Closet",   unit: "×" }
+        - { key: plumb_location_attic,    label: "Attic (hardest)", unit: "×" }
+
+hvac:
+  icon: "❄️"
+  sections:
+    - title: "Equipment"
+      type: EQUIPMENT
+      type_label: "Equipment — full unit cost; install labor calculated separately"
+      items:
+        - { key: hvac_furnace_standard,  label: "Furnace 80%",          unit: "each" }
+        - { key: hvac_furnace_high,      label: "Furnace 95%",          unit: "each" }
+        - { key: hvac_ac_standard,       label: "AC 14 SEER",           unit: "each" }
+        - { key: hvac_ac_high,           label: "AC 18 SEER",           unit: "each" }
+        - { key: hvac_heatpump_standard, label: "Heat Pump 14 SEER",    unit: "each" }
+        - { key: hvac_heatpump_high,     label: "Heat Pump 18 SEER",    unit: "each" }
+        - { key: hvac_minisplit,         label: "Mini Split",           unit: "each" }
+        - { key: hvac_thermostat,        label: "Thermostat",           unit: "each" }
+    - title: "Materials"
+      type: MATERIAL
+      type_label: "Material Only — raw material cost per unit"
+      items:
+        - { key: hvac_duct_new,     label: "New Ductwork",     unit: "/lf" }
+        - { key: hvac_duct_repair,  label: "Duct Repair",      unit: "/lf" }
+        - { key: hvac_refrigerant,  label: "Refrigerant Charge", unit: "each" }
+        - { key: hvac_filters,      label: "Filter Set",       unit: "each" }
+    - title: "Labor Rates"
+      type: LABOR_RATE
+      type_label: "Hourly Rate — HVAC technician hourly"
+      items:
+        - { key: hvac_labor_rate, label: "HVAC Hourly", unit: "/hr" }
+    - title: "Labor (Hours Per Unit)"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — install hours per equipment type"
+      items:
+        - { key: hvac_labor_furnace,   label: "Furnace Install Hours",   unit: "hrs" }
+        - { key: hvac_labor_ac,        label: "AC Install Hours",        unit: "hrs" }
+        - { key: hvac_labor_heatpump,  label: "Heat Pump Install Hours", unit: "hrs" }
+        - { key: hvac_labor_minisplit, label: "Mini Split Install Hours", unit: "hrs" }
+    - title: "Size Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — adjusts cost for square footage"
+      items:
+        - { key: hvac_size_small,  label: "Small (<1500 sqft)",    unit: "×" }
+        - { key: hvac_size_med,    label: "Medium (1500-2500)",    unit: "×" }
+        - { key: hvac_size_large,  label: "Large (2500-3500)",     unit: "×" }
+        - { key: hvac_size_xlarge, label: "XL (>3500 sqft)",       unit: "×" }
+    - title: "Story Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — adjusts cost for multi-story homes"
+      items:
+        - { key: hvac_story_2, label: "2-Story", unit: "×" }
+        - { key: hvac_story_3, label: "3-Story", unit: "×" }
+
+painting:
+  icon: "🎨"
+  sections:
+    - title: "Exterior"
+      type: MATERIAL
+      type_label: "Material Only — exterior paint material per sqft"
+      items:
+        - { key: paint_exterior_mat,   label: "Exterior Paint", unit: "/sqft" }
+    - title: "Exterior Labor"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — exterior paint labor per sqft"
+      items:
+        - { key: paint_exterior_labor, label: "Exterior Labor", unit: "/sqft" }
+    - title: "Interior"
+      type: MATERIAL
+      type_label: "Material Only — interior paint material per sqft"
+      items:
+        - { key: paint_interior_mat, label: "Interior Paint",  unit: "/sqft" }
+        - { key: paint_ceiling_mat,  label: "Ceiling Paint",   unit: "/sqft" }
+        - { key: paint_trim_mat,     label: "Trim Paint",      unit: "/lf" }
+        - { key: paint_primer_mat,   label: "Primer",          unit: "/sqft" }
+    - title: "Interior Labor"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — interior paint labor"
+      items:
+        - { key: paint_interior_labor, label: "Interior Labor", unit: "/sqft" }
+        - { key: paint_ceiling_labor,  label: "Ceiling Labor",  unit: "/sqft" }
+        - { key: paint_trim_labor,     label: "Trim Labor",     unit: "/lf" }
+        - { key: paint_primer_labor,   label: "Primer Labor",   unit: "/sqft" }
+    - title: "Doors & Windows"
+      type: MATERIAL
+      type_label: "Material — per-unit paint for doors and windows"
+      items:
+        - { key: paint_door_mat,   label: "Door Paint",   unit: "each" }
+        - { key: paint_window_mat, label: "Window Paint", unit: "each" }
+    - title: "Doors & Windows Labor"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — per-door/window labor"
+      items:
+        - { key: paint_door_labor,   label: "Door Labor",   unit: "each" }
+        - { key: paint_window_labor, label: "Window Labor", unit: "each" }
+    - title: "Power Wash"
+      type: MATERIAL
+      type_label: "Material — power wash supplies"
+      items:
+        - { key: paint_power_wash_mat,   label: "Power Wash Materials", unit: "/sqft" }
+        - { key: paint_power_wash_labor, label: "Power Wash Labor",     unit: "/sqft" }
+    - title: "Patching (Flat Rates)"
+      type: LUMP_SUM
+      type_label: "Flat Rate — fixed price patching jobs"
+      items:
+        - { key: paint_patch_minor_mat,      label: "Minor Patch Material",   unit: "flat" }
+        - { key: paint_patch_minor_labor,    label: "Minor Patch Labor",      unit: "flat" }
+        - { key: paint_patch_moderate_mat,   label: "Moderate Patch Material", unit: "flat" }
+        - { key: paint_patch_moderate_labor, label: "Moderate Patch Labor",    unit: "flat" }
+        - { key: paint_patch_extensive_mat,  label: "Extensive Patch Material", unit: "flat" }
+        - { key: paint_patch_extensive_labor, label: "Extensive Patch Labor",  unit: "flat" }
+    - title: "Lead Abatement"
+      type: LUMP_SUM
+      type_label: "Flat Rate — lead paint abatement"
+      items:
+        - { key: paint_lead_mat,   label: "Lead Abatement Materials", unit: "flat" }
+        - { key: paint_lead_labor, label: "Lead Abatement Labor",     unit: "flat" }
+
+drywall:
+  icon: "🧱"
+  sections:
+    - title: "Labor Rate"
+      type: LABOR_RATE
+      type_label: "Hourly Rate — drywall hourly"
+      items:
+        - { key: drywall_labor_rate, label: "Drywall Hourly", unit: "/hr" }
+    - title: "Install Labor"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — install labor per sqft"
+      items:
+        - { key: drywall_hang_sqft, label: "Hang",  unit: "/sqft" }
+        - { key: drywall_tape_sqft, label: "Tape",  unit: "/sqft" }
+        - { key: drywall_sand_sqft, label: "Sand",  unit: "/sqft" }
+    - title: "Materials"
+      type: MATERIAL
+      type_label: "Material Only — raw material cost per unit"
+      items:
+        - { key: drywall_sheet_half,      label: "1/2\" Drywall 4x8",  unit: "/sheet" }
+        - { key: drywall_sheet_5_8,       label: "5/8\" Drywall 4x8",  unit: "/sheet" }
+        - { key: drywall_joint_compound,  label: "Joint Compound",     unit: "/bucket" }
+        - { key: drywall_tape,            label: "Tape",               unit: "/roll" }
+        - { key: drywall_screws,          label: "Screws",             unit: "/box" }
+        - { key: drywall_corner_bead,     label: "Corner Bead",        unit: "each" }
+    - title: "Finish Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — finish quality level"
+      items:
+        - { key: drywall_finish_level_3, label: "Level 3 (Standard)", unit: "×" }
+        - { key: drywall_finish_level_4, label: "Level 4 (Smooth)",   unit: "×" }
+        - { key: drywall_finish_level_5, label: "Level 5 (Glass)",    unit: "×" }
+    - title: "Texture Labor"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — texture application per sqft"
+      items:
+        - { key: drywall_texture_none,        label: "No Texture",    unit: "×" }
+        - { key: drywall_texture_orange_peel, label: "Orange Peel",   unit: "/sqft" }
+        - { key: drywall_texture_knockdown,   label: "Knockdown",     unit: "/sqft" }
+        - { key: drywall_texture_popcorn,     label: "Popcorn",       unit: "/sqft" }
+    - title: "Ceiling Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — tall ceiling adjustment"
+      items:
+        - { key: drywall_ceiling_10ft, label: "10ft Ceiling", unit: "×" }
+        - { key: drywall_ceiling_12ft, label: "12ft Ceiling", unit: "×" }
+    - title: "Repairs (Flat Rates)"
+      type: LUMP_SUM
+      type_label: "Flat Rate — fixed price repair jobs"
+      items:
+        - { key: drywall_repair_minor,     label: "Minor Repair",     unit: "flat" }
+        - { key: drywall_repair_moderate,  label: "Moderate Repair",  unit: "flat" }
+        - { key: drywall_repair_extensive, label: "Extensive Repair", unit: "flat" }
+
+flooring:
+  icon: "🪵"
+  sections:
+    - title: "Flooring Materials"
+      type: MATERIAL
+      type_label: "Material Only — flooring material per sqft"
+      items:
+        - { key: floor_carpet,         label: "Carpet",             unit: "/sqft" }
+        - { key: floor_vinyl,          label: "Vinyl Plank",        unit: "/sqft" }
+        - { key: floor_laminate,       label: "Laminate AC3",       unit: "/sqft" }
+        - { key: floor_lvp,            label: "Luxury Vinyl Plank", unit: "/sqft" }
+        - { key: floor_hardwood_eng,   label: "Engineered Hardwood", unit: "/sqft" }
+        - { key: floor_hardwood_solid, label: "Solid Hardwood",     unit: "/sqft" }
+        - { key: floor_tile_ceramic,   label: "Ceramic Tile",       unit: "/sqft" }
+        - { key: floor_tile_porcelain, label: "Porcelain Tile",     unit: "/sqft" }
+    - title: "Install Labor"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — install labor per sqft"
+      items:
+        - { key: floor_labor_carpet,   label: "Carpet Install",    unit: "/sqft" }
+        - { key: floor_labor_vinyl,    label: "Vinyl Install",     unit: "/sqft" }
+        - { key: floor_labor_hardwood, label: "Hardwood Install",  unit: "/sqft" }
+        - { key: floor_labor_tile,    label: "Tile Install",       unit: "/sqft" }
+    - title: "Subfloor & Accessories"
+      type: MATERIAL
+      type_label: "Material Only — subfloor, underlayment, baseboard"
+      items:
+        - { key: floor_subfloor,  label: "Subfloor Repair",  unit: "/sqft" }
+        - { key: floor_underlay,  label: "Underlayment",     unit: "/sqft" }
+        - { key: floor_baseboard, label: "8ft Baseboard",    unit: "each" }
+    - title: "Disposal"
+      type: DISPOSAL
+      type_label: "Disposal — old floor removal per sqft"
+      items:
+        - { key: floor_removal, label: "Old Floor Removal", unit: "/sqft" }
+    - title: "Complexity Multipliers"
+      type: MULTIPLIER
+      type_label: "Multiplier — layout complexity"
+      items:
+        - { key: floor_standard, label: "Standard (simple)",    unit: "×" }
+        - { key: floor_moderate, label: "Moderate (some cuts)", unit: "×" }
+        - { key: floor_complex,  label: "Complex (heavy cuts)", unit: "×" }
