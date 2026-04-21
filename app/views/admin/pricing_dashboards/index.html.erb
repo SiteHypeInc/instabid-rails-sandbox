@@ -1,0 +1,372 @@
+<%# TEA-198 — Pricing Dashboard — read-only view of default_pricings + material_prices %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Pricing Dashboard — InstaBid Sandbox Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0a0e1a;
+      color: #e2e8f0;
+      font-size: 13px;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    a { color: inherit; text-decoration: none; }
+    .mono { font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace; }
+
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    .header h1 { font-size: 20px; font-weight: 700; color: #06b6d4; }
+    .header p  { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .header .breadcrumbs { font-size: 11px; color: #475569; margin-bottom: 6px; }
+    .header .breadcrumbs a:hover { color: #94a3b8; }
+
+    .stats { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .stat {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 10px 16px;
+      min-width: 120px;
+    }
+    .stat .label { color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; }
+    .stat .value { font-size: 20px; font-weight: 700; margin-top: 2px; color: #e2e8f0; }
+
+    .trade-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .trade-tab {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid #1e293b;
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .trade-tab:hover { border-color: #334155; color: #e2e8f0; }
+    .trade-tab.active {
+      border: 2px solid #06b6d4;
+      background: rgba(6, 182, 212, 0.12);
+      color: #06b6d4;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      align-items: center;
+    }
+    .legend .key-label { font-size: 12px; color: #64748b; font-weight: 600; margin-right: 4px; }
+
+    .type-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
+    }
+    .type-MATERIAL      { background: rgba(16,185,129,.12); border: 1px solid #10b981; color: #10b981; }
+    .type-INSTALLED     { background: rgba(6,182,212,.12);  border: 1px solid #06b6d4; color: #06b6d4; }
+    .type-EQUIPMENT     { background: rgba(59,130,246,.12); border: 1px solid #3b82f6; color: #3b82f6; }
+    .type-LABOR_RATE    { background: rgba(245,158,11,.12); border: 1px solid #f59e0b; color: #f59e0b; }
+    .type-LABOR_PER_UNIT{ background: rgba(245,158,11,.12); border: 1px solid #f59e0b; color: #f59e0b; }
+    .type-MULTIPLIER    { background: rgba(239,68,68,.12);  border: 1px solid #ef4444; color: #ef4444; }
+    .type-LUMP_SUM      { background: rgba(139,92,246,.12); border: 1px solid #8b5cf6; color: #8b5cf6; }
+    .type-DISPOSAL      { background: rgba(234,88,12,.12);  border: 1px solid #ea580c; color: #ea580c; }
+    .type-PERMIT        { background: rgba(100,116,139,.12); border: 1px solid #64748b; color: #94a3b8; }
+
+    .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .toggle-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #1e293b;
+      background: rgba(6,182,212,.12);
+      color: #06b6d4;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .toggle-btn.off { background: #0f172a; color: #64748b; }
+    .toggle-hint { font-size: 11px; color: #475569; }
+
+    .trade-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 0 0 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .section { margin-bottom: 28px; }
+    .section-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom-width: 2px;
+      border-bottom-style: solid;
+    }
+    .section-header.border-MATERIAL       { border-bottom-color: rgba(16,185,129,.3); }
+    .section-header.border-INSTALLED      { border-bottom-color: rgba(6,182,212,.3); }
+    .section-header.border-EQUIPMENT      { border-bottom-color: rgba(59,130,246,.3); }
+    .section-header.border-LABOR_RATE     { border-bottom-color: rgba(245,158,11,.3); }
+    .section-header.border-LABOR_PER_UNIT { border-bottom-color: rgba(245,158,11,.3); }
+    .section-header.border-MULTIPLIER     { border-bottom-color: rgba(239,68,68,.3); }
+    .section-header.border-LUMP_SUM       { border-bottom-color: rgba(139,92,246,.3); }
+    .section-header.border-DISPOSAL       { border-bottom-color: rgba(234,88,12,.3); }
+    .section-header.border-PERMIT         { border-bottom-color: rgba(100,116,139,.3); }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: #e2e8f0;
+    }
+    .section-sync-badge {
+      font-size: 10px; color: #10b981; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .section-sync-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;
+    }
+    .section-type-label {
+      font-size: 11px; color: #64748b; font-style: italic; margin-bottom: 10px;
+    }
+
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    .item {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .item-label { font-size: 13px; color: #94a3b8; font-weight: 500; }
+    .item-value-row { display: flex; align-items: baseline; gap: 6px; }
+    .item-currency { font-size: 12px; color: #64748b; }
+    .item-value { font-size: 26px; font-weight: 700; color: #e2e8f0; letter-spacing: -.02em; }
+    .item-unit { font-size: 12px; color: #64748b; }
+    .item-missing { font-size: 14px; color: #475569; font-style: italic; }
+    .item-key { font-size: 10px; color: #475569; margin-top: auto; }
+
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; color: #10b981; font-weight: 600; white-space: nowrap;
+    }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
+    .manual-badge { font-size: 11px; color: #64748b; white-space: nowrap; }
+    .fetched-at { font-size: 10px; color: #475569; margin-top: 2px; }
+
+    .breakdown {
+      display: flex; gap: 8px; margin-top: 2px;
+    }
+    .breakdown-cell {
+      flex: 1;
+      border-radius: 6px;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    .breakdown-cell.material { background: rgba(16,185,129,.08); border: 1px solid rgba(16,185,129,.2); color: #10b981; }
+    .breakdown-cell.labor    { background: rgba(245,158,11,.08); border: 1px solid rgba(245,158,11,.2); color: #f59e0b; }
+    .breakdown-label { font-size: 10px; font-weight: 600; margin-bottom: 2px; }
+    .breakdown-value { font-size: 14px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+
+    .footer {
+      margin-top: 32px;
+      padding: 16px 20px;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+    .footer strong { color: #94a3b8; }
+
+    .empty {
+      padding: 40px;
+      text-align: center;
+      color: #64748b;
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="breadcrumbs">
+    <a href="/admin/material_prices">← Material Prices</a>
+  </div>
+  <h1>⚙️ Pricing Dashboard</h1>
+  <p>Read-only view of <span class="mono">default_pricings</span> + <span class="mono">material_prices</span>. Every key, grouped by TYPE — verify the data makes sense.</p>
+</div>
+
+<% if @trade %>
+  <div class="stats">
+    <div class="stat">
+      <div class="label">Trade</div>
+      <div class="value"><%= @trade[:icon] %> <%= @trade[:name] %></div>
+    </div>
+    <div class="stat">
+      <div class="label">Keys</div>
+      <div class="value"><%= @trade[:total_keys] %></div>
+    </div>
+    <div class="stat">
+      <div class="label">Populated</div>
+      <div class="value"><%= @trade[:populated_keys] %> / <%= @trade[:total_keys] %></div>
+    </div>
+    <div class="stat">
+      <div class="label">BigBox Live</div>
+      <div class="value"><%= @trade[:live_keys] %></div>
+    </div>
+  </div>
+<% end %>
+
+<div class="trade-tabs">
+  <% @trades.each do |t| %>
+    <a class="trade-tab <%= "active" if t[:key] == @selected_trade_key %>" href="<%= admin_pricing_dashboard_path(trade: t[:key]) %>">
+      <%= t[:icon] %> <%= t[:name] %>
+    </a>
+  <% end %>
+</div>
+
+<div class="legend">
+  <span class="key-label">KEY:</span>
+  <% %w[MATERIAL INSTALLED EQUIPMENT LABOR_RATE LABOR_PER_UNIT MULTIPLIER LUMP_SUM DISPOSAL PERMIT].each do |t| %>
+    <span class="type-badge type-<%= t %>"><%= t.tr('_', ' ') %></span>
+  <% end %>
+</div>
+
+<div class="toggle-row">
+  <button type="button" id="breakdown-toggle" class="toggle-btn">✓ Show Material/Labor Breakdown</button>
+  <span class="toggle-hint" id="breakdown-hint">Showing what's material vs labor inside installed prices.</span>
+</div>
+
+<% if @trade %>
+  <h2 class="trade-title"><%= @trade[:icon] %> <%= @trade[:name] %> Pricing</h2>
+
+  <% @trade[:sections].each do |section| %>
+    <div class="section">
+      <div class="section-header border-<%= section[:type] %>">
+        <h3 class="section-title"><%= section[:title] %></h3>
+        <span class="type-badge type-<%= section[:type] %>"><%= section[:type].tr('_', ' ') %></span>
+        <% if section[:syncable] %>
+          <span class="section-sync-badge"><span class="section-sync-dot"></span>BigBox Sync Live</span>
+        <% end %>
+      </div>
+      <div class="section-type-label"><%= section[:type_label] %></div>
+
+      <div class="items-grid">
+        <% section[:items].each do |item| %>
+          <div class="item" data-type="<%= section[:type] %>">
+            <div class="item-top">
+              <span class="item-label"><%= item[:label] %></span>
+              <% if item[:bigbox_live] %>
+                <span class="live-badge" title="Live BigBox data; SKUs: <%= item[:hd_skus].join(', ') %>">
+                  <span class="live-dot"></span>HD Live
+                </span>
+              <% else %>
+                <span class="manual-badge">Manual</span>
+              <% end %>
+            </div>
+
+            <div class="item-value-row">
+              <% if item[:has_value] %>
+                <% if section[:type] == "MULTIPLIER" %>
+                  <span class="item-value mono"><%= format('%.2f', item[:value]) %></span>
+                  <span class="item-unit"><%= item[:unit] %></span>
+                <% else %>
+                  <span class="item-currency">$</span>
+                  <span class="item-value mono"><%= number_with_delimiter(format((item[:value] % 1).zero? ? '%d' : '%.2f', item[:value])) %></span>
+                  <span class="item-unit"><%= item[:unit] %></span>
+                <% end %>
+              <% else %>
+                <span class="item-missing">—  not set</span>
+              <% end %>
+            </div>
+
+            <% if section[:type] == "INSTALLED" && item[:material_part] && item[:labor_part] %>
+              <div class="breakdown breakdown-row">
+                <div class="breakdown-cell material">
+                  <div class="breakdown-label">MATERIAL</div>
+                  <div class="breakdown-value">$<%= number_with_delimiter(format('%.2f', item[:material_part])) %></div>
+                </div>
+                <div class="breakdown-cell labor">
+                  <div class="breakdown-label">LABOR</div>
+                  <div class="breakdown-value">$<%= number_with_delimiter(format('%.2f', item[:labor_part])) %></div>
+                </div>
+              </div>
+            <% end %>
+
+            <% if item[:fetched_at] %>
+              <div class="fetched-at">Fetched: <%= item[:fetched_at].strftime('%b %-d %Y %H:%M') %></div>
+            <% end %>
+
+            <div class="item-key mono"><%= item[:key] %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="empty">No trade data available.</div>
+<% end %>
+
+<div class="footer">
+  <strong>How this works:</strong>
+  Values come from <span class="mono">default_pricings</span>. Items tagged
+  <span style="color:#10b981">HD Live</span> have a matching SKU in
+  <span class="mono">material_prices</span> — the material portion is the BigBox-fetched price;
+  labor is the remainder stored in <span class="mono">default_pricings.value</span>.
+  <span style="color:#06b6d4">INSTALLED</span> rows show material+labor breakdown;
+  <span style="color:#10b981">MATERIAL</span> rows show raw material cost only;
+  <span style="color:#ef4444">MULTIPLIERS</span> are decimal factors (1.0 = no change);
+  <span style="color:#f59e0b">LABOR</span> rows are hourly/per-unit labor costs;
+  <span style="color:#8b5cf6">FLAT RATE</span> rows are fixed-price jobs.
+  Missing values (—) mean the key is defined in the reference but no <span class="mono">default_pricings</span> row exists yet.
+</div>
+
+<script>
+  (function () {
+    var btn = document.getElementById('breakdown-toggle');
+    var hint = document.getElementById('breakdown-hint');
+    var rows = document.querySelectorAll('.breakdown-row');
+    var shown = true;
+    function render() {
+      rows.forEach(function (r) { r.style.display = shown ? 'flex' : 'none'; });
+      btn.textContent = (shown ? '✓ ' : '') + 'Show Material/Labor Breakdown';
+      btn.classList.toggle('off', !shown);
+      hint.textContent = shown
+        ? "Showing what's material vs labor inside installed prices."
+        : "Click to see cost breakdown.";
+    }
+    btn.addEventListener('click', function () { shown = !shown; render(); });
+    render();
+  })();
+</script>
+
+</body>
+</html>
