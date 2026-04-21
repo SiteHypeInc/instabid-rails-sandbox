@@ -3,6 +3,7 @@ class PricingDashboardPresenter
   MAPPINGS_FILE  = Rails.root.join("config", "material_price_mappings.yml")
 
   TRADE_ORDER = %w[roofing siding electrical plumbing hvac painting drywall flooring].freeze
+  TRADE_DISPLAY_NAMES = { "hvac" => "HVAC" }.freeze
 
   def initialize
     @reference     = YAML.load_file(REFERENCE_FILE).with_indifferent_access
@@ -14,7 +15,7 @@ class PricingDashboardPresenter
   def trades
     TRADE_ORDER.filter_map do |key|
       next unless @reference[key]
-      { key: key, name: key.humanize, icon: @reference[key][:icon] }
+      { key: key, name: display_name(key), icon: @reference[key][:icon] }
     end
   end
 
@@ -26,7 +27,7 @@ class PricingDashboardPresenter
 
     {
       key: trade_key,
-      name: trade_key.humanize,
+      name: display_name(trade_key),
       icon: ref[:icon],
       sections: sections,
       total_keys: sections.sum { |s| s[:items].size },
@@ -36,6 +37,10 @@ class PricingDashboardPresenter
   end
 
   private
+
+  def display_name(key)
+    TRADE_DISPLAY_NAMES[key] || key.humanize
+  end
 
   def build_section(trade_key, sec)
     items = sec[:items].map { |item| build_item(trade_key, sec[:type], item) }

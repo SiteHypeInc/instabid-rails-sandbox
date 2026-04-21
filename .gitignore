@@ -43,3 +43,4 @@
 !/app/assets/builds/.keep
 
 /coverage/
+vendor/bundle/
