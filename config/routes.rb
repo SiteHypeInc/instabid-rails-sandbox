@@ -29,7 +29,8 @@ Rails.application.routes.draw do
     # Pricing pipeline: load BigBox data → sync to default_pricings → check status
     scope :pricing do
       post "load",               to: "bigbox_data_loads#create",        as: :pricing_load              # legacy: per-SKU search load
-      post "seed",               to: "pricing_syncs#seed",              as: :pricing_seed              # step 2a: seed Jesse baselines
+      post "seed",               to: "pricing_syncs#seed",              as: :pricing_seed              # step 2a: seed Jesse baselines (plumbing only)
+      post "seed_all",           to: "pricing_syncs#seed_all",          as: :pricing_seed_all          # TEA-198: seed all 8 trades from YAML
       post "sync",               to: "pricing_syncs#sync",              as: :pricing_sync              # step 2b: run BigBox→default_pricings sync
       get  "status",             to: "pricing_syncs#status",            as: :pricing_status            # step 3: inspect results
       post "collection",         to: "bigbox_collections#create",       as: :pricing_collection_create # create 89-SKU BigBox collection

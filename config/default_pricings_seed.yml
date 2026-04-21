@@ -1,0 +1,214 @@
+# Default Pricings Seed — Jesse's baseline values for all 8 trades.
+#
+# Canonical source: docs/tea-198/PRICING_KEY_TYPE_REFERENCE.md
+# Loaded by: Admin::PricingSyncsController#seed_all → POST /admin/pricing/seed_all
+#
+# Shape: trade → pricing_key → numeric value
+# Safe to re-run: upsert via find_or_initialize_by(trade:, pricing_key:)
+
+roofing:
+  pitch_3_12: 1.0
+  pitch_4_12: 1.0
+  pitch_5_12: 1.05
+  pitch_6_12: 1.1
+  pitch_7_12: 1.15
+  pitch_8_12: 1.2
+  pitch_9_12: 1.3
+  pitch_10_12: 1.4
+  pitch_11_12: 1.5
+  pitch_12_12: 1.6
+  mat_asphalt: 40.00
+  mat_arch: 44.96
+  mat_metal: 9.50
+  mat_tile: 12.00
+  mat_wood_shake: 14.00
+  underlayment_roll: 45.00
+  nails_box: 85.00
+  starter_lf: 2.50
+  ridge_lf: 3.00
+  drip_edge_lf: 2.75
+  ice_shield_lf: 4.50
+  vent_unit: 25.00
+  ridge_vent_lf: 5.50
+  osb_sheet: 28.00
+  chimney_flash: 125.00
+  skylight_flash: 85.00
+  valley_lf: 6.00
+  disposal_asphalt_sqft: 0.40
+  disposal_wood_sqft: 0.40
+  disposal_metal_sqft: 0.50
+  disposal_tile_sqft: 0.75
+  labor_rate_sqft: 0.04
+  chimney_labor_hrs: 3
+  skylight_labor_hrs: 2
+
+siding:
+  siding_vinyl: 5.50
+  siding_fiber_cement: 9.50
+  siding_wood: 14.00
+  siding_metal: 8.00
+  siding_stucco: 11.00
+  siding_labor_vinyl: 3.50
+  siding_labor_fiber: 5.50
+  siding_labor_wood: 6.50
+  siding_labor_metal: 4.50
+  siding_labor_stucco: 7.50
+  siding_labor_rate: 45.00
+  siding_housewrap_roll: 175.00
+  siding_j_channel: 12.00
+  siding_corner_post: 35.00
+  siding_window_trim: 55.00
+  siding_door_trim: 75.00
+  siding_soffit_sqft: 8.00
+  siding_fascia_lf: 6.00
+  siding_fastener_kit: 175.00
+  siding_removal_sqft: 1.75
+  siding_story_2: 1.25
+  siding_story_3: 1.50
+
+electrical:
+  elec_wire_lf: 1.00
+  elec_panel_100: 450.00
+  elec_panel_200: 550.00
+  elec_panel_400: 1200.00
+  elec_rewire_sqft: 11.50
+  elec_ceiling_fan_install: 200.00
+  elec_outlet: 12.00
+  elec_outlet_gfci: 35.00
+  elec_switch: 10.00
+  elec_switch_dimmer: 50.00
+  elec_light_install: 35.00
+  elec_recessed: 55.00
+  elec_circuit_20a: 95.00
+  elec_circuit_30a: 130.00
+  elec_circuit_50a: 185.00
+  elec_ev_charger: 350.00
+  elec_permit: 200.00
+
+plumbing:
+  plumb_labor_rate: 95.00
+  plumb_labor_emergency: 175.00
+  plumb_service_call: 95.00
+  plumb_toilet: 375.00
+  plumb_sink_bath: 350.00
+  plumb_sink_kitchen: 550.00
+  plumb_faucet_bath: 225.00
+  plumb_faucet_kitchen: 300.00
+  plumb_shower_valve: 450.00
+  plumb_tub: 1200.00
+  plumb_dishwasher: 200.00
+  plumb_garbage_disposal: 325.00
+  plumb_ice_maker: 150.00
+  plumb_heater_tank_40: 1200.00
+  plumb_heater_tank_50: 1600.00
+  plumb_heater_tankless_gas: 3500.00
+  plumb_heater_tankless_elec: 2200.00
+  plumb_water_softener: 1800.00
+  plumb_sump_pump: 650.00
+  plumb_repipe_pex_lf: 2.50
+  plumb_repipe_copper_lf: 4.50
+  plumb_main_line: 1200.00
+  plumb_gas_line_new: 500.00
+  plumb_access_basement: 1.0
+  plumb_access_crawlspace: 1.15
+  plumb_access_slab: 1.35
+  plumb_location_garage: 1.0
+  plumb_location_basement: 1.0
+  plumb_location_closet: 1.1
+  plumb_location_attic: 1.25
+
+hvac:
+  hvac_furnace_standard: 3500.00
+  hvac_furnace_high: 4500.00
+  hvac_ac_standard: 4000.00
+  hvac_ac_high: 5500.00
+  hvac_heatpump_standard: 5500.00
+  hvac_heatpump_high: 7500.00
+  hvac_minisplit: 2500.00
+  hvac_thermostat: 350.00
+  hvac_duct_new: 15.00
+  hvac_duct_repair: 8.00
+  hvac_refrigerant: 250.00
+  hvac_filters: 200.00
+  hvac_labor_rate: 85.00
+  hvac_labor_furnace: 12
+  hvac_labor_ac: 10
+  hvac_labor_heatpump: 14
+  hvac_labor_minisplit: 8
+  hvac_size_small: 0.9
+  hvac_size_med: 1.0
+  hvac_size_large: 1.2
+  hvac_size_xlarge: 1.4
+  hvac_story_2: 1.2
+  hvac_story_3: 1.4
+
+painting:
+  paint_exterior_mat: 0.45
+  paint_exterior_labor: 2.50
+  paint_interior_mat: 0.45
+  paint_interior_labor: 3.50
+  paint_ceiling_mat: 0.35
+  paint_ceiling_labor: 1.25
+  paint_trim_mat: 0.50
+  paint_trim_labor: 2.00
+  paint_door_mat: 15.00
+  paint_door_labor: 60.00
+  paint_window_mat: 10.00
+  paint_window_labor: 40.00
+  paint_power_wash_mat: 0.10
+  paint_power_wash_labor: 0.15
+  paint_patch_minor_mat: 50.00
+  paint_patch_minor_labor: 100.00
+  paint_patch_moderate_mat: 100.00
+  paint_patch_moderate_labor: 250.00
+  paint_patch_extensive_mat: 250.00
+  paint_patch_extensive_labor: 500.00
+  paint_primer_mat: 0.20
+  paint_primer_labor: 0.30
+  paint_lead_mat: 150.00
+  paint_lead_labor: 350.00
+
+drywall:
+  drywall_labor_rate: 55.00
+  drywall_hang_sqft: 0.75
+  drywall_tape_sqft: 0.65
+  drywall_sand_sqft: 0.35
+  drywall_sheet_half: 12.00
+  drywall_sheet_5_8: 18.00
+  drywall_joint_compound: 18.00
+  drywall_tape: 8.00
+  drywall_screws: 12.00
+  drywall_corner_bead: 5.00
+  drywall_finish_level_3: 1.0
+  drywall_finish_level_4: 1.25
+  drywall_finish_level_5: 1.5
+  drywall_texture_none: 0
+  drywall_texture_orange_peel: 0.80
+  drywall_texture_knockdown: 1.00
+  drywall_texture_popcorn: 0.65
+  drywall_ceiling_10ft: 1.15
+  drywall_ceiling_12ft: 1.3
+  drywall_repair_minor: 175.00
+  drywall_repair_moderate: 400.00
+  drywall_repair_extensive: 900.00
+
+flooring:
+  floor_carpet: 5.00
+  floor_vinyl: 3.50
+  floor_laminate: 4.00
+  floor_lvp: 4.50
+  floor_hardwood_eng: 10.00
+  floor_hardwood_solid: 14.00
+  floor_tile_ceramic: 7.50
+  floor_tile_porcelain: 10.00
+  floor_labor_carpet: 2.00
+  floor_labor_vinyl: 2.50
+  floor_labor_hardwood: 5.00
+  floor_labor_tile: 6.50
+  floor_subfloor: 4.00
+  floor_removal: 2.00
+  floor_underlay: 0.50
+  floor_baseboard: 5.00
+  floor_standard: 1.0
+  floor_moderate: 1.2
+  floor_complex: 1.4

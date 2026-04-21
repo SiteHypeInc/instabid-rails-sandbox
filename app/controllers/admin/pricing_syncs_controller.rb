@@ -25,6 +25,30 @@ module Admin
       render json: { status: "seeded", rows: seeded }
     end
 
+    SEED_FILE = Rails.root.join("config", "default_pricings_seed.yml")
+
+    # POST /admin/pricing/seed_all
+    # Upserts Jesse's baseline values across all 8 trades from config/default_pricings_seed.yml.
+    # Idempotent — existing rows have value/description overwritten.
+    def seed_all
+      data = YAML.load_file(SEED_FILE)
+      counts = Hash.new { |h, k| h[k] = { created: 0, updated: 0 } }
+
+      data.each do |trade, keys|
+        keys.each do |pricing_key, value|
+          record = DefaultPricing.find_or_initialize_by(trade: trade, pricing_key: pricing_key)
+          bucket = record.new_record? ? :created : :updated
+          record.value = value
+          record.description ||= "Jesse baseline (#{trade}/#{pricing_key})"
+          record.save!
+          counts[trade][bucket] += 1
+        end
+      end
+
+      total = counts.values.sum { |c| c[:created] + c[:updated] }
+      render json: { status: "seeded", total: total, by_trade: counts }
+    end
+
     # POST /admin/pricing/sync
     # Runs MaterialPriceSyncService and returns before/after for each pricing key.
     def sync
