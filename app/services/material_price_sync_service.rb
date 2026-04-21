@@ -20,10 +20,25 @@ class MaterialPriceSyncService
       next if @trade_filter && @trade_filter != trade_name.to_s
 
       keys.each do |pricing_key, config|
+        config = config.with_indifferent_access
+
+        # Fail-safe: entries without an explicit `syncable: true` are skipped.
+        # Guards against BigBox silently overwriting multipliers, labor rates,
+        # or lump sums if someone adds a new mapping without marking it.
+        unless config[:syncable] == true
+          results << SyncResult.new(
+            trade: trade_name.to_s, pricing_key: pricing_key.to_s,
+            before_value: current_value(trade_name.to_s, pricing_key.to_s),
+            after_value: nil, material_value: nil, labor_adder: nil,
+            sku_count: 0, skus: [], status: "skipped_not_syncable"
+          )
+          next
+        end
+
         results << sync_one(
           trade:       trade_name.to_s,
           pricing_key: pricing_key.to_s,
-          config:      config.with_indifferent_access
+          config:      config
         )
       end
     end
