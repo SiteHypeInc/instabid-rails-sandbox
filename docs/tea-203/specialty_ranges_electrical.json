@@ -1,0 +1,28 @@
+[
+  {
+    "pricing_key": "elec_conduit_fittings",
+    "item_name": "Conduit Fittings (assorted)",
+    "unit": "kit",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | HD sells single-type connector packs (e.g. 1/2\" EMT compression, 10-25 pack) but not a true mixed assortment kit under one /p/ SKU. Range covers small connector packs to contractor mixed-fitting bundles (EMT + PVC couplings, bushings, set-screw connectors).",
+    "price_low": 10,
+    "price_high": 60,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:30:00Z"
+  },
+  {
+    "pricing_key": "elec_junction_box",
+    "item_name": "Junction Box 4x4\"",
+    "unit": "each",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | 4x4\" square boxes vary by depth, metal gauge, and ground/KO config. RACO/Steel City 1-1/2\" deep galvanized on the low end, 2-1/8\" deep with raised ground on the high end. No single canonical HD /p/ SKU fits the generic line item.",
+    "price_low": 3,
+    "price_high": 15,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:30:00Z"
+  }
+]
