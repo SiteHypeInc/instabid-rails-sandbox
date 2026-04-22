@@ -159,7 +159,7 @@ QUERY_OVERRIDES = {
     'paint_deck_stain_mat':      'homedepot.com behr premium 1 gal semi-transparent waterproofing stain and sealer',
     'paint_epoxy_mat':           'homedepot.com rust-oleum epoxyshield 2 gal gray garage floor epoxy kit',
     'paint_elastomeric_mat':     'homedepot.com behr premium 1 gal white elastomeric masonry stucco brick paint',
-    'paint_shellac_primer':      'homedepot.com zinsser bulls eye 1 gal white shellac primer sealer',
+    'paint_shellac_primer':      'homedepot.com zinsser bin 1 gal white shellac-based interior primer sealer stain blocker',
     # Roofing
     'mat_synthetic_slate':       'homedepot.com davinci bellaforte slate composite roofing shingle',
     'roof_sealant':              'homedepot.com henry 1 gal 209xr extra-thick elastomeric roof patching cement',
