@@ -37,6 +37,21 @@ OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
 HD_URL_RX = re.compile(r'homedepot\.com/p/[^/]+/(\d+)')  # item_id is the trailing digits
 
+# Per-pricing_key query phrasing. Tavily picks /p/ product pages only when the
+# query reads like a shopper's search (brand + dimensions + keyword), not
+# `site:homedepot.com <label>`. Falls back to item_name if key absent.
+QUERY_OVERRIDES = {
+    'cab_base_30_stock':         'homedepot.com hampton bay base cabinet 30 inch',
+    'cab_wall_30_stock':         'homedepot.com hampton bay wall cabinet 30 inch',
+    'cab_tall_stock':            'homedepot.com hampton bay pantry cabinet 84',
+    'cab_base_30_semi':          'homedepot.com kraftmaid base cabinet 30 inch',
+    'cab_wall_30_semi':          'homedepot.com kraftmaid wall cabinet 30 inch',
+    'cab_hinge_soft_close':      'homedepot.com soft close cabinet hinge 35mm',
+    'cab_lazy_susan':            'homedepot.com lazy susan cabinet kidney',
+    'counter_solid_surface_sqft':'homedepot.com corian solid surface countertop',
+    'counter_quartz_sqft':       'homedepot.com quartz countertop slab',
+}
+
 EXTRACT_SYSTEM = """You are a Home Depot pricing extractor.
 
 You will receive:
@@ -140,7 +155,7 @@ PAGE CONTENT (truncated):
 
 def run_one(row):
     """Execute the full Road B pipeline for one gap-list row. Returns a review entry dict."""
-    query = f"site:homedepot.com {row['item_name']}"
+    query = QUERY_OVERRIDES.get(row['pricing_key']) or f"homedepot.com {row['item_name']}"
     entry = {
         'pricing_key':   row['pricing_key'],
         'item_name':     row['item_name'],
