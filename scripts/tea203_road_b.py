@@ -149,7 +149,7 @@ QUERY_OVERRIDES = {
     'drywall_setting_compound':  'homedepot.com usg sheetrock easy sand 90 setting type joint compound 18 lb bag',
     'drywall_mesh_tape':         'homedepot.com strait-flex 300 ft self adhesive fiberglass drywall mesh tape',
     'drywall_bullnose_bead':     'homedepot.com trim-tex 8 ft bullnose corner bead vinyl',
-    'drywall_l_bead':            'homedepot.com trim-tex 10 ft l-bead vinyl drywall trim',
+    'drywall_l_bead':            'homedepot.com 10 ft vinyl drywall l-bead trim edge',
     'drywall_texture_skip_trowel':'homedepot.com homax pro grade 2.2 qt skip trowel wall texture',
     'drywall_skim_coat':         'homedepot.com plus 3 joint compound skim coat ready mix 4.5 gal',
     'drywall_sheet_sound':       'homedepot.com quietrock ez-snap 5/8 in x 4 ft x 8 ft soundproof drywall',
