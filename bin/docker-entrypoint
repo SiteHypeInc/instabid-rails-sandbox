@@ -3,6 +3,10 @@
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
+  # TEA-213: idempotently load the 41 specialty gap-list rows on each boot.
+  # SpecialtyPriceLoaderService uses find_or_initialize_by + per-row rescue,
+  # so reruns are safe and a failure here must not block server startup.
+  ./bin/rails specialty_prices:load || echo "[specialty_prices:load] failed, continuing boot"
 fi
 
 exec "${@}"
