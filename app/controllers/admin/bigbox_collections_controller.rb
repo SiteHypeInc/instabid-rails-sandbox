@@ -67,23 +67,30 @@ module Admin
         zip_code:      zip_code
       )
 
-      loaded    = results.select { |r| r.status == "loaded" }
-      no_price  = results.select { |r| r.status == "no_price" }
-      no_result = results.select { |r| r.status == "no_results" }
-      errors    = results.select { |r| r.status == "error" }
+      by_status = results.group_by(&:status)
+      loaded    = by_status["loaded"] || []
+      no_price  = by_status["no_price"] || []
+      not_found = by_status["not_found"] || []
+      transient = by_status["transient"] || []
+      errors    = by_status["error"] || []
 
       render json: {
         collection_id: collection_id,
         zip_code:      zip_code,
         summary: {
-          loaded:    loaded.count,
-          no_price:  no_price.count,
-          no_result: no_result.count,
-          errors:    errors.count,
-          total:     results.count
+          loaded:      loaded.count,
+          no_price:    no_price.count,
+          not_found:   not_found.count,
+          transient:   transient.count,
+          unknown_sku: (by_status["unknown_sku"] || []).count,
+          no_product:  (by_status["no_product"] || []).count,
+          no_result:   (by_status["no_results"] || []).count,
+          errors:      errors.count,
+          total:       results.count
         },
         loaded_prices: loaded.map { |r| { sku: r.sku, name: r.name, trade: r.trade, price: r.price, unit: r.unit } },
-        issues:        (no_price + errors).map { |r| { sku: r.sku, name: r.name, status: r.status, error: r.error } }
+        transient_skus: transient.map { |r| r.sku },
+        issues: (no_price + not_found + errors).map { |r| { sku: r.sku, name: r.name, status: r.status, error: r.error } }
       }
     rescue => e
       render json: { error: e.class.to_s, message: e.message }, status: :unprocessable_entity
