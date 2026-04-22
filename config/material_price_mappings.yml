@@ -102,6 +102,39 @@ roofing:
     aggregation: average
     labor_adder: 0.00
 
+  # --- TEA-203 gap list additions (2026-04-22) ---
+  gutter_downspout:
+    description: "Gutter Downspout (per each)"
+    skus:
+      - "100016183"
+    aggregation: average
+    labor_adder: 0.00
+  gutter_lf:
+    description: "Gutter (linear ft) (per lf)"
+    skus:
+      - "100061750"
+    aggregation: average
+    labor_adder: 0.00
+  pipe_boot:
+    description: "Pipe Boot/Jack (per each)"
+    skus:
+      - "202078078"
+    aggregation: average
+    labor_adder: 0.00
+  roof_sealant:
+    description: "Roof Sealant/Coating (per gallon)"
+    skus:
+      - "202091022"
+    aggregation: average
+    labor_adder: 0.00
+  step_flashing_lf:
+    description: "Step Flashing (per piece)"
+    skus:
+      - "100070084"
+    aggregation: average
+    labor_adder: 0.00
+
+
 # ─── HVAC ────────────────────────────────────────────────────────────────────
 
 hvac:
@@ -160,6 +193,75 @@ hvac:
       - "202532598"
     aggregation: average
     labor_adder: 150.00
+
+  # --- TEA-203 gap list additions (2026-04-22) ---
+  hvac_condensate_pump:
+    description: "Condensate Pump (per each)"
+    skus:
+      - "324224438"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_disconnect:
+    description: "Disconnect Box 60A (per each)"
+    skus:
+      - "329864804"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_dryer_vent:
+    description: "Dryer Vent Kit (per kit)"
+    skus:
+      - "203626523"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_duct_insulation:
+    description: "Duct Insulation Wrap (per roll)"
+    skus:
+      - "334147823"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_duct_tape:
+    description: "Duct Tape (HVAC rated) (per roll)"
+    skus:
+      - "100208576"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_flex_duct_6:
+    description: "Flex Duct 6in 25ft (per each)"
+    skus:
+      - "100396935"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_flex_duct_8:
+    description: "Flex Duct 8in 25ft (per each)"
+    skus:
+      - "202562741"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_line_set:
+    description: "Copper Line Set 25ft (per each)"
+    skus:
+      - "312540649"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_pad:
+    description: "AC Pad/Stand (per each)"
+    skus:
+      - "334530867"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_rigid_duct_lf:
+    description: "Rigid Sheet Metal Duct (per lf)"
+    skus:
+      - "100125106"
+    aggregation: average
+    labor_adder: 0.00
+  hvac_thermostat_wire:
+    description: "Thermostat Wire 18/5 250ft (per roll)"
+    skus:
+      - "202316418"
+    aggregation: average
+    labor_adder: 0.00
+
 
 # ─── ELECTRICAL ──────────────────────────────────────────────────────────────
 
@@ -220,6 +322,117 @@ electrical:
       - "202532156"
     aggregation: average
     labor_adder: 75.00
+
+  # --- TEA-203 gap list additions (2026-04-22) ---
+  elec_box_new_work:
+    description: "New Work Box 1-gang (per each)"
+    skus:
+      - "202546989"
+    aggregation: average
+    labor_adder: 0.00
+  elec_box_old_work:
+    description: "Old Work Box 1-gang (per each)"
+    skus:
+      - "100404027"
+    aggregation: average
+    labor_adder: 0.00
+  elec_emt_3_4:
+    description: "EMT Conduit 3/4in 10ft (per each)"
+    skus:
+      - "100400406"
+    aggregation: average
+    labor_adder: 0.00
+  elec_emt_half:
+    description: "EMT Conduit 1/2in 10ft (per each)"
+    skus:
+      - "327893644"
+    aggregation: average
+    labor_adder: 0.00
+  elec_flex_conduit:
+    description: "Flex Conduit 1/2in 25ft (per roll)"
+    skus:
+      - "100346402"
+    aggregation: average
+    labor_adder: 0.00
+  elec_occupancy_switch:
+    description: "Occupancy Sensor Switch (per each)"
+    skus:
+      - "202721357"
+    aggregation: average
+    labor_adder: 0.00
+  elec_outlet_20a:
+    description: "20A Standard Outlet (per each)"
+    skus:
+      - "202078776"
+    aggregation: average
+    labor_adder: 0.00
+  elec_outlet_usb:
+    description: "USB Outlet Combo (per each)"
+    skus:
+      - "329409709"
+    aggregation: average
+    labor_adder: 0.00
+  elec_outlet_wp_cover:
+    description: "Weatherproof Outlet Cover (per each)"
+    skus:
+      - "300853022"
+    aggregation: average
+    labor_adder: 0.00
+  elec_pvc_conduit_half:
+    description: "PVC Conduit 1/2in 10ft (per each)"
+    skus:
+      - "100122861"
+    aggregation: average
+    labor_adder: 0.00
+  elec_smart_switch:
+    description: "Smart Switch (WiFi) (per each)"
+    skus:
+      - "315518596"
+    aggregation: average
+    labor_adder: 0.00
+  elec_switch_3way:
+    description: "3-Way Switch (per each)"
+    skus:
+      - "100356976"
+    aggregation: average
+    labor_adder: 0.00
+  elec_thhn_12:
+    description: "THHN Wire 12AWG 500ft (per roll)"
+    skus:
+      - "202304643"
+    aggregation: average
+    labor_adder: 0.00
+  elec_uf_cable:
+    description: "UF-B Cable 12/2 250ft (per roll)"
+    skus:
+      - "202316281"
+    aggregation: average
+    labor_adder: 0.00
+  elec_wire_10_2:
+    description: "Romex 10/2 250ft (per roll)"
+    skus:
+      - "202316274"
+    aggregation: average
+    labor_adder: 0.00
+  elec_wire_10_3:
+    description: "Romex 10/3 250ft (per roll)"
+    skus:
+      - "202316277"
+    aggregation: average
+    labor_adder: 0.00
+  elec_wire_6_3_lf:
+    description: "Romex 6/3 (per ft) (per lf)"
+    skus:
+      - "204632777"
+    aggregation: average
+    labor_adder: 0.00
+  elec_wp_box:
+    description: "Weatherproof Box (per each)"
+    skus:
+      - "326780894"
+    aggregation: average
+    labor_adder: 0.00
+
 
 # ─── PLUMBING ────────────────────────────────────────────────────────────────
 
@@ -293,6 +506,135 @@ plumbing:
       - "313847629"
     aggregation: average
     labor_adder: 1500.00
+
+  # --- TEA-203 gap list additions (2026-04-22) ---
+  plumb_abs_3in:
+    description: "ABS 3in 10ft (per each)"
+    skus:
+      - "309282460"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_angle_stop:
+    description: "Angle Stop Valve (per each)"
+    skus:
+      - "318852199"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_ball_valve_3_4:
+    description: "Ball Valve 3/4in (per each)"
+    skus:
+      - "205816135"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_brass_adapter:
+    description: "Brass Adapter (various) (per each)"
+    skus:
+      - "202270573"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_check_valve:
+    description: "Check Valve (per each)"
+    skus:
+      - "203701787"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_copper_3_4:
+    description: "Copper 3/4in 10ft (per each)"
+    skus:
+      - "321304490"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_copper_elbow_half:
+    description: "Copper 90° Elbow 1/2in (per each)"
+    skus:
+      - "204620176"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_copper_tee_half:
+    description: "Copper Tee 1/2in (per each)"
+    skus:
+      - "100343348"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_cpvc_3_4:
+    description: "CPVC 3/4in 10ft (per each)"
+    skus:
+      - "313554131"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_cpvc_half:
+    description: "CPVC 1/2in 10ft (per each)"
+    skus:
+      - "100170202"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_p_trap:
+    description: "P-Trap 1.5in (per each)"
+    skus:
+      - "205153744"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_pex_1in:
+    description: "PEX 1in 100ft (per roll)"
+    skus:
+      - "302341823"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_pex_coupling_half:
+    description: "PEX Coupling 1/2in (per each)"
+    skus:
+      - "310850598"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_pex_elbow_half:
+    description: "PEX 90° Elbow 1/2in (per each)"
+    skus:
+      - "301541111"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_pex_tee_half:
+    description: "PEX Tee 1/2in (per each)"
+    skus:
+      - "301541257"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_prv:
+    description: "Pressure Relief Valve (per each)"
+    skus:
+      - "100532582"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_pvc_3in:
+    description: "PVC 3in 10ft (per each)"
+    skus:
+      - "100173538"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_pvc_4in:
+    description: "PVC 4in 10ft (per each)"
+    skus:
+      - "100348477"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_pvc_elbow_2in:
+    description: "PVC 90° Elbow 2in (per each)"
+    skus:
+      - "203950854"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_pvc_tee_2in:
+    description: "PVC Tee 2in (per each)"
+    skus:
+      - "203584562"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_wax_ring:
+    description: "Wax Ring (toilet) (per each)"
+    skus:
+      - "330415030"
+    aggregation: average
+    labor_adder: 0.00
+
 
 # ─── FLOORING ────────────────────────────────────────────────────────────────
 # Labor is tracked separately in Jesse's floor_labor_* keys — labor_adder: 0 here.
@@ -371,6 +713,99 @@ flooring:
     aggregation: average
     labor_adder: 0.00
 
+  # --- TEA-203 gap list additions (2026-04-22) ---
+  floor_bamboo:
+    description: "Bamboo (per sqft)"
+    skus:
+      - "205124713"
+    aggregation: average
+    labor_adder: 0.00
+  floor_grout_sanded:
+    description: "Grout (sanded) (per bag)"
+    skus:
+      - "313291664"
+    aggregation: average
+    labor_adder: 0.00
+  floor_grout_unsanded:
+    description: "Grout (unsanded) (per bag)"
+    skus:
+      - "313296538"
+    aggregation: average
+    labor_adder: 0.00
+  floor_marble:
+    description: "Natural Stone (marble) (per sqft)"
+    skus:
+      - "205762403"
+    aggregation: average
+    labor_adder: 0.00
+  floor_moisture_barrier:
+    description: "Moisture Barrier (per sqft)"
+    skus:
+      - "100578718"
+    aggregation: average
+    labor_adder: 0.00
+  floor_mosaic:
+    description: "Mosaic Tile (per sqft)"
+    skus:
+      - "332683156"
+    aggregation: average
+    labor_adder: 0.00
+  floor_self_level:
+    description: "Self-Leveling Compound (per bag)"
+    skus:
+      - "100192482"
+    aggregation: average
+    labor_adder: 0.00
+  floor_sheet_vinyl:
+    description: "Sheet Vinyl (per sqft)"
+    skus:
+      - "327773353"
+    aggregation: average
+    labor_adder: 0.00
+  floor_thinset:
+    description: "Thinset Mortar (per bag)"
+    skus:
+      - "100162542"
+    aggregation: average
+    labor_adder: 0.00
+  floor_tile_large:
+    description: "Large Format Tile 24x24 (per sqft)"
+    skus:
+      - "305849485"
+    aggregation: average
+    labor_adder: 0.00
+  floor_tile_sealer:
+    description: "Tile Sealer (per gallon)"
+    skus:
+      - "100041465"
+    aggregation: average
+    labor_adder: 0.00
+  floor_transition_reducer:
+    description: "Reducer Transition (per each)"
+    skus:
+      - "204768770"
+    aggregation: average
+    labor_adder: 0.00
+  floor_transition_t:
+    description: "T-Molding Transition (per each)"
+    skus:
+      - "205789359"
+    aggregation: average
+    labor_adder: 0.00
+  floor_travertine:
+    description: "Natural Stone (travertine) (per sqft)"
+    skus:
+      - "100664268"
+    aggregation: average
+    labor_adder: 0.00
+  floor_vct:
+    description: "VCT (Vinyl Composition Tile) (per sqft)"
+    skus:
+      - "202599902"
+    aggregation: average
+    labor_adder: 0.00
+
+
 # ─── DRYWALL ─────────────────────────────────────────────────────────────────
 # Labor tracked in drywall_hang_sqft, drywall_tape_sqft etc — labor_adder: 0 here.
 # [SANDBOX] SKUs are placeholders — confirm against live BigBox before production.
@@ -417,6 +852,69 @@ drywall:
       - "202084391"
     aggregation: average
     labor_adder: 0.00
+
+  # --- TEA-203 gap list additions (2026-04-22) ---
+  drywall_bullnose_bead:
+    description: "Bullnose Corner Bead (per each)"
+    skus:
+      - "332715182"
+    aggregation: average
+    labor_adder: 0.00
+  drywall_l_bead:
+    description: "L-Bead (per each)"
+    skus:
+      - "332715134"
+    aggregation: average
+    labor_adder: 0.00
+  drywall_mesh_tape:
+    description: "Mesh Tape (per roll)"
+    skus:
+      - "203071692"
+    aggregation: average
+    labor_adder: 0.00
+  drywall_resilient_channel:
+    description: "Resilient Channel (per 12ft)"
+    skus:
+      - "100319048"
+    aggregation: average
+    labor_adder: 0.00
+  drywall_setting_compound:
+    description: "Setting Compound (hot mud) (per bag)"
+    skus:
+      - "100321611"
+    aggregation: average
+    labor_adder: 0.00
+  drywall_sheet_fire:
+    description: "Fire-Rated Board (Type X) (per sheet)"
+    skus:
+      - "202263275"
+    aggregation: average
+    labor_adder: 0.00
+  drywall_sheet_moisture:
+    description: "Moisture-Resistant Board (green) (per sheet)"
+    skus:
+      - "100322690"
+    aggregation: average
+    labor_adder: 0.00
+  drywall_sheet_mold:
+    description: "Mold-Resistant Board (purple) (per sheet)"
+    skus:
+      - "100321592"
+    aggregation: average
+    labor_adder: 0.00
+  drywall_sheet_sound:
+    description: "Soundproof Drywall (per sheet)"
+    skus:
+      - "321007479"
+    aggregation: average
+    labor_adder: 0.00
+  insulation_batt_r13:
+    description: "Batt Insulation R-13 (per sqft)"
+    skus:
+      - "205470785"
+    aggregation: average
+    labor_adder: 0.00
+
 
 # ─── SIDING ──────────────────────────────────────────────────────────────────
 # Labor tracked in siding_labor_* keys — labor_adder: 0 on material keys here.
@@ -499,3 +997,74 @@ siding:
       - "202532892"
     aggregation: average
     labor_adder: 0.00
+
+  # --- TEA-203 gap list additions (2026-04-22) ---
+  siding_caulk:
+    description: "Exterior Caulk/Sealant (per tube)"
+    skus:
+      - "317803907"
+    aggregation: average
+    labor_adder: 0.00
+  siding_f_channel:
+    description: "Vinyl F-Channel (per 12ft)"
+    skus:
+      - "306278774"
+    aggregation: average
+    labor_adder: 0.00
+  siding_metal_trim:
+    description: "Metal Trim Coil (per roll)"
+    skus:
+      - "202091135"
+    aggregation: average
+    labor_adder: 0.00
+  siding_starter_strip:
+    description: "Vinyl Starter Strip (per 12ft)"
+    skus:
+      - "306293860"
+    aggregation: average
+    labor_adder: 0.00
+  siding_stucco_bond:
+    description: "Stucco Bonding Agent (per gallon)"
+    skus:
+      - "100318465"
+    aggregation: average
+    labor_adder: 0.00
+  siding_stucco_finish:
+    description: "Stucco Finish Coat (per bag)"
+    skus:
+      - "100318472"
+    aggregation: average
+    labor_adder: 0.00
+  siding_stucco_mesh:
+    description: "Stucco Mesh/Lath (per sqft)"
+    skus:
+      - "203611838"
+    aggregation: average
+    labor_adder: 0.00
+  siding_undersill_trim:
+    description: "Vinyl Undersill Trim (per 12ft)"
+    skus:
+      - "309743869"
+    aggregation: average
+    labor_adder: 0.00
+
+# ─── PAINTING ───────────────────────────────────────────────────────────────
+# TEA-203 adds a painting: section for per-gallon product keys only. The per-sqft
+# seed keys (paint_interior_mat, etc.) remain skipped due to the unit-mismatch
+# noted in the top-of-file SKIPS block.
+
+painting:
+  # --- TEA-203 gap list additions (2026-04-22) ---
+  paint_elastomeric_mat:
+    description: "Elastomeric Coating (per gallon)"
+    skus:
+      - "302354704"
+    aggregation: average
+    labor_adder: 0.00
+  paint_shellac_primer:
+    description: "Shellac Primer (per gallon)"
+    skus:
+      - "100398381"
+    aggregation: average
+    labor_adder: 0.00
+
