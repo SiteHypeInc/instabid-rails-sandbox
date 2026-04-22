@@ -1,0 +1,80 @@
+[
+  {
+    "pricing_key": "paint_deck_stain_mat",
+    "item_name": "Deck Stain (per sqft)",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "notes": "Not Road B candidate (gap unit=sqft, HD SKU=gallon — coverage-rate conversion required) | Semi-transparent deck stain Behr Premium ~$38/gal at 250 sqft/gal = $0.15/sqft. Solid Cabot/PPG $45-55/gal at 200 sqft = $0.22-$0.28. US 2024-26 per-sqft material range: $0.12 (semi-transparent budget) to $0.30 (solid premium). Source: HD Behr/Cabot gallon pricing ÷ coverage rate.",
+    "price_low": 0.12,
+    "price_high": 0.30,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:30:00Z"
+  },
+  {
+    "pricing_key": "paint_deck_stain_labor",
+    "item_name": "Deck Stain Labor",
+    "unit": "sqft",
+    "type": "LABOR_PER_UNIT",
+    "notes": "Shifted from Road B (no SKU for labor) | Deck stain labor incl. prep (light sand/wash), 2-coat stain application, clean-up. US 2024-26 range: $1.00/sqft (production residential, single-coat re-stain) to $3.00/sqft (full prep incl. stripping, 2 coats premium, railings). Source: RSMeans + painter contractor surveys.",
+    "price_low": 1.00,
+    "price_high": 3.00,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:30:00Z"
+  },
+  {
+    "pricing_key": "paint_epoxy_mat",
+    "item_name": "Epoxy Floor Coating",
+    "unit": "gallon",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (Haiku refused SKU 314107181 on kit-vs-gallon pedantry) | HD sells garage epoxy primarily as 2-car kits (240 oz / ~1.875 gal covers ~500 sqft). Standalone 1-gal epoxy exists (Quikrete EpoxyShield 1-gal, Rust-Oleum single-part). US 2024-26 per-gallon range: $40 (Quikrete water-based) to $100 (Rust-Oleum RockSolid Polycuramine premium). Kits normalize around $70-$80/gal. Source: HD epoxy SKU list.",
+    "price_low": 40,
+    "price_high": 100,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:30:00Z"
+  },
+  {
+    "pricing_key": "paint_epoxy_labor",
+    "item_name": "Epoxy Floor Labor",
+    "unit": "sqft",
+    "type": "LABOR_PER_UNIT",
+    "notes": "Shifted from Road B (no SKU for labor) | Epoxy floor install labor: diamond-grind prep, crack repair, primer, base coat, flake broadcast (optional), 2-part polyurethane topcoat. US 2024-26 range: $2.00/sqft (basic 1-coat over acid-etched slab) to $7.00/sqft (full prep, flake, polyaspartic topcoat). Source: Concrete Network + epoxy contractor surveys.",
+    "price_low": 2.00,
+    "price_high": 7.00,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:30:00Z"
+  },
+  {
+    "pricing_key": "paint_cabinet_door",
+    "item_name": "Cabinet Refinishing (per door)",
+    "unit": "each",
+    "type": "INSTALLED",
+    "notes": "Shifted from Road B (INSTALLED bundle — no HD SKU for strip/prime/paint service) | Full cabinet door refinish: remove, strip/sand, prime, 2 coats cabinet-grade paint (Emerald Urethane / Benjamin Moore Advance), rehang. US 2024-26 range: $100/door (basic paint, no strip, spray booth production) to $250/door (full strip, brush/spray, premium enamel, on-site). Source: cabinet refinisher surveys.",
+    "price_low": 100,
+    "price_high": 250,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:30:00Z"
+  },
+  {
+    "pricing_key": "paint_wallpaper_removal",
+    "item_name": "Wallpaper Removal",
+    "unit": "sqft",
+    "type": "LABOR_PER_UNIT",
+    "notes": "Shifted from Road B (no SKU for labor) | Wallpaper removal: score, steam/solvent, strip, wash off adhesive residue, skim minor paper tears. US 2024-26 range: $1.00/sqft (single-layer peelable, light adhesive) to $5.00/sqft (multi-layer, oil-sealed plaster, heavy adhesive, includes prep). Source: paperhanger contractor surveys.",
+    "price_low": 1.00,
+    "price_high": 5.00,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:30:00Z"
+  }
+]

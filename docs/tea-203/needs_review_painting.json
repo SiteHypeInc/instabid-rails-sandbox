@@ -1,0 +1,40 @@
+[
+  {
+    "pricing_key": "paint_elastomeric_mat",
+    "item_name": "Elastomeric Coating",
+    "unit": "gallon",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "Crack-resistant exterior",
+    "search_query": "homedepot.com behr premium 1 gal white elastomeric masonry stucco brick paint",
+    "hd_url": "https://www.homedepot.com/p/BEHR-PREMIUM-1-gal-S280-4-Real-Cork-Elastomeric-Masonry-Stucco-and-Brick-Exterior-Paint-06801/302354704",
+    "item_id": "302354704",
+    "match_title": "BEHR PREMIUM 1 gal. #S280-4 Real Cork Elastomeric Masonry, Stucco and Brick Exterior Paint 06801",
+    "match_price": 13.98,
+    "price_unit": "gallon",
+    "confidence": "high",
+    "haiku_reason": "BEHR PREMIUM elastomeric coating in 1-gallon size specifically designed for masonry/stucco with crack-bridging properties matches the target item.",
+    "haiku_matches": true,
+    "error": null,
+    "source": "web_search"
+  },
+  {
+    "pricing_key": "paint_shellac_primer",
+    "item_name": "Shellac Primer",
+    "unit": "gallon",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "Stain/odor blocking",
+    "search_query": "homedepot.com zinsser bin 1 gal white shellac-based interior primer sealer stain blocker",
+    "hd_url": "https://www.homedepot.com/p/Zinsser-1-gal-B-I-N-Shellac-Based-White-Interior-Primer-and-Sealer-320991/100398381",
+    "item_id": "100398381",
+    "match_title": "Zinsser - 1 gal. BIN Shellac-Based White Interior Primer and Sealer",
+    "match_price": null,
+    "price_unit": "gallon",
+    "confidence": "high",
+    "haiku_reason": "Zinsser BIN is a shellac-based primer specifically designed for stain and odor blocking, matching the target item exactly.",
+    "haiku_matches": true,
+    "error": null,
+    "source": "web_search"
+  }
+]

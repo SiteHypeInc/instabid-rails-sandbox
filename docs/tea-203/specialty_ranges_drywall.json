@@ -1,0 +1,28 @@
+[
+  {
+    "pricing_key": "drywall_texture_skip_trowel",
+    "item_name": "Skip Trowel Texture",
+    "unit": "sqft",
+    "type": "LABOR_PER_UNIT",
+    "notes": "Shifted from Road B (no_match — labor line, no HD SKU) | Skip trowel is hand-applied texture over finished drywall, not sprayed. US 2024-26 labor rate: $0.80/sqft (simple single-pass, production residential) to $2.50/sqft (heavy pattern, premium finish, occupied remodel). Material (joint compound thinned) is negligible — this is a labor line. Source: RSMeans residential + regional contractor surveys.",
+    "price_low": 0.80,
+    "price_high": 2.50,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:20:00Z"
+  },
+  {
+    "pricing_key": "drywall_skim_coat",
+    "item_name": "Skim Coat (smooth)",
+    "unit": "sqft",
+    "type": "LABOR_PER_UNIT",
+    "notes": "Shifted from Road B (no_match — labor line, no HD SKU) | Level 5 smooth skim coat is hand-applied full-surface joint compound over taped drywall, sanded flat. US 2024-26 labor rate: $1.00/sqft (ceiling only, new construction) to $3.00/sqft (walls + ceiling, critical-lighting rooms, remodel with sanding prep). Material is thinned Plus 3 — negligible. Source: Drywall Finishing Council Level 5 spec + contractor surveys.",
+    "price_low": 1.00,
+    "price_high": 3.00,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:20:00Z"
+  }
+]

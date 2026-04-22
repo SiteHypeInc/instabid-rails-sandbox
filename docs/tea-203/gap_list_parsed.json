@@ -1,0 +1,1325 @@
+[
+  {
+    "trade": "siding",
+    "item_name": "Vinyl Trim Coil 24\"",
+    "pricing_key": "siding_vinyl_trim_coil",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "siding",
+    "item_name": "Vinyl F-Channel",
+    "pricing_key": "siding_f_channel",
+    "type": "MATERIAL",
+    "unit": "12ft",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "siding",
+    "item_name": "Vinyl Starter Strip",
+    "pricing_key": "siding_starter_strip",
+    "type": "MATERIAL",
+    "unit": "12ft",
+    "syncable": "YES",
+    "notes": "Qty = perimeter / 12"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Vinyl Undersill Trim",
+    "pricing_key": "siding_undersill_trim",
+    "type": "MATERIAL",
+    "unit": "12ft",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "siding",
+    "item_name": "Fiber Cement Shakes",
+    "pricing_key": "siding_fiber_cement_shake",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "Cedar-look panels"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Fiber Cement Trim Boards",
+    "pricing_key": "siding_fiber_trim",
+    "type": "MATERIAL",
+    "unit": "12ft",
+    "syncable": "YES",
+    "notes": "1x4, 1x6, 1x8"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Fiber Cement Caulk",
+    "pricing_key": "siding_fiber_caulk",
+    "type": "MATERIAL",
+    "unit": "tube",
+    "syncable": "YES",
+    "notes": "Color-matched"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Stucco Finish Coat",
+    "pricing_key": "siding_stucco_finish",
+    "type": "MATERIAL",
+    "unit": "bag",
+    "syncable": "YES",
+    "notes": "Currently lumped into one stucco price"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Stucco Mesh/Lath",
+    "pricing_key": "siding_stucco_mesh",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "Metal reinforcement"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Stucco Bonding Agent",
+    "pricing_key": "siding_stucco_bond",
+    "type": "MATERIAL",
+    "unit": "gallon",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "siding",
+    "item_name": "Metal Trim Coil",
+    "pricing_key": "siding_metal_trim",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": "Aluminum 24\" rolls"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Flashing (siding)",
+    "pricing_key": "siding_flashing",
+    "type": "MATERIAL",
+    "unit": "10ft",
+    "syncable": "YES",
+    "notes": "Aluminum or galvanized"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Exterior Caulk/Sealant",
+    "pricing_key": "siding_caulk",
+    "type": "MATERIAL",
+    "unit": "tube",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "siding",
+    "item_name": "Vinyl Siding Nails (itemized)",
+    "pricing_key": "siding_nails",
+    "type": "MATERIAL",
+    "unit": "box",
+    "syncable": "YES",
+    "notes": "Currently in fastener_kit"
+  },
+  {
+    "trade": "siding",
+    "item_name": "Fiber Cement Screws",
+    "pricing_key": "siding_fiber_screws",
+    "type": "MATERIAL",
+    "unit": "box",
+    "syncable": "YES",
+    "notes": "Corrosion-resistant"
+  },
+  {
+    "trade": "roofing",
+    "item_name": "Slate Roofing",
+    "pricing_key": "mat_slate",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "PARTIAL",
+    "notes": "Specialty \u2014 may need web search"
+  },
+  {
+    "trade": "roofing",
+    "item_name": "Synthetic Slate",
+    "pricing_key": "mat_synthetic_slate",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "DaVinci, CeDUR brands at HD"
+  },
+  {
+    "trade": "roofing",
+    "item_name": "Roof Sealant/Coating",
+    "pricing_key": "roof_sealant",
+    "type": "MATERIAL",
+    "unit": "gallon",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "roofing",
+    "item_name": "Pipe Boot/Jack",
+    "pricing_key": "pipe_boot",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Qty = count of roof penetrations"
+  },
+  {
+    "trade": "roofing",
+    "item_name": "Step Flashing",
+    "pricing_key": "step_flashing_lf",
+    "type": "MATERIAL",
+    "unit": "piece",
+    "syncable": "YES",
+    "notes": "Typically 10-packs"
+  },
+  {
+    "trade": "roofing",
+    "item_name": "Gutter (linear ft)",
+    "pricing_key": "gutter_lf",
+    "type": "MATERIAL",
+    "unit": "lf",
+    "syncable": "YES",
+    "notes": "5\" or 6\" K-style"
+  },
+  {
+    "trade": "roofing",
+    "item_name": "Gutter Downspout",
+    "pricing_key": "gutter_downspout",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "10ft sections"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "PEX 1\" 100ft",
+    "pricing_key": "plumb_pex_1in",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": "Larger main lines"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Copper 3/4\" 10ft",
+    "pricing_key": "plumb_copper_3_4",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "CPVC 1/2\" 10ft",
+    "pricing_key": "plumb_cpvc_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Hot water supply"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "CPVC 3/4\" 10ft",
+    "pricing_key": "plumb_cpvc_3_4",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "ABS 3\" 10ft",
+    "pricing_key": "plumb_abs_3in",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Drain/waste"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "PVC 3\" 10ft",
+    "pricing_key": "plumb_pvc_3in",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Drain"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "PVC 4\" 10ft",
+    "pricing_key": "plumb_pvc_4in",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Main drain"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "PEX 90\u00b0 Elbow 1/2\"",
+    "pricing_key": "plumb_pex_elbow_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Qty formula: \\~1 per 4 LF"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "PEX Tee 1/2\"",
+    "pricing_key": "plumb_pex_tee_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Qty: \\~1 per fixture"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "PEX Coupling 1/2\"",
+    "pricing_key": "plumb_pex_coupling_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Copper 90\u00b0 Elbow 1/2\"",
+    "pricing_key": "plumb_copper_elbow_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Copper Tee 1/2\"",
+    "pricing_key": "plumb_copper_tee_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "PVC 90\u00b0 Elbow 2\"",
+    "pricing_key": "plumb_pvc_elbow_2in",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Drain fittings"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "PVC Tee 2\"",
+    "pricing_key": "plumb_pvc_tee_2in",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Brass Adapter (various)",
+    "pricing_key": "plumb_brass_adapter",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Transition fittings"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Ball Valve 1/2\"",
+    "pricing_key": "plumb_ball_valve_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Main shutoffs"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Ball Valve 3/4\"",
+    "pricing_key": "plumb_ball_valve_3_4",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Angle Stop Valve",
+    "pricing_key": "plumb_angle_stop",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Under-sink shutoff. Qty: 2 per sink"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Check Valve",
+    "pricing_key": "plumb_check_valve",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Backflow prevention"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Pressure Relief Valve",
+    "pricing_key": "plumb_prv",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Water heater safety"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "P-Trap 1.5\"",
+    "pricing_key": "plumb_p_trap",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Qty: 1 per fixture drain"
+  },
+  {
+    "trade": "plumbing",
+    "item_name": "Wax Ring (toilet)",
+    "pricing_key": "plumb_wax_ring",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Qty: 1 per toilet"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Romex 10/2 250ft",
+    "pricing_key": "elec_wire_10_2",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": "Dryers, water heaters"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Romex 10/3 250ft",
+    "pricing_key": "elec_wire_10_3",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": "Ranges, heavy appliances"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Romex 6/3 (per ft)",
+    "pricing_key": "elec_wire_6_3_lf",
+    "type": "MATERIAL",
+    "unit": "lf",
+    "syncable": "YES",
+    "notes": "Sub panels, heavy loads"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "THHN Wire 12AWG 500ft",
+    "pricing_key": "elec_thhn_12",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": "Conduit runs"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "UF-B Cable 12/2 250ft",
+    "pricing_key": "elec_uf_cable",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": "Outdoor/underground"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "EMT Conduit 1/2\" 10ft",
+    "pricing_key": "elec_emt_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "EMT Conduit 3/4\" 10ft",
+    "pricing_key": "elec_emt_3_4",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "PVC Conduit 1/2\" 10ft",
+    "pricing_key": "elec_pvc_conduit_half",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Flex Conduit 1/2\" 25ft",
+    "pricing_key": "elec_flex_conduit",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Conduit Fittings (assorted)",
+    "pricing_key": "elec_conduit_fittings",
+    "type": "MATERIAL",
+    "unit": "kit",
+    "syncable": "YES",
+    "notes": "Connectors, bushings"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Old Work Box 1-gang",
+    "pricing_key": "elec_box_old_work",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Retrofit installs"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "New Work Box 1-gang",
+    "pricing_key": "elec_box_new_work",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "New construction"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Junction Box 4x4\"",
+    "pricing_key": "elec_junction_box",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Weatherproof Box",
+    "pricing_key": "elec_wp_box",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Outdoor"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "20A Standard Outlet",
+    "pricing_key": "elec_outlet_20a",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "USB Outlet Combo",
+    "pricing_key": "elec_outlet_usb",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Weatherproof Outlet Cover",
+    "pricing_key": "elec_outlet_wp_cover",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Smart Switch (WiFi)",
+    "pricing_key": "elec_smart_switch",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "electrical",
+    "item_name": "3-Way Switch",
+    "pricing_key": "elec_switch_3way",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Already in SKUs, needs key"
+  },
+  {
+    "trade": "electrical",
+    "item_name": "Occupancy Sensor Switch",
+    "pricing_key": "elec_occupancy_switch",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Flex Duct 6\" 25ft",
+    "pricing_key": "hvac_flex_duct_6",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Flex Duct 8\" 25ft",
+    "pricing_key": "hvac_flex_duct_8",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Rigid Sheet Metal Duct",
+    "pricing_key": "hvac_rigid_duct_lf",
+    "type": "MATERIAL",
+    "unit": "lf",
+    "syncable": "PARTIAL",
+    "notes": "Often custom fab"
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Duct Insulation Wrap",
+    "pricing_key": "hvac_duct_insulation",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Duct Mastic/Sealant",
+    "pricing_key": "hvac_duct_mastic",
+    "type": "MATERIAL",
+    "unit": "gallon",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Duct Tape (HVAC rated)",
+    "pricing_key": "hvac_duct_tape",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Duct Hangers/Supports",
+    "pricing_key": "hvac_duct_hangers",
+    "type": "MATERIAL",
+    "unit": "box",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Copper Line Set 25ft",
+    "pricing_key": "hvac_line_set",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "1/4\" + 3/8\" insulated"
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Condensate Pump",
+    "pricing_key": "hvac_condensate_pump",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Disconnect Box 60A",
+    "pricing_key": "hvac_disconnect",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Required by code"
+  },
+  {
+    "trade": "hvac",
+    "item_name": "AC Pad/Stand",
+    "pricing_key": "hvac_pad",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Condenser unit base"
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Thermostat Wire 18/5 250ft",
+    "pricing_key": "hvac_thermostat_wire",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Bath Exhaust Fan",
+    "pricing_key": "hvac_bath_fan",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Includes install labor"
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Range Hood",
+    "pricing_key": "hvac_range_hood",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Includes install labor"
+  },
+  {
+    "trade": "hvac",
+    "item_name": "Dryer Vent Kit",
+    "pricing_key": "hvac_dryer_vent",
+    "type": "MATERIAL",
+    "unit": "kit",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "painting",
+    "item_name": "Deck Stain (per sqft)",
+    "pricing_key": "paint_deck_stain_mat",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "Semi-transparent/solid"
+  },
+  {
+    "trade": "painting",
+    "item_name": "Deck Stain Labor",
+    "pricing_key": "paint_deck_stain_labor",
+    "type": "LABOR_PER_UNIT",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": ""
+  },
+  {
+    "trade": "painting",
+    "item_name": "Epoxy Floor Coating",
+    "pricing_key": "paint_epoxy_mat",
+    "type": "MATERIAL",
+    "unit": "gallon",
+    "syncable": "YES",
+    "notes": "Garage floors"
+  },
+  {
+    "trade": "painting",
+    "item_name": "Epoxy Floor Labor",
+    "pricing_key": "paint_epoxy_labor",
+    "type": "LABOR_PER_UNIT",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": ""
+  },
+  {
+    "trade": "painting",
+    "item_name": "Cabinet Refinishing (per door)",
+    "pricing_key": "paint_cabinet_door",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "NO",
+    "notes": "Includes strip/prime/paint"
+  },
+  {
+    "trade": "painting",
+    "item_name": "Wallpaper Removal",
+    "pricing_key": "paint_wallpaper_removal",
+    "type": "LABOR_PER_UNIT",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": "Labor only"
+  },
+  {
+    "trade": "painting",
+    "item_name": "Elastomeric Coating",
+    "pricing_key": "paint_elastomeric_mat",
+    "type": "MATERIAL",
+    "unit": "gallon",
+    "syncable": "YES",
+    "notes": "Crack-resistant exterior"
+  },
+  {
+    "trade": "painting",
+    "item_name": "Shellac Primer",
+    "pricing_key": "paint_shellac_primer",
+    "type": "MATERIAL",
+    "unit": "gallon",
+    "syncable": "YES",
+    "notes": "Stain/odor blocking"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Moisture-Resistant Board (green)",
+    "pricing_key": "drywall_sheet_moisture",
+    "type": "MATERIAL",
+    "unit": "sheet",
+    "syncable": "YES",
+    "notes": "Bathrooms"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Fire-Rated Board (Type X)",
+    "pricing_key": "drywall_sheet_fire",
+    "type": "MATERIAL",
+    "unit": "sheet",
+    "syncable": "YES",
+    "notes": "Garages, ceilings"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Mold-Resistant Board (purple)",
+    "pricing_key": "drywall_sheet_mold",
+    "type": "MATERIAL",
+    "unit": "sheet",
+    "syncable": "YES",
+    "notes": "Basements"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Setting Compound (hot mud)",
+    "pricing_key": "drywall_setting_compound",
+    "type": "MATERIAL",
+    "unit": "bag",
+    "syncable": "YES",
+    "notes": "Quick-set"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Mesh Tape",
+    "pricing_key": "drywall_mesh_tape",
+    "type": "MATERIAL",
+    "unit": "roll",
+    "syncable": "YES",
+    "notes": "Self-adhesive"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Bullnose Corner Bead",
+    "pricing_key": "drywall_bullnose_bead",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Rounded corners"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "L-Bead",
+    "pricing_key": "drywall_l_bead",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "Edge trim"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Skip Trowel Texture",
+    "pricing_key": "drywall_texture_skip_trowel",
+    "type": "LABOR_PER_UNIT",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": "Labor only"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Skim Coat (smooth)",
+    "pricing_key": "drywall_skim_coat",
+    "type": "LABOR_PER_UNIT",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": "Level 5 prep"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Soundproof Drywall",
+    "pricing_key": "drywall_sheet_sound",
+    "type": "MATERIAL",
+    "unit": "sheet",
+    "syncable": "YES",
+    "notes": "QuietRock etc"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Resilient Channel",
+    "pricing_key": "drywall_resilient_channel",
+    "type": "MATERIAL",
+    "unit": "12ft",
+    "syncable": "YES",
+    "notes": "Sound isolation"
+  },
+  {
+    "trade": "drywall",
+    "item_name": "Batt Insulation R-13",
+    "pricing_key": "insulation_batt_r13",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "While walls are open"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Sheet Vinyl",
+    "pricing_key": "floor_sheet_vinyl",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "flooring",
+    "item_name": "VCT (Vinyl Composition Tile)",
+    "pricing_key": "floor_vct",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "Commercial/laundry"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Bamboo",
+    "pricing_key": "floor_bamboo",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Natural Stone (marble)",
+    "pricing_key": "floor_marble",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "PARTIAL",
+    "notes": "Specialty \u2014 web search"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Natural Stone (travertine)",
+    "pricing_key": "floor_travertine",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "PARTIAL",
+    "notes": "Specialty"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Large Format Tile 24x24",
+    "pricing_key": "floor_tile_large",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Mosaic Tile",
+    "pricing_key": "floor_mosaic",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Thinset Mortar",
+    "pricing_key": "floor_thinset",
+    "type": "MATERIAL",
+    "unit": "bag",
+    "syncable": "YES",
+    "notes": "50lb bag, covers \\~75 sqft"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Grout (sanded)",
+    "pricing_key": "floor_grout_sanded",
+    "type": "MATERIAL",
+    "unit": "bag",
+    "syncable": "YES",
+    "notes": "25lb bag"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Grout (unsanded)",
+    "pricing_key": "floor_grout_unsanded",
+    "type": "MATERIAL",
+    "unit": "bag",
+    "syncable": "YES",
+    "notes": "10lb bag"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Tile Sealer",
+    "pricing_key": "floor_tile_sealer",
+    "type": "MATERIAL",
+    "unit": "gallon",
+    "syncable": "YES",
+    "notes": "Natural stone"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "T-Molding Transition",
+    "pricing_key": "floor_transition_t",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "6ft pieces"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Reducer Transition",
+    "pricing_key": "floor_transition_reducer",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Self-Leveling Compound",
+    "pricing_key": "floor_self_level",
+    "type": "MATERIAL",
+    "unit": "bag",
+    "syncable": "YES",
+    "notes": "50lb bag"
+  },
+  {
+    "trade": "flooring",
+    "item_name": "Moisture Barrier",
+    "pricing_key": "floor_moisture_barrier",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "Poly sheeting"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Stock Base Cabinet 30\"",
+    "pricing_key": "cab_base_30_stock",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": "HD sells stock"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Stock Wall Cabinet 30\"",
+    "pricing_key": "cab_wall_30_stock",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Stock Tall/Pantry 84\"",
+    "pricing_key": "cab_tall_stock",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Semi-Custom Base 30\"",
+    "pricing_key": "cab_base_30_semi",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "PARTIAL",
+    "notes": "KraftMaid at HD"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Semi-Custom Wall 30\"",
+    "pricing_key": "cab_wall_30_semi",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "PARTIAL",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Custom Base (per LF)",
+    "pricing_key": "cab_base_custom_lf",
+    "type": "INSTALLED",
+    "unit": "lf",
+    "syncable": "NO",
+    "notes": "Specialty \u2014 web search range"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Custom Wall (per LF)",
+    "pricing_key": "cab_wall_custom_lf",
+    "type": "INSTALLED",
+    "unit": "lf",
+    "syncable": "NO",
+    "notes": "Specialty \u2014 web search range"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Cabinet Hardware (pulls)",
+    "pricing_key": "cab_hardware_pull",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Cabinet Hardware (knobs)",
+    "pricing_key": "cab_hardware_knob",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Soft-Close Hinges",
+    "pricing_key": "cab_hinge_soft_close",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Soft-Close Drawer Slides",
+    "pricing_key": "cab_drawer_slide",
+    "type": "MATERIAL",
+    "unit": "pair",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Lazy Susan",
+    "pricing_key": "cab_lazy_susan",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Pull-Out Shelf",
+    "pricing_key": "cab_pullout_shelf",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Cabinet Crown Molding",
+    "pricing_key": "cab_crown_lf",
+    "type": "MATERIAL",
+    "unit": "lf",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Filler Strip",
+    "pricing_key": "cab_filler",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "End Panel",
+    "pricing_key": "cab_end_panel",
+    "type": "MATERIAL",
+    "unit": "each",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Cabinet Refacing (per LF)",
+    "pricing_key": "cab_reface_lf",
+    "type": "INSTALLED",
+    "unit": "lf",
+    "syncable": "NO",
+    "notes": "Specialty"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Cabinet Painting (per door)",
+    "pricing_key": "cab_paint_door",
+    "type": "INSTALLED",
+    "unit": "each",
+    "syncable": "NO",
+    "notes": "Overlaps painting trade"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Laminate Countertop",
+    "pricing_key": "counter_laminate_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "HD stocks"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Butcher Block",
+    "pricing_key": "counter_butcher_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": "HD stocks"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Solid Surface (Corian)",
+    "pricing_key": "counter_solid_surface_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "PARTIAL",
+    "notes": "HD special order"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Quartz",
+    "pricing_key": "counter_quartz_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "PARTIAL",
+    "notes": "Specialty \u2014 web search"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Granite",
+    "pricing_key": "counter_granite_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": "Stone yards \u2014 web search range"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Marble",
+    "pricing_key": "counter_marble_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": "Stone yards \u2014 web search range"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Concrete Countertop",
+    "pricing_key": "counter_concrete_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": "Custom \u2014 web search range"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Counter Install Labor",
+    "pricing_key": "counter_install_sqft",
+    "type": "LABOR_PER_UNIT",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Edge Profile (basic)",
+    "pricing_key": "counter_edge_basic_lf",
+    "type": "INSTALLED",
+    "unit": "lf",
+    "syncable": "NO",
+    "notes": "Ogee, beveled"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Edge Profile (premium)",
+    "pricing_key": "counter_edge_premium_lf",
+    "type": "INSTALLED",
+    "unit": "lf",
+    "syncable": "NO",
+    "notes": "Waterfall, mitered"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Backsplash Subway Tile",
+    "pricing_key": "backsplash_subway_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Backsplash Mosaic Tile",
+    "pricing_key": "backsplash_mosaic_sqft",
+    "type": "MATERIAL",
+    "unit": "sqft",
+    "syncable": "YES",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Backsplash Install Labor",
+    "pricing_key": "backsplash_install_sqft",
+    "type": "LABOR_PER_UNIT",
+    "unit": "sqft",
+    "syncable": "NO",
+    "notes": ""
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Sink Cutout",
+    "pricing_key": "counter_sink_cutout",
+    "type": "LUMP_SUM",
+    "unit": "each",
+    "syncable": "NO",
+    "notes": "Template + cut"
+  },
+  {
+    "trade": "cabinets_and_countertops",
+    "item_name": "Cooktop Cutout",
+    "pricing_key": "counter_cooktop_cutout",
+    "type": "LUMP_SUM",
+    "unit": "each",
+    "syncable": "NO",
+    "notes": ""
+  }
+]
