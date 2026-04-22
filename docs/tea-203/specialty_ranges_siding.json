@@ -1,0 +1,93 @@
+[
+  {
+    "pricing_key": "siding_vinyl_trim_coil",
+    "item_name": "Vinyl Trim Coil 24\"",
+    "unit": "roll",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | No true vinyl-material trim coil at HD — industry uses aluminum coil (24\" x 50 ft, Gibraltar/Amerimax/Mastic) on vinyl-sided homes. HD SKU 202524682 (Gibraltar Birch White 24x50 aluminum) is the canonical product at ~$95/roll. Range covers plain white aluminum through premium painted/Kynar finishes. US 2024-26. Source: HD listings + Gibraltar catalog.",
+    "price_low": 65,
+    "price_high": 150,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:05:00Z"
+  },
+  {
+    "pricing_key": "siding_fiber_cement_shake",
+    "item_name": "Fiber Cement Shakes",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (Haiku refused SKU 317371276 as shingle-vs-shake pedantry) | HardieShingle 15.25\"x48\" is the canonical fiber cement shake product, sold primed (HZ5) and pre-finished (Statement Collection). Coverage math: one 15.25x48 panel = ~4.24 sqft. Primed panel ~$25, Statement colored ~$45. US 2024-26 per-sqft range: $5 primed basic → $10 Statement. Source: HD SKU 317371276 + 305494590, Hardie pricing guide.",
+    "price_low": 5,
+    "price_high": 10,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:05:00Z"
+  },
+  {
+    "pricing_key": "siding_fiber_trim",
+    "item_name": "Fiber Cement Trim Boards",
+    "unit": "12ft",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (Haiku refused SKU 203313789 on 5/4 vs 1x pedantry) | HardieTrim exists in 5/4x5.5, 5/4x3.5, 1x4, 1x6, 1x8, 1x12 all sold 12 ft. SKU 203313789 (5/4x5.5x12 HZ5 primed smooth) is canonical at ~$28/board. 1x6 = ~$20, 1x8 = ~$26, 1x12 = ~$38. US 2024-26. Source: HD HardieTrim SKUs + Hardie catalog.",
+    "price_low": 18,
+    "price_high": 40,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:05:00Z"
+  },
+  {
+    "pricing_key": "siding_fiber_caulk",
+    "item_name": "Fiber Cement Caulk",
+    "unit": "tube",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | HD canonical /p/ for OSI Quad Max color-matched fiber cement sealant is a 12-pack (307910115) — no single-tube /p/. Single tubes at supply houses + HD pro desk intermittently. Typical tubes: OSI Quad Max $10-$14, PL Premium S40 paintable $6-$9, Sashco Big Stretch $8-$11. US 2024-26 per-tube range. Source: HD 12-pack pricing + Ferguson/White Cap.",
+    "price_low": 6,
+    "price_high": 14,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:05:00Z"
+  },
+  {
+    "pricing_key": "siding_flashing",
+    "item_name": "Flashing (siding)",
+    "unit": "10ft",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | Tavily kept returning step flashing (5x7 inch pieces, wrong unit) not continuous 10ft counter/drip flashing. Continuous aluminum flashing 6-8\" wide x 10ft exists at HD without a canonical /p/ under that description — sold per-piece at pro desk + in variable widths by Amerimax/Gibraltar. US 2024-26 typical 10ft piece: $12 (3-4\" mill-finish drip edge) to $30 (8\" painted Kynar counter flashing). Source: HD pro-desk + Gibraltar catalog.",
+    "price_low": 12,
+    "price_high": 30,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:05:00Z"
+  },
+  {
+    "pricing_key": "siding_nails",
+    "item_name": "Vinyl Siding Nails (itemized)",
+    "unit": "box",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (Haiku refused SKU 100199042 on aluminum-vs-vinyl naming) | Contractors use aluminum or hot-dip galvanized roofing-style nails with an oversized head for vinyl siding — there is no separate 'vinyl' nail metallurgy. SKU 100199042 (Grip-Rite 2\" aluminum siding nails 1 lb) is canonical at ~$7/lb. Range covers 1-1/4\" to 2-1/2\" aluminum/HDG in 1 lb box. US 2024-26. Source: HD Grip-Rite SKUs.",
+    "price_low": 4,
+    "price_high": 12,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:05:00Z"
+  },
+  {
+    "pricing_key": "siding_fiber_screws",
+    "item_name": "Fiber Cement Screws",
+    "unit": "box",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | Collated fiber cement screws (Senco/Quik Drive) are sold in strips not boxes; loose 1 lb box of #8 x 1-5/8\" yellow-zinc or ceramic-coated cement-board screws exists as Grip-Rite/Pro-Twist but HD's /p/ variants keep flipping between drywall and cement board in search. Typical 1 lb box: $8 (basic yellow-zinc) to $20 (ceramic-coated corrosion-resistant). US 2024-26. Source: HD Grip-Rite cement board screw SKUs + Fastenal catalog.",
+    "price_low": 8,
+    "price_high": 20,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:05:00Z"
+  }
+]
