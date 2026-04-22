@@ -1,5 +1,57 @@
 [
   {
+    "pricing_key": "cab_base_30_semi",
+    "item_name": "Semi-Custom Base 30\"",
+    "unit": "each",
+    "type": "INSTALLED",
+    "notes": "Shifted from Road B (no_match) | KraftMaid-tier semi-custom at HD is order-through-store, not a /p/ SKU. Research: per-cabinet installed price for 30\" base with standard door/finish; upgraded wood/inset push high end.",
+    "price_low": 400,
+    "price_high": 900,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:10:00Z"
+  },
+  {
+    "pricing_key": "cab_wall_30_semi",
+    "item_name": "Semi-Custom Wall 30\"",
+    "unit": "each",
+    "type": "INSTALLED",
+    "notes": "Shifted from Road B (no_match) | KraftMaid-tier wall cabinet order-through-store. Research: roughly 70\u201380% of semi-custom base price.",
+    "price_low": 300,
+    "price_high": 700,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:10:00Z"
+  },
+  {
+    "pricing_key": "counter_solid_surface_sqft",
+    "item_name": "Solid Surface (Corian)",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | HD special order; /p/ pages are samples, not per-sqft SKUs. Research: Corian/Wilsonart material-only; fabrication adds separate labor.",
+    "price_low": 50,
+    "price_high": 100,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:10:00Z"
+  },
+  {
+    "pricing_key": "counter_quartz_sqft",
+    "item_name": "Quartz",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | HD /p/ entry is a configurator, not slab material. Research: MSI/Silestone/Cambria slab material per sqft; premium brands push high end.",
+    "price_low": 50,
+    "price_high": 120,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:10:00Z"
+  },
+  {
     "pricing_key": "cab_base_custom_lf",
     "item_name": "Custom Base (per LF)",
     "unit": "lf",

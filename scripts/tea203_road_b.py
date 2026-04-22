@@ -50,6 +50,27 @@ QUERY_OVERRIDES = {
     'cab_lazy_susan':            'homedepot.com lazy susan cabinet kidney',
     'counter_solid_surface_sqft':'homedepot.com corian solid surface countertop',
     'counter_quartz_sqft':       'homedepot.com quartz countertop slab',
+    # Electrical
+    'elec_wire_10_2':            'homedepot.com romex 10/2 250 ft nm-b cable',
+    'elec_wire_10_3':            'homedepot.com romex 10/3 250 ft nm-b cable',
+    'elec_wire_6_3_lf':          'homedepot.com romex 6/3 nm-b cable per foot',
+    'elec_thhn_12':              'homedepot.com thhn 12 awg 500 ft wire',
+    'elec_uf_cable':             'homedepot.com uf-b 12/2 250 ft cable',
+    'elec_emt_half':             'homedepot.com emt conduit 1/2 inch 10 ft',
+    'elec_emt_3_4':              'homedepot.com emt conduit 3/4 inch 10 ft',
+    'elec_pvc_conduit_half':     'homedepot.com pvc conduit 1/2 inch 10 ft schedule 40',
+    'elec_flex_conduit':         'homedepot.com flexible metal conduit 1/2 inch 25 ft',
+    'elec_conduit_fittings':     'homedepot.com emt conduit fittings assortment kit',
+    'elec_box_old_work':         'homedepot.com old work electrical box 1-gang',
+    'elec_box_new_work':         'homedepot.com new work electrical box 1-gang',
+    'elec_junction_box':         'homedepot.com junction box 4x4 metal',
+    'elec_wp_box':               'homedepot.com weatherproof electrical box 1-gang',
+    'elec_outlet_20a':           'homedepot.com 20 amp tamper resistant duplex outlet white',
+    'elec_outlet_usb':           'homedepot.com usb outlet combo 20 amp',
+    'elec_outlet_wp_cover':      'homedepot.com weatherproof outlet cover in-use',
+    'elec_smart_switch':         'homedepot.com smart switch wifi single pole',
+    'elec_switch_3way':          'homedepot.com 3-way switch 15 amp decorator',
+    'elec_occupancy_switch':     'homedepot.com occupancy sensor switch motion',
 }
 
 EXTRACT_SYSTEM = """You are a Home Depot pricing extractor.
