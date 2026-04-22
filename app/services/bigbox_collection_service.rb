@@ -78,36 +78,74 @@ class BigboxCollectionService
 
   # Fetches results from a completed collection and upserts into material_prices.
   # Returns array of IngestResult.
+  #
+  # BigBox Collections result shape (discovered 2026-04-22 on collection 6E313612):
+  #   GET /collections/:id/results        → { results: [{ id, download_links: {...}, ... }] }
+  #     (one entry per run, NOT per-item — "results" = result sets)
+  #   GET /collections/:id/results/:set   → { result: { download_links: { pages: [URLs] } } }
+  #     → each page URL returns an array of per-item rows:
+  #        { success, id, result: { product, offers, message? }, request: { item_id } }
   def ingest_results(collection_id:, zip_code: "10001")
     @zip_code = zip_code.to_s
 
-    uri       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/results")
-    uri.query = URI.encode_www_form(api_key: @api_key)
+    set_ids = list_result_set_ids(collection_id)
 
-    response = build_http(uri).request(Net::HTTP::Get.new(uri.request_uri))
-
-    unless response.is_a?(Net::HTTPSuccess)
-      raise "BigBox Collections results failed: HTTP #{response.code}"
-    end
-
-    data = JSON.parse(response.body)
-    results_raw = Array(data["results"])
-
-    Rails.logger.info("[BigboxCollection] #{collection_id}: #{results_raw.length} results found")
-
-    if results_raw.empty?
+    if set_ids.empty?
       return [IngestResult.new(sku: nil, name: nil, trade: nil, category: nil,
                                unit: nil, price: nil, status: "no_results",
-                               error: "Collection has 0 results — run may not have completed yet")]
+                               error: "Collection has 0 result sets — run may not have completed yet")]
     end
 
-    # Build lookup: bigbox_item_id → our SKU metadata
     sku_lookup = build_sku_lookup
+    by_item    = {} # item_id → latest IngestResult (later sets overwrite earlier)
 
-    results_raw.map { |row| ingest_one(row, sku_lookup) }
+    set_ids.each do |set_id|
+      page_urls = fetch_page_urls(collection_id: collection_id, set_id: set_id)
+      Rails.logger.info("[BigboxCollection] #{collection_id} set #{set_id}: #{page_urls.length} page(s)")
+
+      page_urls.each do |url|
+        rows = fetch_page_rows(url)
+        Rails.logger.info("[BigboxCollection] page #{url.split('/').last}: #{rows.length} rows")
+        rows.each do |row|
+          result = ingest_one(row, sku_lookup)
+          key    = result.sku.presence || SecureRandom.hex(4)
+          by_item[key] = result
+        end
+      end
+    end
+
+    by_item.values
 
   rescue JSON::ParserError => e
     raise "BigBox Collections results parse error: #{e.message}"
+  end
+
+  def list_result_set_ids(collection_id)
+    uri       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/results")
+    uri.query = URI.encode_www_form(api_key: @api_key)
+    response  = build_http(uri).request(Net::HTTP::Get.new(uri.request_uri))
+    raise "BigBox Collections results failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+    Array(JSON.parse(response.body)["results"]).map { |s| s["id"].to_s }.reject(&:blank?)
+  end
+
+  def fetch_page_urls(collection_id:, set_id:)
+    uri       = URI("#{BIGBOX_COLLECTIONS_URL}/#{collection_id}/results/#{set_id}")
+    uri.query = URI.encode_www_form(api_key: @api_key)
+    response  = build_http(uri).request(Net::HTTP::Get.new(uri.request_uri))
+    raise "BigBox result set fetch failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+    Array(JSON.parse(response.body).dig("result", "download_links", "pages"))
+  end
+
+  def fetch_page_rows(url)
+    uri      = URI(url)
+    http     = build_http(uri)
+    http.read_timeout = 60
+    response = http.request(Net::HTTP::Get.new(uri.request_uri))
+    raise "BigBox page download failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+
+    Array(JSON.parse(response.body))
   end
 
   # Lists all BigBox collections. Returns parsed JSON.
@@ -143,29 +181,41 @@ class BigboxCollectionService
     lookup
   end
 
+  # row shape: { success:, id:, result: { product?, offers?, message? }, request: { item_id } }
   def ingest_one(row, sku_lookup)
-    # BigBox Collections result shape:
-    #   { "item_id": "202534215", "product": { "title": "...", ... }, "offers": { "primary": { "price": 42.97 } } }
-    # OR flat:
-    #   { "item_id": "202534215", "title": "...", "price": 42.97 }
-    item_id = (row["item_id"] || row.dig("product", "item_id") || row.dig("product", "asin")).to_s
+    item_id = row.dig("request", "item_id").to_s
     meta    = sku_lookup[item_id]
 
     if meta.nil?
       Rails.logger.warn("[BigboxCollection] Unknown item_id #{item_id} — no matching SKU in material_skus.json")
       return IngestResult.new(
-        sku: item_id, name: row.dig("product", "title"), trade: nil,
-        category: nil, unit: nil, price: nil, status: "unknown_sku",
-        error: "item_id #{item_id} not found in material_skus.json"
+        sku: item_id, name: nil, trade: nil, category: nil, unit: nil, price: nil,
+        status: "unknown_sku", error: "item_id #{item_id} not found in material_skus.json"
       )
     end
 
-    product = row["product"] || row
-    price   = extract_price(product, offers: row["offers"])
+    result_body = row["result"] || {}
+    product     = result_body["product"]
+
+    # "Product not found" — stale item_id, will not resolve on retry.
+    if product.blank?
+      message = result_body["message"].presence
+      success = row["success"]
+      status  = if message.to_s.match?(/not found/i)
+                  "not_found"
+                elsif success == false
+                  "transient"
+                else
+                  "no_product"
+                end
+      return IngestResult.new(**meta, price: nil, status: status, error: message)
+    end
+
+    price = extract_price(product, offers: result_body["offers"])
 
     if price.nil? || price <= 0
       return IngestResult.new(**meta, price: nil, status: "no_price",
-                              error: "No valid price in result for #{item_id}")
+                              error: "Product returned but no usable price (#{item_id})")
     end
 
     upsert_material_price(
@@ -180,23 +230,43 @@ class BigboxCollectionService
     IngestResult.new(**meta, price: price, status: "loaded")
 
   rescue => e
-    Rails.logger.error("[BigboxCollection] ingest_one #{item_id} failed: #{e.message}")
-    IngestResult.new(**meta.to_h, price: nil, status: "error", error: e.message)
+    Rails.logger.error("[BigboxCollection] ingest_one #{item_id.inspect} failed: #{e.message}")
+    IngestResult.new(**(meta || {}).to_h, price: nil, status: "error", error: e.message)
   end
 
+  # Price precedence for BigBox Collections product results:
+  #   1. product.buybox_winner.price (flat number, e.g. 51.23)
+  #   2. product.buybox_winner.price.value (nested — older/alt shape)
+  #   3. product.buybox_winner.price.raw  ("$45.98")
+  #   4. offers.primary.price
+  #   5. product.price / price_string / price_raw / list_price
   def extract_price(product, offers: nil)
+    bb_price = product.dig("buybox_winner", "price")
+    if bb_price.is_a?(Numeric)
+      return bb_price.to_d if bb_price.to_d > 0
+    elsif bb_price.is_a?(Hash)
+      value = bb_price["value"]
+      return value.to_d if value.present? && value.to_d > 0
+
+      raw = bb_price["raw"]
+      if raw.present?
+        cleaned = raw.to_s.gsub(/[^\d.]/, "")
+        return cleaned.to_d if cleaned.present? && cleaned.to_d > 0
+      end
+    end
+
     if offers.is_a?(Hash)
       offer_price = offers.dig("primary", "price")
       return offer_price.to_d if offer_price.present? && offer_price.to_d > 0
     end
 
-    return product["price"].to_d if product["price"].present?
+    return product["price"].to_d if product["price"].present? && product["price"].to_d > 0
 
     raw = product["price_string"] || product["price_raw"] || product["list_price"]
     return nil if raw.blank?
 
     cleaned = raw.to_s.gsub(/[^\d.]/, "")
-    cleaned.present? ? cleaned.to_d : nil
+    cleaned.present? && cleaned.to_d > 0 ? cleaned.to_d : nil
   end
 
   def upsert_material_price(sku:, name:, category:, trade:, unit:, price:)
