@@ -94,6 +94,22 @@ QUERY_OVERRIDES = {
     'plumb_prv':                 'homedepot.com watts temperature pressure relief valve water heater 3/4 in',
     'plumb_p_trap':              'homedepot.com 1-1/2 in white plastic p-trap',
     'plumb_wax_ring':            'homedepot.com toilet wax ring with flange',
+    # HVAC
+    'hvac_flex_duct_6':          'homedepot.com master flow 6 in x 25 ft insulated flexible duct r-6',
+    'hvac_flex_duct_8':          'homedepot.com master flow 8 in x 25 ft insulated flexible duct r-6',
+    'hvac_rigid_duct_lf':        'homedepot.com master flow 6 in x 5 ft galvanized round sheet metal duct',
+    'hvac_duct_insulation':      'homedepot.com owens corning duct wrap insulation r-6 fiberglass roll',
+    'hvac_duct_mastic':          'homedepot.com hardcast rcd 6 1 gal water-based ductboard sealant brush grade',
+    'hvac_duct_tape':            'homedepot.com nashua 557 ul 181b-fx hvac foil tape 60 yd roll',
+    'hvac_duct_hangers':         'homedepot.com 1/2 in x 100 ft galvanized hanger strap roll duct support',
+    'hvac_line_set':             'homedepot.com mrcool 1/4 in x 3/8 in x 25 ft insulated copper line set mini split',
+    'hvac_condensate_pump':      'homedepot.com little giant vcma-15uls 115v automatic condensate removal pump',
+    'hvac_disconnect':           'homedepot.com square d 60 amp 240-volt non-fused ac disconnect',
+    'hvac_pad':                  'homedepot.com diversitech 32 in x 32 in x 3 in plastic equipment pad',
+    'hvac_thermostat_wire':      'homedepot.com southwire 18/5 thermostat wire 250 ft solid copper',
+    'hvac_bath_fan':             'homedepot.com broan-nutone 80 cfm ceiling bath exhaust fan',
+    'hvac_range_hood':           'homedepot.com broan-nutone 30 in convertible under cabinet range hood stainless',
+    'hvac_dryer_vent':           'homedepot.com everbilt 4 in dryer vent installation kit periscope hood clamps',
 }
 
 EXTRACT_SYSTEM = """You are a Home Depot pricing extractor.

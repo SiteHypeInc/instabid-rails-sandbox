@@ -1,0 +1,15 @@
+[
+  {
+    "pricing_key": "plumb_ball_valve_half",
+    "item_name": "Ball Valve 1/2\"",
+    "unit": "each",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (unit mismatch) | HD canonical /p/ for 1/2\" brass full-port ball valves is a 5-pack contractor bundle (e.g. Apollo/BrassCraft 5-pk, ~$40-$55). Per-unit estimator needs a per-each band. US 2024-26 single-unit retail: lead-free brass full-port 1/2\" sweat or threaded valves run ~$8 (basic threaded, big-box) to ~$18 (premium SharkBite push-to-connect or Apollo lead-free w/ MIPxFIP). Source: HD 5-pack /p/ + supply-house single-unit listings (Ferguson, SupplyHouse).",
+    "price_low": 8,
+    "price_high": 18,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:35:00Z"
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "pricing_key": "hvac_duct_mastic",
+    "item_name": "Duct Mastic/Sealant",
+    "unit": "gallon",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | HD canonical /p/ for water-based duct mastic on the public scrape returns small tubes (10.5 oz) not 1-gal pails. Hardcast RCD 6 1-gal and Foster 30-02 1-gal exist at supply houses + intermittently at HD pro desk. US 2024-26 typical pail: $20 (basic water-based) to $45 (premium fiber-reinforced). Source: HD pro-desk listings + Ferguson/Grainger.",
+    "price_low": 20,
+    "price_high": 45,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:45:00Z"
+  },
+  {
+    "pricing_key": "hvac_duct_hangers",
+    "item_name": "Duct Hangers/Supports",
+    "unit": "box",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match) | HD doesn't sell a canonical 'box of duct hangers' SKU. Common purchases: galvanized hanger strap rolls (1-1/2\" x 100 ft, ~$15-25), saddle hangers (10-25 pk, ~$12-30), or pre-bent J-hooks. Range covers a typical small-job purchase of strap or saddle assortment. Source: HD Master Flow + Everbilt strap/hanger listings.",
+    "price_low": 12,
+    "price_high": 35,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:45:00Z"
+  },
+  {
+    "pricing_key": "hvac_bath_fan",
+    "item_name": "Bath Exhaust Fan",
+    "unit": "each",
+    "type": "INSTALLED",
+    "notes": "Shifted from Road B (INSTALLED type — labor included) | HD only sells the unit (Broan-NuTone 80 CFM ~$60-90, premium quiet/light models ~$120-200). Install labor (electrical hookup, duct routing through ceiling/wall, exterior cap) typically $150-450 depending on attic vs cathedral, new vs replace. Bundle: $210-650 installed. Source: HD product line + RSMeans/Homewyse bath-fan install labor bands.",
+    "price_low": 210,
+    "price_high": 650,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:45:00Z"
+  },
+  {
+    "pricing_key": "hvac_range_hood",
+    "item_name": "Range Hood",
+    "unit": "each",
+    "type": "INSTALLED",
+    "notes": "Shifted from Road B (INSTALLED type — labor included) | HD sells the unit only (Broan-NuTone 30\" under-cabinet ~$130-280, wall-mount/island chimney hoods ~$300-800+). Install labor (mount, vent routing to exterior, electrical) typically $200-500 for under-cabinet replacement; $400-900 for new wall/island runs. Bundle: $330-1100 installed for typical kitchen. Source: HD product line + RSMeans range-hood install bands.",
+    "price_low": 330,
+    "price_high": 1100,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T02:45:00Z"
+  }
+]
