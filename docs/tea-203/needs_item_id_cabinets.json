@@ -1,0 +1,660 @@
+[
+  {
+    "pricing_key": "cab_base_30_stock",
+    "item_name": "Stock Base Cabinet 30\"",
+    "unit": "each",
+    "type": "INSTALLED",
+    "syncable": "YES",
+    "notes": "HD sells stock",
+    "search_term": "hampton bay base cabinet 30 inch",
+    "tried_terms": [
+      "hampton bay base cabinet 30 inch",
+      "base kitchen cabinet 30"
+    ],
+    "item_id": "302970345",
+    "match_title": "Hampton Bay Recessed Panel 24 in. W x 24 in. D x 34.5 in. H Assembled 3 Drawer Base Kitchen Cabinet in Unfinished",
+    "match_price": 189.0,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Recessed-Panel-24-in-W-x-24-in-D-x-34-5-in-H-Assembled-3-Drawer-Base-Kitchen-Cabinet-in-Unfinished-KDB24-UF/302970345",
+    "results_total": 24,
+    "confidence": "high",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_wall_30_stock",
+    "item_name": "Stock Wall Cabinet 30\"",
+    "unit": "each",
+    "type": "INSTALLED",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "hampton bay wall cabinet 30 inch",
+    "tried_terms": [
+      "hampton bay wall cabinet 30 inch",
+      "wall kitchen cabinet 30"
+    ],
+    "item_id": "302970345",
+    "match_title": "Hampton Bay Recessed Panel 24 in. W x 24 in. D x 34.5 in. H Assembled 3 Drawer Base Kitchen Cabinet in Unfinished",
+    "match_price": 189.0,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Recessed-Panel-24-in-W-x-24-in-D-x-34-5-in-H-Assembled-3-Drawer-Base-Kitchen-Cabinet-in-Unfinished-KDB24-UF/302970345",
+    "results_total": 24,
+    "confidence": "low",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_tall_stock",
+    "item_name": "Stock Tall/Pantry 84\"",
+    "unit": "each",
+    "type": "INSTALLED",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "hampton bay pantry cabinet",
+    "tried_terms": [
+      "hampton bay pantry cabinet",
+      "tall kitchen cabinet 84"
+    ],
+    "item_id": "302970345",
+    "match_title": "Hampton Bay Recessed Panel 24 in. W x 24 in. D x 34.5 in. H Assembled 3 Drawer Base Kitchen Cabinet in Unfinished",
+    "match_price": 189.0,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Recessed-Panel-24-in-W-x-24-in-D-x-34-5-in-H-Assembled-3-Drawer-Base-Kitchen-Cabinet-in-Unfinished-KDB24-UF/302970345",
+    "results_total": 24,
+    "confidence": "low",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_base_30_semi",
+    "item_name": "Semi-Custom Base 30\"",
+    "unit": "each",
+    "type": "INSTALLED",
+    "syncable": "PARTIAL",
+    "notes": "KraftMaid at HD",
+    "search_term": "kraftmaid base cabinet 30",
+    "tried_terms": [
+      "kraftmaid base cabinet 30",
+      "semi custom base cabinet"
+    ],
+    "item_id": "330823317",
+    "match_title": "Hampton Bay 30 in. W x 24 in. D x 34.5 in. H Ready to Assemble Drawer Base Kitchen Cabinet in Unfinished with CLICKREADY Technology",
+    "match_price": 208.0,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-30-in-W-x-24-in-D-x-34-5-in-H-Ready-to-Assemble-Drawer-Base-Kitchen-Cabinet-in-Unfinished-with-CLICKREADY-Technology-DB30/330823317",
+    "results_total": 24,
+    "confidence": "low",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_wall_30_semi",
+    "item_name": "Semi-Custom Wall 30\"",
+    "unit": "each",
+    "type": "INSTALLED",
+    "syncable": "PARTIAL",
+    "notes": "",
+    "search_term": "kraftmaid wall cabinet 30",
+    "tried_terms": [
+      "kraftmaid wall cabinet 30",
+      "semi custom wall cabinet"
+    ],
+    "item_id": "302970345",
+    "match_title": "Hampton Bay Recessed Panel 24 in. W x 24 in. D x 34.5 in. H Assembled 3 Drawer Base Kitchen Cabinet in Unfinished",
+    "match_price": 189.0,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Recessed-Panel-24-in-W-x-24-in-D-x-34-5-in-H-Assembled-3-Drawer-Base-Kitchen-Cabinet-in-Unfinished-KDB24-UF/302970345",
+    "results_total": 16,
+    "confidence": "low",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_base_custom_lf",
+    "item_name": "Custom Base (per LF)",
+    "unit": "lf",
+    "type": "INSTALLED",
+    "syncable": "NO",
+    "notes": "Specialty \u2014 web search range",
+    "search_term": "custom base cabinet",
+    "tried_terms": [
+      "custom base cabinet",
+      "custom kitchen cabinet"
+    ],
+    "item_id": "315488256",
+    "match_title": "Hampton Bay Custom Unfinished Cabinet Door",
+    "match_price": 8.8,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Custom-Unfinished-Cabinet-Door/315488256",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_wall_custom_lf",
+    "item_name": "Custom Wall (per LF)",
+    "unit": "lf",
+    "type": "INSTALLED",
+    "syncable": "NO",
+    "notes": "Specialty \u2014 web search range",
+    "search_term": "custom wall cabinet",
+    "tried_terms": [
+      "custom wall cabinet",
+      "custom kitchen cabinet"
+    ],
+    "item_id": "315488256",
+    "match_title": "Hampton Bay Custom Unfinished Cabinet Door",
+    "match_price": 8.8,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Custom-Unfinished-Cabinet-Door/315488256",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_hardware_pull",
+    "item_name": "Cabinet Hardware (pulls)",
+    "unit": "each",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "cabinet pull handle",
+    "tried_terms": [
+      "cabinet pull handle",
+      "cabinet hardware pull"
+    ],
+    "item_id": "310240906",
+    "match_title": "Liberty Mandara 5-1/16 in. (128 mm) Classic Matte Black Cabinet Drawer Bar Pull",
+    "match_price": 6.78,
+    "match_url": "https://www.homedepot.com/p/Liberty-Mandara-5-1-16-in-128-mm-Classic-Matte-Black-Cabinet-Drawer-Bar-Pull-P36131C-FB-CP/310240906",
+    "results_total": 24,
+    "confidence": "medium",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_hardware_knob",
+    "item_name": "Cabinet Hardware (knobs)",
+    "unit": "each",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "cabinet hardware knob",
+    "tried_terms": [
+      "cabinet hardware knob",
+      "cabinet knob satin nickel"
+    ],
+    "item_id": "202824439",
+    "match_title": "Liberty 10-Pack Garrett 1-1/4 in. (32 mm) Classic Satin Nickel Round Cabinet Knobs",
+    "match_price": 23.93,
+    "match_url": "https://www.homedepot.com/p/Liberty-10-Pack-Garrett-1-1-4-in-32-mm-Classic-Satin-Nickel-Round-Cabinet-Knobs-P50154L-STN-U1/202824439",
+    "results_total": 24,
+    "confidence": "high",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_hinge_soft_close",
+    "item_name": "Soft-Close Hinges",
+    "unit": "each",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "soft close cabinet hinge",
+    "tried_terms": [
+      "soft close cabinet hinge",
+      "cabinet hinge"
+    ],
+    "item_id": "302854891",
+    "match_title": "Everbilt 5 Pair Face Frames 35 mm 105-Degree 1/2 in. Overlay Soft Close Nickel Cabinet Hinge (10 Pieces)",
+    "match_price": 56.57,
+    "match_url": "https://www.homedepot.com/p/Everbilt-5-Pair-Face-Frames-35-mm-105-Degree-1-2-in-Overlay-Soft-Close-Nickel-Cabinet-Hinge-10-Pieces-H1530SE-NP-U1/302854891",
+    "results_total": 24,
+    "confidence": "low",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_drawer_slide",
+    "item_name": "Soft-Close Drawer Slides",
+    "unit": "pair",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "soft close drawer slides",
+    "tried_terms": [
+      "soft close drawer slides",
+      "drawer slide"
+    ],
+    "item_id": "302867630",
+    "match_title": "Everbilt 22 in. Soft-Close Full Extension Side Mount Ball Bearing Drawer Slide Set 1-Pair (2 Pieces)",
+    "match_price": 25.97,
+    "match_url": "https://www.homedepot.com/p/Everbilt-22-in-Soft-Close-Full-Extension-Side-Mount-Ball-Bearing-Drawer-Slide-Set-1-Pair-2-Pieces-D94222E-ZP-W/302867630",
+    "results_total": 24,
+    "confidence": "high",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_lazy_susan",
+    "item_name": "Lazy Susan",
+    "unit": "each",
+    "type": "INSTALLED",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "lazy susan cabinet",
+    "tried_terms": [
+      "lazy susan cabinet",
+      "lazy susan"
+    ],
+    "item_id": "302970345",
+    "match_title": "Hampton Bay Recessed Panel 24 in. W x 24 in. D x 34.5 in. H Assembled 3 Drawer Base Kitchen Cabinet in Unfinished",
+    "match_price": 189.0,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Recessed-Panel-24-in-W-x-24-in-D-x-34-5-in-H-Assembled-3-Drawer-Base-Kitchen-Cabinet-in-Unfinished-KDB24-UF/302970345",
+    "results_total": 24,
+    "confidence": "low",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_pullout_shelf",
+    "item_name": "Pull-Out Shelf",
+    "unit": "each",
+    "type": "INSTALLED",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "cabinet pull out shelf",
+    "tried_terms": [
+      "cabinet pull out shelf",
+      "pull out shelf"
+    ],
+    "item_id": "336815436",
+    "match_title": "Slide-A-Shelf Made-to-Fit Customizable Slide-Out Shelf",
+    "match_price": 95.85,
+    "match_url": "https://www.homedepot.com/p/Slide-A-Shelf-Made-to-Fit-Customizable-Slide-Out-Shelf/336815436",
+    "results_total": 24,
+    "confidence": "high",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_crown_lf",
+    "item_name": "Cabinet Crown Molding",
+    "unit": "lf",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "cabinet crown molding",
+    "tried_terms": [
+      "cabinet crown molding",
+      "crown molding"
+    ],
+    "item_id": "100533083",
+    "match_title": "Hampton Bay Hampton/Shaker 3 in. W x 30 in. H x 0.75 in. D Kitchen Cabinet Wall and Base Filler in Satin White",
+    "match_price": 37.98,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Hampton-Shaker-3-in-W-x-30-in-H-x-0-75-in-D-Kitchen-Cabinet-Wall-and-Base-Filler-in-Satin-White-KAFS330-SW/100533083",
+    "results_total": 24,
+    "confidence": "medium",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_filler",
+    "item_name": "Filler Strip",
+    "unit": "each",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "cabinet filler strip",
+    "tried_terms": [
+      "cabinet filler strip",
+      "hampton bay filler"
+    ],
+    "item_id": "100533083",
+    "match_title": "Hampton Bay Hampton/Shaker 3 in. W x 30 in. H x 0.75 in. D Kitchen Cabinet Wall and Base Filler in Satin White",
+    "match_price": 37.98,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Hampton-Shaker-3-in-W-x-30-in-H-x-0-75-in-D-Kitchen-Cabinet-Wall-and-Base-Filler-in-Satin-White-KAFS330-SW/100533083",
+    "results_total": 24,
+    "confidence": "high",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_end_panel",
+    "item_name": "End Panel",
+    "unit": "each",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "cabinet end panel",
+    "tried_terms": [
+      "cabinet end panel",
+      "cabinet finish panel"
+    ],
+    "item_id": "301348021",
+    "match_title": "Hampton Bay Hampton/Shaker 24 in. W x 84 in. H x 1.5 in. D Kitchen Cabinet Refrigerator End Panel Kit in Satin White",
+    "match_price": 136.0,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Hampton-Shaker-24-in-W-x-84-in-H-x-1-5-in-D-Kitchen-Cabinet-Refrigerator-End-Panel-Kit-in-Satin-White-KAREP-SW/301348021",
+    "results_total": 24,
+    "confidence": "high",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_reface_lf",
+    "item_name": "Cabinet Refacing (per LF)",
+    "unit": "lf",
+    "type": "INSTALLED",
+    "syncable": "NO",
+    "notes": "Specialty",
+    "search_term": "cabinet refacing kit",
+    "tried_terms": [
+      "cabinet refacing kit",
+      "cabinet reface"
+    ],
+    "item_id": "315488256",
+    "match_title": "Hampton Bay Custom Unfinished Cabinet Door",
+    "match_price": 8.8,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Custom-Unfinished-Cabinet-Door/315488256",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "cab_paint_door",
+    "item_name": "Cabinet Painting (per door)",
+    "unit": "each",
+    "type": "INSTALLED",
+    "syncable": "NO",
+    "notes": "Overlaps painting trade",
+    "search_term": "cabinet door paint kit",
+    "tried_terms": [
+      "cabinet door paint kit",
+      "cabinet paint kit"
+    ],
+    "item_id": "315488256",
+    "match_title": "Hampton Bay Custom Unfinished Cabinet Door",
+    "match_price": 8.8,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-Custom-Unfinished-Cabinet-Door/315488256",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_laminate_sqft",
+    "item_name": "Laminate Countertop",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "HD stocks",
+    "search_term": "formica laminate countertop",
+    "tried_terms": [
+      "formica laminate countertop",
+      "formica sheet"
+    ],
+    "item_id": "327607667",
+    "match_title": "Hampton Bay 10 ft. Straight Laminate Countertop in Textured Calcutta Marble with Eased Edge and Integrated Backsplash",
+    "match_price": 239.0,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-10-ft-Straight-Laminate-Countertop-in-Textured-Calcutta-Marble-with-Eased-Edge-and-Integrated-Backsplash-TOP157199/327607667",
+    "results_total": 24,
+    "confidence": "high",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_butcher_sqft",
+    "item_name": "Butcher Block",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "HD stocks",
+    "search_term": "butcher block",
+    "tried_terms": [
+      "butcher block",
+      "hampton bay butcher block"
+    ],
+    "item_id": "319764506",
+    "match_title": "Hampton Bay 10 ft. L x 25 in. D Unfinished Hevea Butcher Block Countertop with Standard Edge",
+    "match_price": 296.65,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-10-ft-L-x-25-in-D-Unfinished-Hevea-Butcher-Block-Countertop-with-Standard-Edge-THD-HBU-0005/319764506",
+    "results_total": 24,
+    "confidence": "high",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_solid_surface_sqft",
+    "item_name": "Solid Surface (Corian)",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "PARTIAL",
+    "notes": "HD special order",
+    "search_term": "corian solid surface",
+    "tried_terms": [
+      "corian solid surface",
+      "solid surface countertop"
+    ],
+    "item_id": "311742117",
+    "match_title": "Husky 52 in. W x 24 in. D 2-Drawer Adjustable Height White Workbench Table with Solid Wood Top",
+    "match_price": 378.0,
+    "match_url": "https://www.homedepot.com/p/Husky-52-in-W-x-24-in-D-2-Drawer-Adjustable-Height-White-Workbench-Table-with-Solid-Wood-Top-HOLT5202BJ2/311742117",
+    "results_total": 24,
+    "confidence": "low",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_quartz_sqft",
+    "item_name": "Quartz",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "PARTIAL",
+    "notes": "Specialty \u2014 web search",
+    "search_term": "msi quartz",
+    "tried_terms": [
+      "msi quartz",
+      "quartz slab"
+    ],
+    "item_id": "310171063",
+    "match_title": "Custom Natural Stone Countertop",
+    "match_price": 56.0,
+    "match_url": "https://www.homedepot.com/p/Custom-Natural-Stone-Countertop/310171063",
+    "results_total": 24,
+    "confidence": "low",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_granite_sqft",
+    "item_name": "Granite",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "NO",
+    "notes": "Stone yards \u2014 web search range",
+    "search_term": "granite slab",
+    "tried_terms": [
+      "granite slab",
+      "granite countertop"
+    ],
+    "item_id": "310171063",
+    "match_title": "Custom Natural Stone Countertop",
+    "match_price": 56.0,
+    "match_url": "https://www.homedepot.com/p/Custom-Natural-Stone-Countertop/310171063",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_marble_sqft",
+    "item_name": "Marble",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "NO",
+    "notes": "Stone yards \u2014 web search range",
+    "search_term": "marble slab",
+    "tried_terms": [
+      "marble slab",
+      "marble countertop"
+    ],
+    "item_id": "310171063",
+    "match_title": "Custom Natural Stone Countertop",
+    "match_price": 56.0,
+    "match_url": "https://www.homedepot.com/p/Custom-Natural-Stone-Countertop/310171063",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_concrete_sqft",
+    "item_name": "Concrete Countertop",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "NO",
+    "notes": "Custom \u2014 web search range",
+    "search_term": "concrete countertop mix",
+    "tried_terms": [
+      "concrete countertop mix",
+      "concrete mix"
+    ],
+    "item_id": "100318511",
+    "match_title": "Quikrete 80 lb. Concrete Mix",
+    "match_price": 6.47,
+    "match_url": "https://www.homedepot.com/p/Quikrete-80-lb-Concrete-Mix-110180/100318511",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_install_sqft",
+    "item_name": "Counter Install Labor",
+    "unit": "sqft",
+    "type": "LABOR_PER_UNIT",
+    "syncable": "NO",
+    "notes": "",
+    "search_term": "countertop installation",
+    "tried_terms": [
+      "countertop installation"
+    ],
+    "item_id": null,
+    "match_title": null,
+    "match_price": null,
+    "match_url": null,
+    "results_total": 0,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_edge_basic_lf",
+    "item_name": "Edge Profile (basic)",
+    "unit": "lf",
+    "type": "INSTALLED",
+    "syncable": "NO",
+    "notes": "Ogee, beveled",
+    "search_term": "countertop edge",
+    "tried_terms": [
+      "countertop edge",
+      "edge profile countertop"
+    ],
+    "item_id": "319764506",
+    "match_title": "Hampton Bay 10 ft. L x 25 in. D Unfinished Hevea Butcher Block Countertop with Standard Edge",
+    "match_price": 296.65,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-10-ft-L-x-25-in-D-Unfinished-Hevea-Butcher-Block-Countertop-with-Standard-Edge-THD-HBU-0005/319764506",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_edge_premium_lf",
+    "item_name": "Edge Profile (premium)",
+    "unit": "lf",
+    "type": "INSTALLED",
+    "syncable": "NO",
+    "notes": "Waterfall, mitered",
+    "search_term": "premium countertop edge",
+    "tried_terms": [
+      "premium countertop edge",
+      "countertop edge"
+    ],
+    "item_id": "319764506",
+    "match_title": "Hampton Bay 10 ft. L x 25 in. D Unfinished Hevea Butcher Block Countertop with Standard Edge",
+    "match_price": 296.65,
+    "match_url": "https://www.homedepot.com/p/Hampton-Bay-10-ft-L-x-25-in-D-Unfinished-Hevea-Butcher-Block-Countertop-with-Standard-Edge-THD-HBU-0005/319764506",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "backsplash_subway_sqft",
+    "item_name": "Backsplash Subway Tile",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "subway tile backsplash",
+    "tried_terms": [
+      "subway tile backsplash",
+      "subway tile"
+    ],
+    "item_id": "313528975",
+    "match_title": "Ivy Hill Tile Kingston White 3 in. x 8 in. Glazed Ceramic Wall Tile (5.38 sq. ft./case)",
+    "match_price": 53.74,
+    "match_url": "https://www.homedepot.com/p/Ivy-Hill-Tile-Kingston-White-3-in-x-8-in-Glazed-Ceramic-Wall-Tile-5-38-sq-ft-case-EXT3RD105189/313528975",
+    "results_total": 24,
+    "confidence": "medium",
+    "error": null
+  },
+  {
+    "pricing_key": "backsplash_mosaic_sqft",
+    "item_name": "Backsplash Mosaic Tile",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "syncable": "YES",
+    "notes": "",
+    "search_term": "mosaic tile backsplash",
+    "tried_terms": [
+      "mosaic tile backsplash",
+      "mosaic tile"
+    ],
+    "item_id": "205138045",
+    "match_title": "Home Decorators Collection Carrara White Marble Look Polished Porcelain Tile, 12 in. x 24 in. Floor and Wall (16 sq. ft. /Case)",
+    "match_price": 31.84,
+    "match_url": "https://www.homedepot.com/p/Home-Decorators-Collection-Carrara-White-Marble-Look-Polished-Porcelain-Tile-12-in-x-24-in-Floor-and-Wall-16-sq-ft-Case-NHDCARR1224P/205138045",
+    "results_total": 24,
+    "confidence": "medium",
+    "error": null
+  },
+  {
+    "pricing_key": "backsplash_install_sqft",
+    "item_name": "Backsplash Install Labor",
+    "unit": "sqft",
+    "type": "LABOR_PER_UNIT",
+    "syncable": "NO",
+    "notes": "",
+    "search_term": "backsplash installation",
+    "tried_terms": [
+      "backsplash installation"
+    ],
+    "item_id": null,
+    "match_title": null,
+    "match_price": null,
+    "match_url": null,
+    "results_total": 0,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_sink_cutout",
+    "item_name": "Sink Cutout",
+    "unit": "each",
+    "type": "LUMP_SUM",
+    "syncable": "NO",
+    "notes": "Template + cut",
+    "search_term": "undermount sink",
+    "tried_terms": [
+      "undermount sink",
+      "sink cutout"
+    ],
+    "item_id": "312598293",
+    "match_title": "AKDY Handmade All-in-One Top mount Stainless Steel 33 in. x 22 in. Single Bowl Kitchen Sink w/ Spring Neck Faucet, Accessory",
+    "match_price": 299.99,
+    "match_url": "https://www.homedepot.com/p/AKDY-Handmade-All-in-One-Top-mount-Stainless-Steel-33-in-x-22-in-Single-Bowl-Kitchen-Sink-w-Spring-Neck-Faucet-Accessory-KS0365/312598293",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  },
+  {
+    "pricing_key": "counter_cooktop_cutout",
+    "item_name": "Cooktop Cutout",
+    "unit": "each",
+    "type": "LUMP_SUM",
+    "syncable": "NO",
+    "notes": "",
+    "search_term": "cooktop installation",
+    "tried_terms": [
+      "cooktop installation",
+      "cooktop"
+    ],
+    "item_id": "342453110",
+    "match_title": "Samsung 25 cu. ft. Bespoke AI Standard Depth 3-Door French Door Refrigerator with 5-Burner Range and AutoRelease Dishwasher",
+    "match_price": 2876.0,
+    "match_url": "https://www.homedepot.com/p/sets/Samsung-25-cu-ft-Bespoke-AI-Standard-Depth-3-Door-French-Door-Refrigerator-with-5-Burner-Range-and-AutoRelease-Dishwasher/342453110",
+    "results_total": 24,
+    "confidence": "specialty",
+    "error": null
+  }
+]
