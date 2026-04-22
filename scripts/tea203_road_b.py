@@ -161,8 +161,8 @@ QUERY_OVERRIDES = {
     'paint_elastomeric_mat':     'homedepot.com behr premium 1 gal white elastomeric masonry stucco brick paint',
     'paint_shellac_primer':      'homedepot.com zinsser bin 1 gal white shellac-based interior primer sealer stain blocker',
     # Roofing
-    'mat_synthetic_slate':       'homedepot.com davinci bellaforte slate composite roofing shingle',
-    'roof_sealant':              'homedepot.com henry 1 gal 209xr extra-thick elastomeric roof patching cement',
+    'mat_synthetic_slate':       'homedepot.com tapco inspire classic slate polymer composite shingle',
+    'roof_sealant':              'homedepot.com henry 107 dura-brite 4.75 gal white acrylic elastomeric roof coating',
     'pipe_boot':                 'homedepot.com oatey 4 in thermoplastic no-calk roof flashing pipe boot',
     'step_flashing_lf':          'homedepot.com amerimax 5 in x 7 in x 10 in aluminum step flashing',
     'gutter_lf':                 'homedepot.com amerimax 10 ft k style white aluminum gutter',

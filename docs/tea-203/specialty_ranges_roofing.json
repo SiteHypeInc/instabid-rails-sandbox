@@ -1,0 +1,28 @@
+[
+  {
+    "pricing_key": "mat_slate",
+    "item_name": "Slate Roofing",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "notes": "Not Road B candidate (gap list flagged 'Specialty — may need web search') | Natural slate roofing is sourced through slate distributors (Vermont Structural Slate, Buckingham, Greenstone, North Country). HD does not stock natural slate roofing. US 2024-26 per-sqft material only: $8 (basic S1 unfading grey, 1/4\" thick) to $20 (premium colored Vermont/Virginia, graduated thickness). Excludes underlayment, copper flashings, and labor. Source: NSQI slate distributor catalogs + RSMeans.",
+    "price_low": 8,
+    "price_high": 20,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:40:00Z"
+  },
+  {
+    "pricing_key": "mat_synthetic_slate",
+    "item_name": "Synthetic Slate",
+    "unit": "sqft",
+    "type": "MATERIAL",
+    "notes": "Shifted from Road B (no_match — HD does not stock DaVinci/CeDUR/Brava/Tapco canonically; limited to special-order through pro desk) | Synthetic slate brands and US 2024-26 per-sqft material: DaVinci Bellaforte $4.50, Brava Old World $5.00, Tapco Inspire Classic $4.00, CeDUR Walden $5.50. Range $3.50/sqft (basic polymer single-width) to $7.00/sqft (premium graduated, class 4 impact, lifetime warranty). Source: manufacturer 2026 price sheets.",
+    "price_low": 3.50,
+    "price_high": 7.00,
+    "source": "research_suggested",
+    "confidence": "medium",
+    "filled_by": "todd",
+    "filled_at": "2026-04-22T03:40:00Z"
+  }
+]
