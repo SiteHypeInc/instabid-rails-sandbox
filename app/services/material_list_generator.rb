@@ -23,6 +23,7 @@ class MaterialListGenerator
     when "drywall"  then build_drywall
     when "flooring" then build_flooring
     when "painting" then build_painting
+    when "siding"   then build_siding
     else
       raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
     end
@@ -1165,6 +1166,196 @@ class MaterialListGenerator
       total_material_cost: (total_material_cost * 100).round / 100.0,
       labor_hours:         0,
       labor_cost:          (total_labor_cost * 100).round / 100.0,
+      material_list:       material_list
+    }
+  end
+
+  # -- Siding --------------------------------------------------------------
+
+  SIDING_WASTE = 1.12
+
+  SIDING_LABEL = {
+    "vinyl"        => "Vinyl",
+    "fiber_cement" => "Fiber Cement",
+    "wood"         => "Wood",
+    "metal"        => "Metal",
+    "stucco"       => "Stucco"
+  }.freeze
+
+  def build_siding
+    sqft       = (@criteria[:squareFeet] || @criteria[:square_feet] || 0).to_f
+    raw_type   = (@criteria[:sidingType]  || @criteria[:siding_type] || "vinyl").to_s.downcase
+    stories    = (@criteria[:stories] || 1).to_i
+    removal_in = @criteria[:removal]
+    needs_rem  = (@criteria[:needsRemoval] || @criteria[:needs_removal]).to_s.downcase
+    windows    = (@criteria[:windowCount]  || @criteria[:window_count] || 0).to_i
+    doors      = (@criteria[:doorCount]    || @criteria[:door_count]   || 0).to_i
+    trim_in    = @criteria[:trimLinearFeet] || @criteria[:trim_linear_feet]
+
+    siding_type = case raw_type
+                  when "wood_cedar"     then "wood"
+                  when "metal_aluminum" then "metal"
+                  else                       raw_type
+                  end
+
+    removal = truthy?(removal_in) || needs_rem == "yes"
+
+    material_costs = {
+      "vinyl"        => price("siding_vinyl",        5.50),
+      "fiber_cement" => price("siding_fiber_cement", 9.50),
+      "wood"         => price("siding_wood",        14.00),
+      "metal"        => price("siding_metal",        8.00),
+      "stucco"       => price("siding_stucco",      11.00)
+    }
+
+    labor_rates = {
+      "vinyl"        => price("siding_labor_vinyl",  3.50),
+      "fiber_cement" => price("siding_labor_fiber",  5.50),
+      "wood"         => price("siding_labor_wood",   6.50),
+      "metal"        => price("siding_labor_metal",  4.50),
+      "stucco"       => price("siding_labor_stucco", 7.50)
+    }
+
+    adjusted_sqft = sqft * SIDING_WASTE
+    trim          = trim_in.nil? ? Math.sqrt(sqft) * 4 : trim_in.to_f
+
+    cost_per_sqft = material_costs[siding_type] || price("siding_vinyl", 5.50)
+
+    material_list = []
+
+    label = SIDING_LABEL[siding_type] ||
+            siding_type.split("_").map(&:capitalize).join(" ")
+    material_list << {
+      item:       "#{label} Siding",
+      quantity:   adjusted_sqft.ceil,
+      unit:       "sqft",
+      unit_cost:  cost_per_sqft,
+      total_cost: adjusted_sqft * cost_per_sqft,
+      category:   "siding_material"
+    }
+
+    house_wrap_cost  = price("siding_housewrap_roll", 175.00)
+    house_wrap_rolls = (sqft / 1000.0).ceil
+    material_list << {
+      item:       "House Wrap",
+      quantity:   house_wrap_rolls,
+      unit:       "rolls",
+      unit_cost:  house_wrap_cost,
+      total_cost: house_wrap_rolls * house_wrap_cost,
+      category:   "house_wrap"
+    }
+
+    j_channel_cost   = price("siding_j_channel", 12.00)
+    j_channel_pieces = (trim / 12.0).ceil
+    material_list << {
+      item:       "J-Channel",
+      quantity:   j_channel_pieces,
+      unit:       "pieces (12ft)",
+      unit_cost:  j_channel_cost,
+      total_cost: j_channel_pieces * j_channel_cost,
+      category:   "trim"
+    }
+
+    corner_post_cost = price("siding_corner_post", 35.00)
+    corner_posts     = stories <= 1 ? 6 : stories * 6
+    material_list << {
+      item:       "Corner Posts",
+      quantity:   corner_posts,
+      unit:       "posts",
+      unit_cost:  corner_post_cost,
+      total_cost: corner_posts * corner_post_cost,
+      category:   "trim"
+    }
+
+    if windows > 0
+      w_cost = price("siding_window_trim", 55.00)
+      material_list << {
+        item:       "Window Trim & Wrapping",
+        quantity:   windows,
+        unit:       "windows",
+        unit_cost:  w_cost,
+        total_cost: windows * w_cost,
+        category:   "trim"
+      }
+    end
+
+    if doors > 0
+      d_cost = price("siding_door_trim", 75.00)
+      material_list << {
+        item:       "Door Trim & Wrapping",
+        quantity:   doors,
+        unit:       "doors",
+        unit_cost:  d_cost,
+        total_cost: doors * d_cost,
+        category:   "trim"
+      }
+    end
+
+    perimeter    = Math.sqrt(sqft) * 4
+    soffit_sqft  = perimeter * 1.5
+    soffit_cost  = price("siding_soffit_sqft", 8.00)
+    material_list << {
+      item:       "Soffit",
+      quantity:   soffit_sqft.ceil,
+      unit:       "sqft",
+      unit_cost:  soffit_cost,
+      total_cost: soffit_sqft * soffit_cost,
+      category:   "soffit"
+    }
+
+    fascia_cost = price("siding_fascia_lf", 6.00)
+    material_list << {
+      item:       "Fascia",
+      quantity:   perimeter.ceil,
+      unit:       "linear ft",
+      unit_cost:  fascia_cost,
+      total_cost: perimeter * fascia_cost,
+      category:   "fascia"
+    }
+
+    kit_cost = price("siding_fastener_kit", 175.00)
+    material_list << {
+      item:       "Fasteners, Flashing & Caulk",
+      quantity:   1,
+      unit:       "kit",
+      unit_cost:  kit_cost,
+      total_cost: kit_cost,
+      category:   "fasteners"
+    }
+
+    if removal
+      rem_cost = price("siding_removal_sqft", 1.75)
+      material_list << {
+        item:       "Old Siding Removal & Disposal",
+        quantity:   sqft,
+        unit:       "sqft",
+        unit_cost:  rem_cost,
+        total_cost: sqft * rem_cost,
+        category:   "removal"
+      }
+    end
+
+    # Labor
+    labor_rate       = labor_rates[siding_type] || price("siding_labor_vinyl", 3.50)
+    labor_hourly_rate = price("siding_labor_rate", 45.00)
+    labor_hours      = (sqft * labor_rate) / labor_hourly_rate
+
+    story2_mult = price("siding_story_2", 1.25)
+    story3_mult = price("siding_story_3", 1.50)
+    if stories >= 3
+      labor_hours *= story3_mult
+    elsif stories >= 2
+      labor_hours *= story2_mult
+    end
+    labor_hours += sqft * 0.02 if removal
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
+                                       .sum { |i| i[:total_cost] }
+
+    {
+      trade:               "siding",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 100).round / 100.0,
       material_list:       material_list
     }
   end
