@@ -98,12 +98,15 @@ class PricingDashboardPresenter
       end
     end
 
+    display_value = value || material_part
+
     {
       key:                key,
       label:              item[:label],
       unit:               item[:unit],
       value:              value,
-      has_value:          value.present? || material_part.present?,
+      display_value:      display_value,
+      has_value:          display_value.present?,
       description:        dp&.description || mapping&.dig(:description),
       last_synced_at:     dp&.last_synced_at,
       material_part:      material_part,

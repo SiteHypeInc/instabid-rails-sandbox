@@ -317,12 +317,13 @@
 
             <div class="item-value-row">
               <% if item[:has_value] %>
+                <% display_value = item[:display_value] %>
                 <% if section[:type] == "MULTIPLIER" %>
-                  <span class="item-value mono"><%= format('%.2f', item[:value]) %></span>
+                  <span class="item-value mono"><%= format('%.2f', display_value) %></span>
                   <span class="item-unit"><%= item[:unit] %></span>
                 <% else %>
                   <span class="item-currency">$</span>
-                  <span class="item-value mono"><%= number_with_delimiter(format((item[:value] % 1).zero? ? '%d' : '%.2f', item[:value])) %></span>
+                  <span class="item-value mono"><%= number_with_delimiter(format((display_value % 1).zero? ? '%d' : '%.2f', display_value)) %></span>
                   <span class="item-unit"><%= item[:unit] %></span>
                 <% end %>
               <% else %>
