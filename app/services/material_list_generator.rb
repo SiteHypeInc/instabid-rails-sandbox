@@ -21,6 +21,7 @@ class MaterialListGenerator
     when "roofing"  then build_roofing
     when "plumbing" then build_plumbing
     when "drywall"  then build_drywall
+    when "flooring" then build_flooring
     else
       raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
     end
@@ -806,5 +807,153 @@ class MaterialListGenerator
       labor_hours:         (labor_hours * 10).round / 10.0,
       material_list:       material_list
     }
+  end
+
+  # -- Flooring ------------------------------------------------------------
+
+  FLOORING_WASTE = 1.10
+
+  FLOORING_LABEL = {
+    "carpet"         => "Carpet",
+    "vinyl"          => "Vinyl",
+    "laminate"       => "Laminate",
+    "lvp"            => "Lvp",
+    "hardwood_eng"   => "Hardwood Eng",
+    "hardwood_solid" => "Hardwood Solid",
+    "tile_ceramic"   => "Tile Ceramic",
+    "tile_porcelain" => "Tile Porcelain"
+  }.freeze
+
+  def build_flooring
+    sqft            = (@criteria[:squareFeet]      || @criteria[:square_feet]      || 0).to_f
+    flooring_type   = (@criteria[:flooringType]    || @criteria[:flooring_type]    || "carpet").to_s.downcase
+    removal         = truthy?(@criteria[:removal])
+    subfloor_repair = truthy?(@criteria[:subfloorRepair] || @criteria[:subfloor_repair])
+    underlayment_on = @criteria.key?(:underlayment) ? truthy?(@criteria[:underlayment]) : true
+    baseboard_lf    = (@criteria[:baseboard] || 0).to_f
+    complexity      = (@criteria[:complexity] || "standard").to_s.downcase
+
+    material_costs = {
+      "carpet"         => price("floor_carpet",         5.00),
+      "vinyl"          => price("floor_vinyl",          3.50),
+      "laminate"       => price("floor_laminate",       4.00),
+      "lvp"            => price("floor_lvp",            4.50),
+      "hardwood_eng"   => price("floor_hardwood_eng",  10.00),
+      "hardwood_solid" => price("floor_hardwood_solid",14.00),
+      "tile_ceramic"   => price("floor_tile_ceramic",   7.50),
+      "tile_porcelain" => price("floor_tile_porcelain",10.00)
+    }
+
+    labor_rates = {
+      "carpet"         => price("floor_labor_carpet",   2.00),
+      "vinyl"          => price("floor_labor_vinyl",    2.50),
+      "laminate"       => price("floor_labor_vinyl",    2.50),
+      "lvp"            => price("floor_labor_vinyl",    2.50),
+      "hardwood_eng"   => price("floor_labor_hardwood", 5.00),
+      "hardwood_solid" => price("floor_labor_hardwood", 5.00),
+      "tile_ceramic"   => price("floor_labor_tile",     6.50),
+      "tile_porcelain" => price("floor_labor_tile",     6.50)
+    }
+
+    adjusted_sqft = sqft * FLOORING_WASTE
+    cost_per_sqft = material_costs[flooring_type] || price("floor_vinyl", 3.50)
+
+    material_list = []
+
+    label = FLOORING_LABEL[flooring_type] ||
+            flooring_type.split("_").map(&:capitalize).join(" ")
+    material_list << {
+      item:       "#{label} Flooring",
+      quantity:   adjusted_sqft.ceil,
+      unit:       "sqft",
+      unit_cost:  cost_per_sqft,
+      total_cost: adjusted_sqft * cost_per_sqft,
+      category:   "flooring_material"
+    }
+
+    if underlayment_on && flooring_type != "carpet"
+      u_cost = price("floor_underlay", 0.50)
+      material_list << {
+        item:       "Underlayment",
+        quantity:   sqft,
+        unit:       "sqft",
+        unit_cost:  u_cost,
+        total_cost: sqft * u_cost,
+        category:   "underlayment"
+      }
+    end
+
+    if removal
+      r_cost = price("floor_removal", 2.00)
+      material_list << {
+        item:       "Old Flooring Removal",
+        quantity:   sqft,
+        unit:       "sqft",
+        unit_cost:  r_cost,
+        total_cost: sqft * r_cost,
+        category:   "removal"
+      }
+    end
+
+    if subfloor_repair
+      s_cost     = price("floor_subfloor", 4.00)
+      repair_sqft = (sqft * 0.3).ceil
+      material_list << {
+        item:       "Subfloor Repair",
+        quantity:   repair_sqft,
+        unit:       "sqft",
+        unit_cost:  s_cost,
+        total_cost: repair_sqft * s_cost,
+        category:   "prep"
+      }
+    end
+
+    if baseboard_lf > 0
+      b_cost = price("floor_baseboard", 5.00)
+      material_list << {
+        item:       "Baseboard Trim",
+        quantity:   baseboard_lf,
+        unit:       "linear feet",
+        unit_cost:  b_cost,
+        total_cost: baseboard_lf * b_cost,
+        category:   "trim"
+      }
+    end
+
+    complexity_mult = {
+      "standard" => price("floor_standard", 1.0),
+      "moderate" => price("floor_moderate", 1.2),
+      "complex"  => price("floor_complex",  1.4)
+    }
+
+    labor_rate = labor_rates[flooring_type] || price("floor_labor_vinyl", 2.50)
+
+    # Legacy JS divides by a fixed 45, not @hourly_rate. Preserve verbatim.
+    labor_hours  = (sqft * labor_rate) / 45.0
+    labor_hours *= (complexity_mult[complexity] || 1.0)
+    labor_hours += sqft * 0.02 if removal
+    labor_hours += sqft * 0.01 if subfloor_repair
+    labor_hours += baseboard_lf / 20.0 if baseboard_lf > 0
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
+                                       .sum { |i| i[:total_cost] }
+
+    {
+      trade:               "flooring",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 100).round / 100.0,
+      material_list:       material_list
+    }
+  end
+
+  def truthy?(v)
+    return false if v.nil?
+    case v
+    when true         then true
+    when false        then false
+    when Numeric      then v != 0
+    when String       then %w[true yes 1 on].include?(v.downcase)
+    else                   !!v
+    end
   end
 end
