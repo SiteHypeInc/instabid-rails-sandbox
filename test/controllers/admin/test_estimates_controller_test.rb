@@ -332,5 +332,34 @@ module Admin
         refute_match(/Error:/, @response.body, "#{trade} surfaced an error")
       end
     end
+
+    # TEA-245 — reproduces the Commander submission: plumbing new_construction
+    # with fixture counts must itemize each fixture type, not fall back to a
+    # lone Service Call line.
+    test "POST plumbing new_construction itemizes fixture counts" do
+      post admin_test_estimate_path, params: {
+        mode: "single",
+        trade: "plumbing",
+        hourly_rate: "65",
+        criteria: {
+          "plumbing" => {
+            "serviceType"    => "new_construction",
+            "faucetCount"    => "4",
+            "toiletCount"    => "2",
+            "sinkCount"      => "3",
+            "tubShowerCount" => "2",
+            "bathrooms"      => "2",
+            "kitchens"       => "1"
+          }
+        }
+      }
+      assert_response :success
+      assert_match(/Toilet Installation/, @response.body)
+      assert_match(/Sink Installation/, @response.body)
+      assert_match(/Faucet Installation/, @response.body)
+      assert_match(/Tub\/Shower Installation/, @response.body)
+      assert_match(/PEX Supply Lines/, @response.body)
+      refute_match(/\bService Call\b/, @response.body)
+    end
   end
 end

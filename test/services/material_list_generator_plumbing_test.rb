@@ -168,6 +168,57 @@ class MaterialListGeneratorPlumbingTest < ActiveSupport::TestCase
     refute result.key?(:complexity_multiplier)
   end
 
+  # TEA-245: new_construction must itemize fixture counts the same way remodel
+  # does. Reproduces the Commander submission from the TEA-236 Round 2 smoke.
+  test "new_construction itemizes every fixture type with count > 0" do
+    result = MaterialListGenerator.call(
+      trade: "plumbing",
+      criteria: {
+        serviceType:    "new_construction",
+        faucetCount:    4,
+        toiletCount:    2,
+        sinkCount:      3,
+        tubShowerCount: 2,
+        bathrooms:      2,
+        kitchens:       1
+      }
+    )
+
+    items = result[:material_list].index_by { |i| i[:item] }
+    assert_equal 2, items.fetch("Toilet Installation")[:quantity]
+    assert_equal 3, items.fetch("Sink Installation")[:quantity]
+    assert_equal 4, items.fetch("Faucet Installation")[:quantity]
+    assert_equal 2, items.fetch("Tub/Shower Installation")[:quantity]
+
+    assert items.key?("PEX Supply Lines (rough-in)")
+    assert items.key?("DWV Drain Lines")
+
+    refute_equal 1, result[:material_list].count, "should not fall through to the general service-call branch"
+  end
+
+  test "new_construction mirrors remodel totals for identical inputs" do
+    criteria = {
+      faucetCount:    4,
+      toiletCount:    2,
+      sinkCount:      3,
+      tubShowerCount: 2,
+      bathrooms:      2,
+      kitchens:       1
+    }
+
+    remodel_result = MaterialListGenerator.call(
+      trade: "plumbing",
+      criteria: criteria.merge(serviceType: "remodel")
+    )
+    new_construction_result = MaterialListGenerator.call(
+      trade: "plumbing",
+      criteria: criteria.merge(serviceType: "new_construction")
+    )
+
+    assert_in_delta remodel_result[:total_material_cost], new_construction_result[:total_material_cost], 0.01
+    assert_equal remodel_result[:labor_hours], new_construction_result[:labor_hours]
+  end
+
   test "accepts snake_case criteria keys" do
     result = MaterialListGenerator.call(
       trade:    "plumbing",

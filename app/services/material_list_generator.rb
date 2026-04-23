@@ -583,10 +583,10 @@ class MaterialListGenerator
         labor_hours += 4
       end
 
-    when "remodel"
-      # "Full remodel" — emits rough-in pipe/DWV AND fixtures in one pass.
-      # Falls through to fixture branch after emitting rough-in by re-running
-      # with service_type re-bound; simpler to inline the fixture block here.
+    when "remodel", "new_construction"
+      # Full remodel / new construction — emits rough-in pipe/DWV AND fixtures
+      # in one pass. new_construction mirrors remodel so controller-submitted
+      # fixture counts itemize the same way (TEA-245).
       rough_units = bathrooms + kitchens + laundry_rooms
       if rough_units > 0
         pex_unit = price("pex_pipe_lf", 2.50)
