@@ -264,7 +264,10 @@
               </tr>
             </thead>
             <tbody>
-              <% r[:material_list].each do |line| %>
+              <%# Labor lines are surfaced in the "Labor Cost" / "Labor Hours" %>
+              <%# cards below so every trade renders consistently regardless of %>
+              <%# whether its generator emits Labor as line items or not. %>
+              <% r[:material_list].reject { |l| (l[:category] || l["category"]).to_s == "Labor" }.each do |line| %>
                 <tr>
                   <td><%= line[:item] || line["item"] %></td>
                   <td class="src"><%= line[:category] || line["category"] %></td>
