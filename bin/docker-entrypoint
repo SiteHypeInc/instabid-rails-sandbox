@@ -15,6 +15,8 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   # and shared-material (corner_bead/screws) default_pricings across drywall +
   # siding so Commander's 7-item smoke can exercise the pending/range render
   # and 2-trade dedup paths. Task uses find_or_initialize_by and is idempotent.
+  # NOTE: sandbox-only seed. Prune this line if `tea236:smoke_seeds` diverges
+  # from the current pricing schema and starts erroring noisily on boot.
   ./bin/rails tea236:smoke_seeds || echo "[tea236:smoke_seeds] failed, continuing boot"
 fi
 
