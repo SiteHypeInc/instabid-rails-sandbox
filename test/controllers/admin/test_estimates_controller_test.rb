@@ -270,6 +270,44 @@ module Admin
       assert_match(/Input errors/, @response.body)
     end
 
+    test "labor lines stay out of the materials <table> (rendered via Labor Cost card only)" do
+      # Painting emits many Labor category lines (interior/exterior/power-wash/
+      # trim/doors/windows). If a regression leaks them into the materials
+      # table, the trade looks inconsistent with roofing/flooring which roll
+      # labor into a single number. Guard by parsing the first <table>...
+      # </table> under the painting result and asserting no Labor rows.
+      post admin_test_estimate_path, params: {
+        mode: "single",
+        trade: "painting",
+        hourly_rate: "65",
+        criteria: {
+          "painting" => {
+            "squareFeet" => "2000", "paintType" => "interior", "coats" => "2",
+            "patching" => "moderate", "trim_lf" => "80", "doors" => "4", "windows" => "6"
+          }
+        }
+      }
+      assert_response :success
+
+      table_match = @response.body.match(%r{<table>.*?</table>}m)
+      assert table_match, "expected a materials <table> in the painting response"
+      table_html = table_match[0]
+      refute_match(/Painting Labor/, table_html,
+        "Labor line leaked into materials table — it belongs in the Labor Cost card only")
+      refute_match(/Wall Patching Labor/, table_html,
+        "Patching labor leaked into materials table — it belongs in the Labor Cost card only")
+    end
+
+    test "Price Sources summary strip renders when material lines have a :source stamp" do
+      post admin_test_estimate_path, params: {
+        mode: "single", trade: "drywall", hourly_rate: "65",
+        criteria: { "drywall" => { "squareFeet" => "2000", "projectType" => "new_construction" } }
+      }
+      assert_response :success
+      assert_match(/Price Sources:/, @response.body,
+        "expected per-trade 'Price Sources:' summary strip under the materials table")
+    end
+
     test "all 8 trades produce non-negative totals with minimal inputs" do
       trades_with_minimal = {
         "roofing"    => { "squareFeet" => "2000", "pitch" => "6/12", "material" => "architectural" },

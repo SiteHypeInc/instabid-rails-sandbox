@@ -149,17 +149,18 @@ module Admin
       labor_cost          = (result[:labor_cost] || result["labor_cost"] || (labor_hours * @hourly_rate)).to_f
 
       {
-        trade:               trade,
-        criteria:            criteria,
-        material_list:       material_list,
-        total_material_cost: total_material_cost,
-        labor_hours:         labor_hours,
-        labor_cost:          labor_cost,
-        trade_total:         total_material_cost + labor_cost,
-        error:               nil,
-        unported:            false,
-        package:             nil,
-        package_label:       nil
+        trade:                 trade,
+        criteria:              criteria,
+        material_list:         material_list,
+        total_material_cost:   total_material_cost,
+        labor_hours:           labor_hours,
+        labor_cost:            labor_cost,
+        trade_total:           total_material_cost + labor_cost,
+        price_source_summary:  tally_price_sources(material_list),
+        error:                 nil,
+        unported:              false,
+        package:               nil,
+        package_label:         nil
       }
     rescue MaterialListGenerator::UnsupportedTrade => e
       blank_result(trade, error: e.message)
@@ -172,18 +173,32 @@ module Admin
 
     def blank_result(trade, error: nil, unported: false, package: nil)
       {
-        trade:               trade,
-        criteria:            {},
-        material_list:       [],
-        total_material_cost: 0,
-        labor_hours:         0,
-        labor_cost:          0,
-        trade_total:         0,
-        error:               error,
-        unported:            unported,
-        package:             package,
-        package_label:       package ? REMODEL_PACKAGE_LABELS[package] : nil
+        trade:                 trade,
+        criteria:              {},
+        material_list:         [],
+        total_material_cost:   0,
+        labor_hours:           0,
+        labor_cost:            0,
+        trade_total:           0,
+        price_source_summary:  {},
+        error:                 error,
+        unported:              unported,
+        package:               package,
+        package_label:         package ? REMODEL_PACKAGE_LABELS[package] : nil
       }
+    end
+
+    # MaterialListGenerator stamps :source on every line via PricingResolver's
+    # dominant-source tracking. Tally it per-trade so the view can surface a
+    # "Price Sources: HD Live (12), Manual (3)" strip. Labor rows have no
+    # meaningful source, so drop them from the count.
+    def tally_price_sources(material_list)
+      material_list
+        .reject { |line| (line[:category] || line["category"]).to_s == "Labor" }
+        .group_by { |line| (line[:source] || line["source"] || "Manual").to_s }
+        .transform_values(&:size)
+        .sort_by { |_src, n| -n }
+        .to_h
     end
 
     def run_remodel(type, preset, remodel_input)
