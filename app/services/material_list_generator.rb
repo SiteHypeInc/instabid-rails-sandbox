@@ -22,6 +22,7 @@ class MaterialListGenerator
     when "plumbing" then build_plumbing
     when "drywall"  then build_drywall
     when "flooring" then build_flooring
+    when "painting" then build_painting
     else
       raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
     end
@@ -942,6 +943,228 @@ class MaterialListGenerator
       trade:               "flooring",
       total_material_cost: (total_material_cost * 100).round / 100.0,
       labor_hours:         (labor_hours * 100).round / 100.0,
+      material_list:       material_list
+    }
+  end
+
+  # -- Painting ------------------------------------------------------------
+
+  COAT_MULTIPLIER  = { 1 => 1.0, 2 => 1.5, 3 => 2.0 }.freeze
+  STORY_MULTIPLIER = { 1 => 1.0, 2 => 1.15, 3 => 1.35, 4 => 1.5 }.freeze
+  PAINT_CONDITION_MULTIPLIER = {
+    "excellent" => 0.9, "good" => 1.0, "smooth" => 1.0,
+    "fair" => 1.15,     "textured" => 1.1,
+    "poor" => 1.25,     "damaged" => 1.35, "needs_repair" => 1.4
+  }.freeze
+
+  def build_painting
+    sqft          = (@criteria[:squareFeet]      || @criteria[:square_feet]      || 0).to_f
+    paint_type    = (@criteria[:paintType]       || @criteria[:paint_type]       || "exterior").to_s.downcase
+    stories       = (@criteria[:stories] || 1).to_i
+    coats         = (@criteria[:coats]   || 2).to_i
+    include_ceil  = (@criteria[:includeCeilings] || @criteria[:include_ceilings] || "no").to_s.downcase
+    trim_lf       = (@criteria[:trimLinearFeet]  || @criteria[:trim_linear_feet] || 0).to_f
+    doors         = (@criteria[:doorCount]       || @criteria[:door_count]       || 0).to_i
+    windows       = (@criteria[:windowCount]     || @criteria[:window_count]     || 0).to_i
+    siding_cond   = (@criteria[:sidingCondition] || @criteria[:siding_condition] || "good").to_s.downcase
+    power_wash    = (@criteria[:powerWashing]    || @criteria[:power_washing]    || "no").to_s.downcase
+    wall_cond     = (@criteria[:wallCondition]   || @criteria[:wall_condition]   || "smooth").to_s.downcase
+    patching      = (@criteria[:patchingNeeded]  || @criteria[:patching_needed]  || "none").to_s.downcase
+    lead_paint    = (@criteria[:leadPaint]       || @criteria[:lead_paint]       || "no").to_s.downcase
+    color_change  = (@criteria[:colorChangeDramatic] || @criteria[:color_change_dramatic] || "no").to_s.downcase
+
+    ext_mat_rate    = price("paint_exterior_mat",         0.45)
+    ext_labor_rate  = price("paint_exterior_labor",       2.50)
+    int_mat_rate    = price("paint_interior_mat",         0.45)
+    int_labor_rate  = price("paint_interior_labor",       3.50)
+    ceil_mat_rate   = price("paint_ceiling_mat",          0.35)
+    ceil_labor_rate = price("paint_ceiling_labor",        1.25)
+    trim_mat_rate   = price("paint_trim_mat",             0.50)
+    trim_labor_rate = price("paint_trim_labor",           2.00)
+    door_mat_rate   = price("paint_door_mat",            15.00)
+    door_labor_rate = price("paint_door_labor",          60.00)
+    win_mat_rate    = price("paint_window_mat",          10.00)
+    win_labor_rate  = price("paint_window_labor",        40.00)
+    pw_mat_rate     = price("paint_power_wash_mat",       0.10)
+    pw_labor_rate   = price("paint_power_wash_labor",     0.15)
+    patch_min_mat   = price("paint_patch_minor_mat",     50.00)
+    patch_min_lab   = price("paint_patch_minor_labor",  100.00)
+    patch_mod_mat   = price("paint_patch_moderate_mat", 100.00)
+    patch_mod_lab   = price("paint_patch_moderate_labor", 250.00)
+    patch_ext_mat   = price("paint_patch_extensive_mat", 250.00)
+    patch_ext_lab   = price("paint_patch_extensive_labor", 500.00)
+    primer_mat_rate = price("paint_primer_mat",           0.20)
+    primer_lab_rate = price("paint_primer_labor",         0.30)
+    lead_mat_rate   = price("paint_lead_mat",           150.00)
+    lead_lab_rate   = price("paint_lead_labor",         350.00)
+
+    coat_mult  = COAT_MULTIPLIER.fetch(coats, 1.5)
+    story_mult = STORY_MULTIPLIER.fetch(stories, 1.0)
+
+    material_list    = []
+    total_labor_cost = 0.0
+
+    # ----- Interior -----
+    if %w[interior both].include?(paint_type)
+      int_sqft  = paint_type == "both" ? sqft * 0.5 : sqft
+      cond_mult = PAINT_CONDITION_MULTIPLIER.fetch(wall_cond, 1.0)
+      plural    = coats > 1 ? "s" : ""
+
+      int_mat_cost = int_sqft * int_mat_rate * coat_mult
+      material_list << {
+        item:       "Interior Paint Materials (#{coats} coat#{plural})",
+        quantity:   int_sqft,
+        unit:       "sqft",
+        unit_cost:  (int_mat_rate * coat_mult * 100).round / 100.0,
+        total_cost: (int_mat_cost * 100).round / 100.0,
+        category:   "Interior"
+      }
+
+      int_labor_cost = int_sqft * int_labor_rate * coat_mult * cond_mult
+      material_list << {
+        item:       "Interior Labor (#{coats} coat#{plural})",
+        quantity:   int_sqft,
+        unit:       "sqft",
+        unit_cost:  (int_labor_rate * coat_mult * cond_mult * 100).round / 100.0,
+        total_cost: (int_labor_cost * 100).round / 100.0,
+        category:   "Labor"
+      }
+      total_labor_cost += int_labor_cost
+
+      if include_ceil == "yes"
+        ceil_sqft       = int_sqft * 0.9
+        ceil_mat_cost   = ceil_sqft * ceil_mat_rate   * coat_mult
+        ceil_labor_cost = ceil_sqft * ceil_labor_rate * coat_mult
+
+        material_list << {
+          item:       "Ceiling Paint Materials",
+          quantity:   ceil_sqft.round,
+          unit:       "sqft",
+          unit_cost:  (ceil_mat_rate * coat_mult * 100).round / 100.0,
+          total_cost: (ceil_mat_cost * 100).round / 100.0,
+          category:   "Interior"
+        }
+        material_list << {
+          item:       "Ceiling Labor",
+          quantity:   ceil_sqft.round,
+          unit:       "sqft",
+          unit_cost:  (ceil_labor_rate * coat_mult * 100).round / 100.0,
+          total_cost: (ceil_labor_cost * 100).round / 100.0,
+          category:   "Labor"
+        }
+        total_labor_cost += ceil_labor_cost
+      end
+    end
+
+    # ----- Exterior -----
+    if %w[exterior both].include?(paint_type)
+      ext_sqft  = paint_type == "both" ? sqft * 0.5 : sqft
+      cond_mult = PAINT_CONDITION_MULTIPLIER.fetch(siding_cond, 1.0)
+      coat_s    = coats > 1 ? "s" : ""
+      story_s   = stories > 1 ? "ies" : "y"
+
+      ext_mat_cost   = ext_sqft * ext_mat_rate   * coat_mult * story_mult
+      ext_labor_cost = ext_sqft * ext_labor_rate * coat_mult * story_mult * cond_mult
+
+      material_list << {
+        item:       "Exterior Paint Materials (#{coats} coat#{coat_s}, #{stories} stor#{story_s})",
+        quantity:   ext_sqft,
+        unit:       "sqft",
+        unit_cost:  (ext_mat_rate * coat_mult * story_mult * 100).round / 100.0,
+        total_cost: (ext_mat_cost * 100).round / 100.0,
+        category:   "Exterior"
+      }
+      material_list << {
+        item:       "Exterior Labor (#{coats} coat#{coat_s}, #{stories} stor#{story_s})",
+        quantity:   ext_sqft,
+        unit:       "sqft",
+        unit_cost:  (ext_labor_rate * coat_mult * story_mult * cond_mult * 100).round / 100.0,
+        total_cost: (ext_labor_cost * 100).round / 100.0,
+        category:   "Labor"
+      }
+      total_labor_cost += ext_labor_cost
+
+      if power_wash == "yes"
+        pw_mat_cost   = ext_sqft * pw_mat_rate
+        pw_labor_cost = ext_sqft * pw_labor_rate
+
+        material_list << {
+          item:       "Power Washing Materials",
+          quantity:   ext_sqft,
+          unit:       "sqft",
+          unit_cost:  pw_mat_rate,
+          total_cost: (pw_mat_cost * 100).round / 100.0,
+          category:   "Prep"
+        }
+        material_list << {
+          item:       "Power Washing Labor",
+          quantity:   ext_sqft,
+          unit:       "sqft",
+          unit_cost:  pw_labor_rate,
+          total_cost: (pw_labor_cost * 100).round / 100.0,
+          category:   "Labor"
+        }
+        total_labor_cost += pw_labor_cost
+      end
+    end
+
+    # ----- Patching -----
+    case patching
+    when "minor"
+      material_list << { item: "Wall Patching Materials (minor)",    quantity: 1, unit: "job", unit_cost: patch_min_mat, total_cost: patch_min_mat, category: "Prep" }
+      material_list << { item: "Wall Patching Labor (minor)",        quantity: 1, unit: "job", unit_cost: patch_min_lab, total_cost: patch_min_lab, category: "Labor" }
+      total_labor_cost += patch_min_lab
+    when "moderate"
+      material_list << { item: "Wall Patching Materials (moderate)", quantity: 1, unit: "job", unit_cost: patch_mod_mat, total_cost: patch_mod_mat, category: "Prep" }
+      material_list << { item: "Wall Patching Labor (moderate)",     quantity: 1, unit: "job", unit_cost: patch_mod_lab, total_cost: patch_mod_lab, category: "Labor" }
+      total_labor_cost += patch_mod_lab
+    when "extensive"
+      material_list << { item: "Wall Patching Materials (extensive)", quantity: 1, unit: "job", unit_cost: patch_ext_mat, total_cost: patch_ext_mat, category: "Prep" }
+      material_list << { item: "Wall Patching Labor (extensive)",     quantity: 1, unit: "job", unit_cost: patch_ext_lab, total_cost: patch_ext_lab, category: "Labor" }
+      total_labor_cost += patch_ext_lab
+    end
+
+    # ----- Trim / Doors / Windows -----
+    if trim_lf > 0
+      material_list << { item: "Trim Materials", quantity: trim_lf, unit: "linear ft", unit_cost: trim_mat_rate,   total_cost: (trim_lf * trim_mat_rate   * 100).round / 100.0, category: "Trim & Detail" }
+      material_list << { item: "Trim Labor",     quantity: trim_lf, unit: "linear ft", unit_cost: trim_labor_rate, total_cost: (trim_lf * trim_labor_rate * 100).round / 100.0, category: "Labor" }
+      total_labor_cost += trim_lf * trim_labor_rate
+    end
+
+    if doors > 0
+      material_list << { item: "Door Painting Materials", quantity: doors, unit: "doors", unit_cost: door_mat_rate,   total_cost: doors * door_mat_rate,   category: "Trim & Detail" }
+      material_list << { item: "Door Painting Labor",     quantity: doors, unit: "doors", unit_cost: door_labor_rate, total_cost: doors * door_labor_rate, category: "Labor" }
+      total_labor_cost += doors * door_labor_rate
+    end
+
+    if windows > 0
+      material_list << { item: "Window Trim Materials", quantity: windows, unit: "windows", unit_cost: win_mat_rate,   total_cost: windows * win_mat_rate,   category: "Trim & Detail" }
+      material_list << { item: "Window Trim Labor",     quantity: windows, unit: "windows", unit_cost: win_labor_rate, total_cost: windows * win_labor_rate, category: "Labor" }
+      total_labor_cost += windows * win_labor_rate
+    end
+
+    # ----- Primer for dramatic color change -----
+    if color_change == "yes"
+      material_list << { item: "Extra Primer Materials (Color Change)", quantity: sqft, unit: "sqft", unit_cost: primer_mat_rate, total_cost: (sqft * primer_mat_rate * 100).round / 100.0, category: "Prep" }
+      material_list << { item: "Extra Primer Labor (Color Change)",     quantity: sqft, unit: "sqft", unit_cost: primer_lab_rate, total_cost: (sqft * primer_lab_rate * 100).round / 100.0, category: "Labor" }
+      total_labor_cost += sqft * primer_lab_rate
+    end
+
+    # ----- Lead abatement -----
+    if lead_paint == "yes"
+      material_list << { item: "Lead Paint Abatement Materials", quantity: 1, unit: "job", unit_cost: lead_mat_rate, total_cost: lead_mat_rate, category: "Specialty" }
+      material_list << { item: "Lead Paint Abatement Labor",     quantity: 1, unit: "job", unit_cost: lead_lab_rate, total_cost: lead_lab_rate, category: "Labor" }
+      total_labor_cost += lead_lab_rate
+    end
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
+                                       .sum { |i| i[:total_cost] }
+
+    {
+      trade:               "painting",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         0,
+      labor_cost:          (total_labor_cost * 100).round / 100.0,
       material_list:       material_list
     }
   end
