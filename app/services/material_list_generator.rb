@@ -42,6 +42,12 @@ class MaterialListGenerator
              when "shower"        then build_shower_system
              when "waterproofing" then build_waterproofing
              when "heated_floor"  then build_heated_floor
+             when "framing"         then build_framing
+             when "foundation"      then build_foundation
+             when "windows_doors"   then build_windows_doors
+             when "insulation"      then build_insulation
+             when "permits"         then build_permits
+             when "site_prep"       then build_site_prep
              else
                raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
              end
@@ -3011,6 +3017,300 @@ class MaterialListGenerator
     total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
     {
       trade:               "heated_floor",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  # --- Addition cluster (TEA-240) ------------------------------------------
+
+  def build_framing
+    lf = (@criteria[:framingWallLf] || @criteria[:framing_wall_lf] || @criteria[:wallLf] || 0).to_f
+    headers = (@criteria[:headersCount] || @criteria[:headers_count] || 0).to_i
+    wall_height = (@criteria[:wallHeight] || @criteria[:wall_height] || 9).to_f
+    return empty_trade_result("framing") if lf <= 0
+
+    wall_unit = price("framing_wall_lf", 38.00)
+    header_unit = price("framing_header_each", 145.00)
+    height_mult = wall_height > 9 ? 1.15 : 1.0
+
+    wall_total = wall_unit * lf * height_mult
+    material_list = [{
+      item:       "Wall Framing (2x6 Studs + Plates)",
+      quantity:   lf,
+      unit:       "LF",
+      unit_cost:  (wall_unit * height_mult * 100).round / 100.0,
+      total_cost: (wall_total * 100).round / 100.0,
+      category:   "Framing"
+    }]
+
+    if headers > 0
+      material_list << {
+        item:       "Framing Headers",
+        quantity:   headers,
+        unit:       "each",
+        unit_cost:  header_unit,
+        total_cost: (header_unit * headers * 100).round / 100.0,
+        category:   "Framing"
+      }
+    end
+
+    labor_hours = lf * 0.35 + headers * 1.0
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Framing Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "framing",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def build_foundation
+    type = (@criteria[:foundationType] || @criteria[:foundation_type] || "slab").to_s
+    sqft = (@criteria[:foundationSqft] || @criteria[:foundation_sqft] || @criteria[:squareFeet] || 0).to_f
+    return empty_trade_result("foundation") if sqft <= 0
+
+    key, unit_default, label = case type
+                               when "crawlspace", "crawl_space" then ["foundation_crawlspace_sqft", 18.00, "Crawlspace Foundation"]
+                               when "pier", "pier_beam"         then ["foundation_pier_sqft",        12.00, "Pier Foundation"]
+                               else                                 ["foundation_slab_sqft",         14.00, "Slab Foundation"]
+                               end
+    unit = price(key, unit_default)
+
+    material_list = [{
+      item:       label,
+      quantity:   sqft,
+      unit:       "sqft",
+      unit_cost:  unit,
+      total_cost: (unit * sqft * 100).round / 100.0,
+      category:   "Foundation"
+    }]
+
+    labor_hours = sqft * 0.25
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Foundation Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "foundation",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def build_windows_doors
+    window_count = (@criteria[:windowCount] || @criteria[:window_count] || 0).to_i
+    window_grade = (@criteria[:windowGrade] || @criteria[:window_grade] || "builder").to_s
+    exterior_doors = (@criteria[:exteriorDoorCount] || @criteria[:exterior_door_count] || 0).to_i
+    interior_doors = (@criteria[:interiorDoorCount] || @criteria[:interior_door_count] || 0).to_i
+    return empty_trade_result("windows_doors") if window_count + exterior_doors + interior_doors == 0
+
+    window_key, window_default = case window_grade
+                                  when "premium" then ["window_premium", 950.00]
+                                  when "mid", "mid-range" then ["window_mid", 575.00]
+                                  else ["window_builder", 325.00]
+                                  end
+    window_unit = price(window_key, window_default)
+    exterior_unit = price("exterior_door_install", 850.00)
+    interior_unit = price("interior_door_install", 225.00)
+
+    material_list = []
+    if window_count > 0
+      material_list << {
+        item:       "Windows (#{window_grade})",
+        quantity:   window_count,
+        unit:       "each",
+        unit_cost:  window_unit,
+        total_cost: (window_unit * window_count * 100).round / 100.0,
+        category:   "Windows/Doors"
+      }
+    end
+    if exterior_doors > 0
+      material_list << {
+        item:       "Exterior Doors",
+        quantity:   exterior_doors,
+        unit:       "each",
+        unit_cost:  exterior_unit,
+        total_cost: (exterior_unit * exterior_doors * 100).round / 100.0,
+        category:   "Windows/Doors"
+      }
+    end
+    if interior_doors > 0
+      material_list << {
+        item:       "Interior Doors",
+        quantity:   interior_doors,
+        unit:       "each",
+        unit_cost:  interior_unit,
+        total_cost: (interior_unit * interior_doors * 100).round / 100.0,
+        category:   "Windows/Doors"
+      }
+    end
+
+    labor_hours = window_count * 1.5 + exterior_doors * 2.5 + interior_doors * 1.0
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Windows/Doors Install Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "windows_doors",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def build_insulation
+    sqft = (@criteria[:insulationSqft] || @criteria[:insulation_sqft] || @criteria[:squareFeet] || 0).to_f
+    type = (@criteria[:insulationType] || @criteria[:insulation_type] || "batt").to_s
+    return empty_trade_result("insulation") if sqft <= 0
+
+    key, unit_default, label = case type
+                               when "spray", "spray_foam" then ["insulation_spray_sqft", 3.25, "Spray Foam Insulation"]
+                               when "blown", "blown_in"   then ["insulation_blown_sqft", 1.75, "Blown-In Insulation"]
+                               else                           ["insulation_batt_sqft",  1.35, "Batt Insulation"]
+                               end
+    unit = price(key, unit_default)
+
+    material_list = [{
+      item:       label,
+      quantity:   sqft,
+      unit:       "sqft",
+      unit_cost:  unit,
+      total_cost: (unit * sqft * 100).round / 100.0,
+      category:   "Insulation"
+    }]
+
+    labor_rate_per_sqft = type == "spray" ? 0.05 : 0.08
+    labor_hours = sqft * labor_rate_per_sqft
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Insulation Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "insulation",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def build_permits
+    project_cost = (@criteria[:projectCost] || @criteria[:project_cost] || 0).to_f
+    type = (@criteria[:permitType] || @criteria[:permit_type] || "full").to_s
+    return empty_trade_result("permits") if project_cost <= 0
+
+    base = price("permit_base_fee", 450.00)
+    pct = type == "structural" ? 0.015 : 0.010
+    permit_fee = base + project_cost * pct
+
+    engineering = nil
+    if truthy?(@criteria[:structuralEngineering] || @criteria[:structural_engineering])
+      eng_unit = price("structural_engineering_fee", 1800.00)
+      engineering = {
+        item:       "Structural Engineering",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  eng_unit,
+        total_cost: eng_unit,
+        category:   "Permits"
+      }
+    end
+
+    material_list = [{
+      item:       "Building Permit (#{type})",
+      quantity:   1,
+      unit:       "each",
+      unit_cost:  (permit_fee * 100).round / 100.0,
+      total_cost: (permit_fee * 100).round / 100.0,
+      category:   "Permits"
+    }]
+    material_list << engineering if engineering
+
+    total_material_cost = material_list.sum { |i| i[:total_cost] }
+    {
+      trade:               "permits",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         0.0,
+      material_list:       material_list
+    }
+  end
+
+  def build_site_prep
+    excavation_sqft = (@criteria[:excavationSqft] || @criteria[:excavation_sqft] || 0).to_f
+    clearing_sqft = (@criteria[:siteClearingSqft] || @criteria[:site_clearing_sqft] || 0).to_f
+    return empty_trade_result("site_prep") if excavation_sqft + clearing_sqft <= 0
+
+    material_list = []
+    if excavation_sqft > 0
+      unit = price("site_excavation_sqft", 4.50)
+      material_list << {
+        item:       "Excavation",
+        quantity:   excavation_sqft,
+        unit:       "sqft",
+        unit_cost:  unit,
+        total_cost: (unit * excavation_sqft * 100).round / 100.0,
+        category:   "Site Prep"
+      }
+    end
+    if clearing_sqft > 0
+      unit = price("site_clearing_sqft", 1.25)
+      material_list << {
+        item:       "Site Clearing",
+        quantity:   clearing_sqft,
+        unit:       "sqft",
+        unit_cost:  unit,
+        total_cost: (unit * clearing_sqft * 100).round / 100.0,
+        category:   "Site Prep"
+      }
+    end
+
+    labor_hours = excavation_sqft * 0.05 + clearing_sqft * 0.02
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Site Prep Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "site_prep",
       total_material_cost: (total_material_cost * 100).round / 100.0,
       labor_hours:         (labor_hours * 10).round / 10.0,
       material_list:       material_list
