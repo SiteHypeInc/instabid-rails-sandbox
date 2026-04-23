@@ -519,12 +519,14 @@ module Admin
       REMODEL_PACKAGE_LABELS[pkg.to_s] || pkg.to_s.tr("_", " ").capitalize
     end
 
-    # [HD Live] / [Web Search] / [Manual] label for a material list line.
-    # PricingResolver is stub-only in the sandbox, so every line resolves from
-    # the caller-supplied default → tag as [Manual]. When the resolver gets
-    # DB-backed, update this to read the line's actual source.
-    def price_source_label(_line)
-      "[Manual]"
+    # [Manual] / [BigBox Live HD] / [Web Search] label for a material list line.
+    # The MaterialListGenerator stamps each line's source via PricingResolver.
+    # A missing source (pre-patch lines / tests) falls back to [Manual] so the
+    # column is always populated.
+    def price_source_label(line)
+      raw = (line[:source] || line["source"]).to_s
+      raw = "Manual" if raw.empty?
+      "[#{raw}]"
     end
   end
 end

@@ -1,5 +1,6 @@
 class MaterialListGenerator
   class UnsupportedTrade < StandardError; end
+  class InvalidCriteria < ArgumentError; end
 
   # Ported from materialListGenerator.js (Node 411). Formulas and default
   # unit prices match the legacy implementation verbatim so results land in
@@ -14,27 +15,63 @@ class MaterialListGenerator
     @criteria      = criteria.with_indifferent_access
     @contractor_id = contractor_id
     @hourly_rate   = hourly_rate
+    @dominant_source = "Manual"
   end
 
   def call
-    case @trade
-    when "roofing"  then build_roofing
-    when "plumbing" then build_plumbing
-    when "drywall"  then build_drywall
-    when "flooring" then build_flooring
-    when "painting" then build_painting
-    when "siding"   then build_siding
-    when "hvac"     then build_hvac
-    when "electrical" then build_electrical
-    else
-      raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
-    end
+    guard_critical_sqft!
+
+    result = case @trade
+             when "roofing"    then build_roofing
+             when "plumbing"   then build_plumbing
+             when "drywall"    then build_drywall
+             when "flooring"   then build_flooring
+             when "painting"   then build_painting
+             when "siding"     then build_siding
+             when "hvac"       then build_hvac
+             when "electrical" then build_electrical
+             else
+               raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
+             end
+
+    stamp_sources(result)
   end
 
   private
 
+  # Reject non-positive sqft before any Math.sqrt / ratio math can blow up.
+  # Builders that default missing sqft (e.g. plumbing "general" → service call
+  # only) are allowed to pass with 0; anything explicitly negative is rejected.
+  CRITICAL_SQFT_KEYS = %i[squareFeet square_feet].freeze
+
+  def guard_critical_sqft!
+    value = CRITICAL_SQFT_KEYS.map { |k| @criteria[k] }.compact.first
+    return if value.nil? || value.to_s.strip.empty?
+
+    numeric = value.to_f
+    if numeric < 0
+      raise InvalidCriteria, "squareFeet must be >= 0 (got #{value.inspect})"
+    end
+  end
+
+  def stamp_sources(result)
+    return result unless result.is_a?(Hash)
+
+    list = Array(result[:material_list] || result["material_list"])
+    list.each { |line| line[:source] ||= @dominant_source }
+    result
+  end
+
   def price(key, default)
-    PricingResolver.price(trade: @trade, key: key, contractor_id: @contractor_id, default: default)
+    resolution = PricingResolver.resolve(trade: @trade, key: key, contractor_id: @contractor_id, default: default)
+    # Track the last non-Manual source so line stamping reflects when we're
+    # actually pulling from live pricing data. In the sandbox this is almost
+    # always "Manual"; when DefaultPricing/MaterialPrice get populated the
+    # result rendering will surface that automatically.
+    if resolution[:source] && resolution[:source] != "Manual"
+      @dominant_source = resolution[:source]
+    end
+    resolution[:price]
   end
 
   # -- Roofing -------------------------------------------------------------
@@ -325,6 +362,45 @@ class MaterialListGenerator
     material_list = []
     labor_hours   = 0.0
 
+    # Shared fixture emission — callable from plain "fixture"/"fixture_swap"
+    # branches and from "remodel" which also does rough-in. Mutates
+    # material_list + labor_hours in the enclosing scope.
+    emit_fixtures = lambda do
+      if toilet_count > 0
+        toilet_unit = price("fixture_toilet", 375.00)
+        material_list << { item: "Toilet Installation",  quantity: toilet_count,  unit: "fixtures", unit_cost: toilet_unit,  total_cost: toilet_unit  * toilet_count,  category: "Fixtures" }
+        labor_hours += 2.5 * toilet_count
+      end
+      if sink_count > 0
+        sink_unit = price("fixture_sink", 450.00)
+        material_list << { item: "Sink Installation",    quantity: sink_count,    unit: "fixtures", unit_cost: sink_unit,    total_cost: sink_unit    * sink_count,    category: "Fixtures" }
+        labor_hours += 3 * sink_count
+      end
+      if faucet_count > 0
+        faucet_unit = price("fixture_faucet", 262.00)
+        material_list << { item: "Faucet Installation",  quantity: faucet_count,  unit: "fixtures", unit_cost: faucet_unit,  total_cost: faucet_unit  * faucet_count,  category: "Fixtures" }
+        labor_hours += 1.5 * faucet_count
+      end
+      if tub_shower_count > 0
+        tub_unit = price("fixture_tub_shower", 1200.00)
+        material_list << { item: "Tub/Shower Installation", quantity: tub_shower_count, unit: "fixtures", unit_cost: tub_unit, total_cost: tub_unit * tub_shower_count, category: "Fixtures" }
+        labor_hours += 6 * tub_shower_count
+      end
+      if garbage_disposal == "yes"
+        material_list << plumbing_garbage_disposal_line
+        labor_hours += 1.5
+      end
+      if ice_maker == "yes"
+        material_list << plumbing_ice_maker_line
+        labor_hours += 1
+      end
+      if dishwasher_hookup == "yes"
+        dw_unit = price("dishwasher_hookup", 200.00)
+        material_list << { item: "Dishwasher Hookup", quantity: 1, unit: "hookup", unit_cost: dw_unit, total_cost: dw_unit, category: "Add-ons" }
+        labor_hours += 2
+      end
+    end
+
     case service_type
     when "repipe"
       if square_feet > 0
@@ -433,80 +509,98 @@ class MaterialListGenerator
         labor_hours += 4
       end
 
-    when "fixture"
-      if toilet_count > 0
-        toilet_unit = price("fixture_toilet", 375.00)
+    when "rough_in"
+      # Per-fixture rough plumbing: DWV + supply lines per bathroom/kitchen/laundry.
+      # Keyed off room counts so controller-mapped remodel inputs flow through.
+      rough_units = bathrooms + kitchens + laundry_rooms
+      if rough_units > 0
+        pex_unit = price("pex_pipe_lf", 2.50)
+        pex_feet = (bathrooms * 40) + (kitchens * 25) + (laundry_rooms * 20)
         material_list << {
-          item:       "Toilet Installation",
-          quantity:   toilet_count,
-          unit:       "fixtures",
-          unit_cost:  toilet_unit,
-          total_cost: toilet_unit * toilet_count,
-          category:   "Fixtures"
+          item:       "PEX Supply Lines (rough-in)",
+          quantity:   pex_feet,
+          unit:       "linear feet",
+          unit_cost:  pex_unit,
+          total_cost: pex_feet * pex_unit,
+          category:   "Pipe"
         }
-        labor_hours += 2.5 * toilet_count
+
+        dwv_unit = price("dwv_pipe_lf", 4.25)
+        dwv_feet = (bathrooms * 20) + (kitchens * 10) + (laundry_rooms * 8)
+        material_list << {
+          item:       "DWV Drain Lines",
+          quantity:   dwv_feet,
+          unit:       "linear feet",
+          unit_cost:  dwv_unit,
+          total_cost: dwv_feet * dwv_unit,
+          category:   "Pipe"
+        }
+
+        valve_unit = price("shutoff_valve", 25.00)
+        valve_count = (bathrooms * 3) + (kitchens * 2) + laundry_rooms
+        material_list << {
+          item:       "Shutoff Valves",
+          quantity:   valve_count,
+          unit:       "valves",
+          unit_cost:  valve_unit,
+          total_cost: valve_count * valve_unit,
+          category:   "Pipe"
+        }
+
+        labor_hours += (bathrooms * 12) + (kitchens * 8) + (laundry_rooms * 5)
+        labor_hours *= 1.2  if stories >= 2
+        labor_hours *= access_mult
       end
 
-      if sink_count > 0
-        sink_unit = price("fixture_sink", 450.00)
+      if gas_line_needed == "yes"
+        gas_unit = price("gas_line_install", 500.00)
         material_list << {
-          item:       "Sink Installation",
-          quantity:   sink_count,
-          unit:       "fixtures",
-          unit_cost:  sink_unit,
-          total_cost: sink_unit * sink_count,
-          category:   "Fixtures"
-        }
-        labor_hours += 3 * sink_count
-      end
-
-      if faucet_count > 0
-        faucet_unit = price("fixture_faucet", 262.00)
-        material_list << {
-          item:       "Faucet Installation",
-          quantity:   faucet_count,
-          unit:       "fixtures",
-          unit_cost:  faucet_unit,
-          total_cost: faucet_unit * faucet_count,
-          category:   "Fixtures"
-        }
-        labor_hours += 1.5 * faucet_count
-      end
-
-      if tub_shower_count > 0
-        tub_unit = price("fixture_tub_shower", 1200.00)
-        material_list << {
-          item:       "Tub/Shower Installation",
-          quantity:   tub_shower_count,
-          unit:       "fixtures",
-          unit_cost:  tub_unit,
-          total_cost: tub_unit * tub_shower_count,
-          category:   "Fixtures"
-        }
-        labor_hours += 6 * tub_shower_count
-      end
-
-      if garbage_disposal == "yes"
-        material_list << plumbing_garbage_disposal_line
-        labor_hours += 1.5
-      end
-      if ice_maker == "yes"
-        material_list << plumbing_ice_maker_line
-        labor_hours += 1
-      end
-      if dishwasher_hookup == "yes"
-        dw_unit = price("dishwasher_hookup", 200.00)
-        material_list << {
-          item:       "Dishwasher Hookup",
+          item:       "Gas Line Installation",
           quantity:   1,
-          unit:       "hookup",
-          unit_cost:  dw_unit,
-          total_cost: dw_unit,
-          category:   "Add-ons"
+          unit:       "job",
+          unit_cost:  gas_unit,
+          total_cost: gas_unit,
+          category:   "Gas"
         }
-        labor_hours += 2
+        labor_hours += 4
       end
 
+    when "remodel"
+      # "Full remodel" — emits rough-in pipe/DWV AND fixtures in one pass.
+      # Falls through to fixture branch after emitting rough-in by re-running
+      # with service_type re-bound; simpler to inline the fixture block here.
+      rough_units = bathrooms + kitchens + laundry_rooms
+      if rough_units > 0
+        pex_unit = price("pex_pipe_lf", 2.50)
+        pex_feet = (bathrooms * 40) + (kitchens * 25) + (laundry_rooms * 20)
+        material_list << {
+          item:       "PEX Supply Lines (rough-in)",
+          quantity:   pex_feet,
+          unit:       "linear feet",
+          unit_cost:  pex_unit,
+          total_cost: pex_feet * pex_unit,
+          category:   "Pipe"
+        }
+        dwv_unit = price("dwv_pipe_lf", 4.25)
+        dwv_feet = (bathrooms * 20) + (kitchens * 10) + (laundry_rooms * 8)
+        material_list << {
+          item:       "DWV Drain Lines",
+          quantity:   dwv_feet,
+          unit:       "linear feet",
+          unit_cost:  dwv_unit,
+          total_cost: dwv_feet * dwv_unit,
+          category:   "Pipe"
+        }
+        labor_hours += (bathrooms * 10) + (kitchens * 6) + (laundry_rooms * 4)
+      end
+
+      # Fall through to fixture emission.
+      emit_fixtures.call
+      labor_hours *= access_mult
+      labor_hours = [labor_hours, 2].max
+
+    when "fixture", "fixture_swap"
+      emit_fixtures.call
       labor_hours *= access_mult
       labor_hours  = [labor_hours, 2].max
 
@@ -653,7 +747,12 @@ class MaterialListGenerator
     material_list = []
     labor_hours   = 0.0
 
-    if project_type == "new_construction"
+    # Remodel = fresh sheets on the sqft passed in (controller multiplies
+    # kitchen/bath sqft by a wall-coefficient before calling). Behaviour-wise
+    # it matches new_construction math; diverging rates should land when the
+    # spec-driven drywall remodel spike runs. Silent $0 is not acceptable —
+    # TEA-234 smoke item #3.
+    if project_type.in?(%w[new_construction remodel])
       adjusted_sqft  = sqft * DRYWALL_WASTE
       sheets_needed  = (adjusted_sqft / 32.0).ceil
 
@@ -1163,10 +1262,15 @@ class MaterialListGenerator
     total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
                                        .sum { |i| i[:total_cost] }
 
+    # Painting prices labor per-sqft / per-unit, not per-hour. Surface an
+    # equivalent-hours rollup so the totals card + remodel-summary rollup
+    # don't under-report (TEA-234 smoke item #5).
+    equivalent_hours = @hourly_rate.to_f.positive? ? (total_labor_cost / @hourly_rate) : 0.0
+
     {
       trade:               "painting",
       total_material_cost: (total_material_cost * 100).round / 100.0,
-      labor_hours:         0,
+      labor_hours:         (equivalent_hours * 10).round / 10.0,
       labor_cost:          (total_labor_cost * 100).round / 100.0,
       material_list:       material_list
     }

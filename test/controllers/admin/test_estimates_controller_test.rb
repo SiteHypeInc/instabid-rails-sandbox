@@ -148,6 +148,128 @@ module Admin
       assert_match(/Results/, @response.body)
     end
 
+    # -------- TEA-234 rework (smoke-driven) --------
+
+    test "smoke #1a: squareFeet=0 rejects with explicit error, no itemized $0 estimate" do
+      post admin_test_estimate_path, params: {
+        mode: "single",
+        trade: "roofing",
+        hourly_rate: "65",
+        criteria: { "roofing" => { "squareFeet" => "0", "pitch" => "6/12" } }
+      }
+      assert_response :success
+      assert_match(/Input errors/, @response.body)
+      refute_match(/Trade Total/, @response.body)
+    end
+
+    test "smoke #1b: negative squareFeet rejected before generator Math.sqrt blows up" do
+      post admin_test_estimate_path, params: {
+        mode: "single",
+        trade: "roofing",
+        hourly_rate: "65",
+        criteria: { "roofing" => { "squareFeet" => "-500", "pitch" => "6/12" } }
+      }
+      assert_response :success
+      assert_match(/Input errors/, @response.body)
+      refute_match(/Math::DomainError/, @response.body)
+      refute_match(/Trade Total/, @response.body)
+    end
+
+    test "smoke #1c: non-numeric squareFeet rejected cleanly" do
+      post admin_test_estimate_path, params: {
+        mode: "single",
+        trade: "roofing",
+        hourly_rate: "65",
+        criteria: { "roofing" => { "squareFeet" => "not a number", "pitch" => "6/12" } }
+      }
+      assert_response :success
+      assert_match(/Input errors/, @response.body)
+    end
+
+    test "smoke #2: Source column renders [Manual] tag per line (not category)" do
+      post admin_test_estimate_path, params: {
+        mode: "single", trade: "roofing", hourly_rate: "65",
+        criteria: { "roofing" => { "squareFeet" => "2000", "pitch" => "6/12", "material" => "architectural" } }
+      }
+      assert_response :success
+      # Materials table has Source column populated with source label, not raw category
+      assert_match(/\[Manual\]/, @response.body)
+    end
+
+    test "smoke #3: drywall remodel no longer returns silent empty material list" do
+      result = MaterialListGenerator.call(
+        trade: "drywall",
+        criteria: { squareFeet: 2000, projectType: "remodel", rooms: 4,
+                    ceilingHeight: "8ft", finishLevel: "level_4_smooth",
+                    textureType: "orange_peel", damageExtent: "moderate" }
+      )
+      assert_operator result[:material_list].size, :>, 0, "drywall remodel must emit line items"
+      assert_operator result[:total_material_cost], :>, 0, "drywall remodel must have non-zero materials"
+      assert_operator result[:labor_hours], :>, 0, "drywall remodel must have non-zero labor"
+    end
+
+    test "smoke #4: plumbing remodel threads fixture counts through to line items" do
+      result = MaterialListGenerator.call(
+        trade: "plumbing",
+        criteria: {
+          serviceType: "remodel",
+          bathrooms:   2, kitchens: 1,
+          toiletCount: 2, sinkCount: 3, faucetCount: 3, tubShowerCount: 2
+        }
+      )
+      items = result[:material_list].map { |l| l[:item] }
+      assert_includes items, "Toilet Installation"
+      assert_includes items, "Sink Installation"
+      assert_includes items, "Faucet Installation"
+      assert_includes items, "Tub/Shower Installation"
+      # Rough-in piping should also be present for serviceType=remodel
+      assert_includes items, "PEX Supply Lines (rough-in)"
+      assert_includes items, "DWV Drain Lines"
+    end
+
+    test "smoke #4b: plumbing rough_in emits pipe scaled to fixture counts" do
+      result = MaterialListGenerator.call(
+        trade: "plumbing",
+        criteria: { serviceType: "rough_in", bathrooms: 2, kitchens: 1, laundryRooms: 1 }
+      )
+      items = result[:material_list].map { |l| l[:item] }
+      assert_includes items, "PEX Supply Lines (rough-in)"
+      assert_includes items, "DWV Drain Lines"
+      assert_includes items, "Shutoff Valves"
+      assert_operator result[:labor_hours], :>, 0
+    end
+
+    test "smoke #4c: plumbing fixture_swap is an alias for fixture" do
+      swap = MaterialListGenerator.call(
+        trade: "plumbing",
+        criteria: { serviceType: "fixture_swap", toiletCount: 1, sinkCount: 1 }
+      )
+      fixture = MaterialListGenerator.call(
+        trade: "plumbing",
+        criteria: { serviceType: "fixture", toiletCount: 1, sinkCount: 1 }
+      )
+      assert_equal fixture[:total_material_cost], swap[:total_material_cost]
+      assert_equal fixture[:labor_hours],         swap[:labor_hours]
+    end
+
+    test "smoke #5: painting labor_hours is non-zero (equivalent-hours rollup)" do
+      result = MaterialListGenerator.call(
+        trade: "painting",
+        criteria: { squareFeet: 2000, paintType: "interior", coats: 2 }
+      )
+      assert_operator result[:labor_cost],  :>, 0
+      assert_operator result[:labor_hours], :>, 0, "painting should surface equivalent labor hours, not 0"
+    end
+
+    test "InvalidCriteria from generator surfaces as error, not 500" do
+      post admin_test_estimate_path, params: {
+        mode: "single", trade: "plumbing", hourly_rate: "65",
+        criteria: { "plumbing" => { "squareFeet" => "-100" } }
+      }
+      assert_response :success
+      assert_match(/Input errors/, @response.body)
+    end
+
     test "all 8 trades produce non-negative totals with minimal inputs" do
       trades_with_minimal = {
         "roofing"    => { "squareFeet" => "2000", "pitch" => "6/12", "material" => "architectural" },

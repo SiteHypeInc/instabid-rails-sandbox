@@ -8,7 +8,10 @@ class MaterialListGeneratorPaintingTest < ActiveSupport::TestCase
     )
 
     assert_equal "painting", result[:trade]
-    assert_equal 0, result[:labor_hours]
+    # TEA-234 smoke #5: painting prices labor per-sqft; labor_hours surfaces
+    # an equivalent-hours rollup (labor_cost / hourly_rate) so the totals
+    # card + remodel grand-total reflect real effort. 7500 / 65 ≈ 115.4
+    assert_in_delta 115.4, result[:labor_hours], 0.1
     refute result.key?(:complexity_multiplier)
 
     items = result[:material_list].index_by { |i| i[:item] }

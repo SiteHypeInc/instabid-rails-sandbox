@@ -242,6 +242,20 @@
   </div>
 </form>
 
+<%# ================= INPUT ERRORS ================= %>
+<% if @submitted && @input_errors.any? %>
+  <div class="panel">
+    <div class="error">
+      <strong>Input errors — estimate not run:</strong>
+      <ul style="margin-top:6px; padding-left:20px;">
+        <% @input_errors.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+<% end %>
+
 <%# ================= RESULTS ================= %>
 <% if @submitted && @results.any? %>
   <div class="panel results">
@@ -272,7 +286,10 @@
               </tr>
             </thead>
             <tbody>
-              <% r[:material_list].each do |line| %>
+              <%# Labor lines render in the totals card below, not here — keeps
+                  the materials table consistent across all trades (TEA-234 #5). %>
+              <% materials_only = r[:material_list].reject { |l| (l[:category] || l["category"]).to_s == "Labor" } %>
+              <% materials_only.each do |line| %>
                 <tr>
                   <td><%= line[:item] || line["item"] %></td>
                   <td class="src"><%= price_source_label(line) %></td>
