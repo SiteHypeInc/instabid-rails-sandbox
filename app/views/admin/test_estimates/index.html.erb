@@ -1,4 +1,4 @@
-<%# TEA-236 — Test Estimate sandbox form. Internal only, not customer-facing. %>
+<%# TEA-236 / TEA-239 — Test Estimate sandbox form. Internal only, not customer-facing. %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,16 +89,16 @@
     .trade-form { display: none; }
     .trade-form.active { display: block; }
 
-    .remodel-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
-    .remodel-picker label {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 12px; border: 1px solid #334155; border-radius: 6px;
-      font-size: 12px; text-transform: capitalize; cursor: pointer;
-    }
-    .remodel-picker input[type=checkbox] { accent-color: #06b6d4; }
-    .remodel-section { margin-top: 16px; padding: 16px; border: 1px solid #1e293b; border-radius: 8px; display: none; }
-    .remodel-section.active { display: block; }
+    .remodel-type-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .remodel-type-tabs .mode-btn { font-size: 12px; padding: 6px 14px; }
+    .preset-row { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+    .preset-row label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+    .preset-row select { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; border-radius: 6px; padding: 7px 10px; font-size: 13px; }
+    .remodel-type-form { display: none; }
+    .remodel-type-form.active { display: block; }
+    .remodel-section { margin-top: 16px; padding: 16px; border: 1px solid #1e293b; border-radius: 8px; }
     .remodel-section h4 { font-size: 13px; color: #06b6d4; margin-bottom: 10px; text-transform: capitalize; }
+    .remodel-section.preset-hidden { display: none; }
 
     .results table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
     .results th, .results td { text-align: left; padding: 7px 10px; font-size: 12px; border-bottom: 1px solid #1e293b; }
@@ -106,6 +106,7 @@
     .results tr:hover { background: rgba(6,182,212,0.04); }
     .results .num { text-align: right; font-family: 'JetBrains Mono', monospace; }
     .results .src { color: #64748b; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+    .results .unported td { color: #fbbf24; font-style: italic; }
 
     .totals { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
     .total-card {
@@ -128,7 +129,7 @@
 <div class="header">
   <div class="breadcrumbs"><a href="<%= admin_pricing_dashboard_path %>">Admin</a> / Test Estimate</div>
   <h1>Test Estimate — Internal Sandbox</h1>
-  <p>Fill trade inputs &rarr; calls <code class="mono">MaterialListGenerator</code> &rarr; renders itemized material list, labor, and totals. Not customer-facing. (TEA-236)</p>
+  <p>Fill trade inputs &rarr; calls <code class="mono">MaterialListGenerator</code> &rarr; renders itemized material list, labor, totals. Not customer-facing. (TEA-236 + TEA-239 Remodel scope)</p>
 </div>
 
 <form method="post" action="<%= admin_test_estimate_path %>" id="estimate-form">
@@ -177,43 +178,56 @@
     <% end %>
   </div>
 
-  <%# ================= REMODEL-SCOPE SECTION ================= %>
+  <%# ================= REMODEL SCOPE (TEA-239) ================= %>
   <div class="panel" id="remodel-panel" style="<%= 'display:none' if @mode == 'single' %>">
-    <h2>Pick trades to include</h2>
-    <div class="remodel-picker">
-      <% selected_remodel = Array(params[:remodel_trades]).map(&:to_s) %>
-      <% @trades.each do |trade| %>
-        <label>
-          <input type="checkbox" name="remodel_trades[]" value="<%= trade %>" data-remodel-toggle="<%= trade %>" <%= 'checked' if selected_remodel.include?(trade) %>>
-          <%= trade %>
-        </label>
+    <h2>Remodel Scope — TEA-238 spec</h2>
+    <p class="note">9th trade option. Pick Kitchen / Bathroom / Addition, then a scope preset. Form sections activate per spec.</p>
+
+    <div class="remodel-type-tabs" style="margin-top:12px;">
+      <% remodel_types.each do |type| %>
+        <button type="button" class="mode-btn <%= 'active' if type == @remodel_type %>" data-remodel-type="<%= type %>"><%= remodel_type_label(type) %></button>
       <% end %>
     </div>
+    <input type="hidden" name="remodel_type" id="remodel-type-input" value="<%= @remodel_type %>">
 
-    <% @trades.each do |trade| %>
-      <div class="remodel-section <%= 'active' if selected_remodel.include?(trade) %>" data-remodel-section="<%= trade %>">
-        <h4><%= trade.capitalize %></h4>
-        <div class="field-grid">
-          <% trade_fields(trade).each do |field| %>
-            <div class="field">
-              <label><%= field[:label] %></label>
-              <% value = test_estimate_field_value(trade, field, @criteria) %>
-              <% input_name = "criteria[#{trade}][#{field[:name]}]" %>
-              <% case field[:type] %>
-              <% when :select %>
-                <select name="<%= input_name %>">
-                  <% field[:options].each do |opt| %>
-                    <option value="<%= opt %>" <%= 'selected' if opt.to_s == value.to_s %>><%= opt %></option>
+    <% remodel_types.each do |type| %>
+      <div class="remodel-type-form <%= 'active' if type == @remodel_type %>" data-remodel-type-form="<%= type %>">
+        <div class="preset-row">
+          <label class="mono">Scope preset</label>
+          <select name="remodel_preset" data-preset-for="<%= type %>">
+            <% remodel_presets(type).each do |preset| %>
+              <option value="<%= preset[:value] %>" <%= 'selected' if preset[:value] == @remodel_preset && type == @remodel_type %>><%= preset[:label] %></option>
+            <% end %>
+          </select>
+        </div>
+
+        <% remodel_sections(type).each do |section| %>
+          <% gate_attr = section[:preset_gate] ? section[:preset_gate].join(",") : "" %>
+          <div class="remodel-section" data-section-key="<%= section[:key] %>" data-preset-gate="<%= gate_attr %>">
+            <h4><%= section[:label] %></h4>
+            <div class="field-grid">
+              <% section[:fields].each do |field| %>
+                <div class="field">
+                  <label><%= field[:label] %><%= ' (auto)' if field[:auto] %></label>
+                  <% value = remodel_field_value(type, section[:key], field, @remodel_input) %>
+                  <% input_name = "remodel[#{type}][#{section[:key]}][#{field[:name]}]" %>
+                  <% case field[:type] %>
+                  <% when :select %>
+                    <select name="<%= input_name %>">
+                      <% field[:options].each do |opt| %>
+                        <option value="<%= opt %>" <%= 'selected' if opt.to_s == value.to_s %>><%= opt %></option>
+                      <% end %>
+                    </select>
+                  <% when :number %>
+                    <input type="number" name="<%= input_name %>" step="<%= field[:step] || 'any' %>" value="<%= value %>">
+                  <% else %>
+                    <input type="text" name="<%= input_name %>" value="<%= value %>">
                   <% end %>
-                </select>
-              <% when :number %>
-                <input type="number" name="<%= input_name %>" step="<%= field[:step] || 'any' %>" value="<%= value %>">
-              <% else %>
-                <input type="text" name="<%= input_name %>" value="<%= value %>">
+                </div>
               <% end %>
             </div>
-          <% end %>
-        </div>
+          </div>
+        <% end %>
       </div>
     <% end %>
   </div>
@@ -231,11 +245,18 @@
 <%# ================= RESULTS ================= %>
 <% if @submitted && @results.any? %>
   <div class="panel results">
-    <h2>Results</h2>
+    <h2>Results<% if @mode == 'remodel' %> — <%= remodel_type_label(@remodel_type) %> / <%= (remodel_presets(@remodel_type).find { |p| p[:value] == @remodel_preset } || {})[:label] %><% end %></h2>
+
     <% @results.each do |r| %>
+      <% heading = r[:package_label] || r[:trade].to_s.capitalize %>
       <div style="margin-bottom: 24px;">
-        <h3><%= r[:trade].capitalize %></h3>
-        <% if r[:error] %>
+        <h3><%= heading %><% if r[:unported] %> <span style="color:#fbbf24;">[Builder not ported]</span><% end %></h3>
+
+        <% if r[:unported] %>
+          <div class="error" style="color:#fbbf24; border-color:rgba(251,191,36,0.3); background:rgba(251,191,36,0.06);">
+            <strong><%= heading %></strong> — no <code class="mono">MaterialListGenerator</code> builder exists for this trade yet. Flagged for pricing-key / builder-port ticket.
+          </div>
+        <% elsif r[:error] %>
           <div class="error">Error: <%= r[:error] %></div>
         <% else %>
           <table>
@@ -243,6 +264,7 @@
               <tr>
                 <th>Item</th>
                 <th>Source</th>
+                <th>Category</th>
                 <th class="num">Qty</th>
                 <th>Unit</th>
                 <th class="num">Unit $</th>
@@ -253,6 +275,7 @@
               <% r[:material_list].each do |line| %>
                 <tr>
                   <td><%= line[:item] || line["item"] %></td>
+                  <td class="src"><%= price_source_label(line) %></td>
                   <td class="src"><%= line[:category] || line["category"] %></td>
                   <td class="num"><%= line[:quantity] || line["quantity"] %></td>
                   <td><%= line[:unit] || line["unit"] %></td>
@@ -284,42 +307,51 @@
       </div>
     <% end %>
 
-    <% if @mode == "remodel" && @results.length > 1 %>
-      <% grand_material = @results.sum { |r| r[:total_material_cost].to_f } %>
-      <% grand_hours    = @results.sum { |r| r[:labor_hours].to_f } %>
-      <% grand_labor    = @results.sum { |r| r[:labor_cost].to_f } %>
-      <% grand_total    = @results.sum { |r| r[:trade_total].to_f } %>
+    <% if @mode == "remodel" && @remodel_summary %>
       <div class="grand-summary">
-        <h3>Remodel Scope — Grand Totals</h3>
+        <h3>Remodel Scope — Trade Summary</h3>
         <table style="margin-top: 12px;">
           <thead>
             <tr>
-              <th>Trade</th>
-              <th class="num">Materials</th>
-              <th class="num">Labor Hours</th>
-              <th class="num">Labor Cost</th>
-              <th class="num">Trade Total</th>
+              <th>Trade Package</th>
+              <th class="num">Material</th>
+              <th class="num">Labor</th>
+              <th class="num">Total</th>
             </tr>
           </thead>
           <tbody>
             <% @results.each do |r| %>
-              <tr>
-                <td><%= r[:trade].capitalize %></td>
+              <tr class="<%= 'unported' if r[:unported] %>">
+                <td><%= r[:package_label] || r[:trade].to_s.capitalize %><%= ' *' if r[:unported] %></td>
                 <td class="num"><%= format_money(r[:total_material_cost]) %></td>
-                <td class="num"><%= format_hours(r[:labor_hours]) %></td>
                 <td class="num"><%= format_money(r[:labor_cost]) %></td>
                 <td class="num"><%= format_money(r[:trade_total]) %></td>
               </tr>
             <% end %>
             <tr style="border-top: 2px solid #06b6d4;">
-              <td><strong>Grand Total</strong></td>
-              <td class="num"><strong><%= format_money(grand_material) %></strong></td>
-              <td class="num"><strong><%= format_hours(grand_hours) %></strong></td>
-              <td class="num"><strong><%= format_money(grand_labor) %></strong></td>
-              <td class="num"><strong style="color: #06b6d4;"><%= format_money(grand_total) %></strong></td>
+              <td><strong>Direct Total</strong></td>
+              <td class="num"><strong><%= format_money(@remodel_summary[:direct_material]) %></strong></td>
+              <td class="num"><strong><%= format_money(@remodel_summary[:direct_labor]) %></strong></td>
+              <td class="num"><strong><%= format_money(@remodel_summary[:direct_total]) %></strong></td>
+            </tr>
+            <tr>
+              <td>GC Overhead (<%= format('%d%%', (@remodel_summary[:gc_pct] * 100).round) %>)</td>
+              <td></td><td></td>
+              <td class="num"><%= format_money(@remodel_summary[:gc_overhead]) %></td>
+            </tr>
+            <tr>
+              <td>Contingency (10%)</td>
+              <td></td><td></td>
+              <td class="num"><%= format_money(@remodel_summary[:contingency]) %></td>
+            </tr>
+            <tr style="border-top: 2px solid #06b6d4;">
+              <td><strong>Project Total</strong></td>
+              <td></td><td></td>
+              <td class="num"><strong style="color:#06b6d4;"><%= format_money(@remodel_summary[:grand_total]) %></strong></td>
             </tr>
           </tbody>
         </table>
+        <p class="note" style="margin-top:10px;">* <code class="mono">[Builder not ported]</code> rows contribute $0 until their trade builder lands. Grand total under-states project cost. See escalation comment on TEA-239 for the gap list.</p>
       </div>
     <% end %>
   </div>
@@ -331,10 +363,10 @@
   var singlePanel = document.getElementById("single-panel");
   var remodelPanel = document.getElementById("remodel-panel");
 
-  document.querySelectorAll(".mode-btn").forEach(function(btn) {
+  document.querySelectorAll(".mode-btn[data-mode]").forEach(function(btn) {
     btn.addEventListener("click", function() {
       var mode = btn.dataset.mode;
-      document.querySelectorAll(".mode-btn").forEach(function(b) { b.classList.remove("active"); });
+      document.querySelectorAll(".mode-btn[data-mode]").forEach(function(b) { b.classList.remove("active"); });
       btn.classList.add("active");
       modeInput.value = mode;
       singlePanel.style.display  = (mode === "single")  ? "" : "none";
@@ -355,13 +387,94 @@
     });
   });
 
-  document.querySelectorAll("[data-remodel-toggle]").forEach(function(cb) {
-    cb.addEventListener("change", function() {
-      var trade = cb.dataset.remodelToggle;
-      var section = document.querySelector('[data-remodel-section="' + trade + '"]');
-      if (section) section.classList.toggle("active", cb.checked);
+  // Remodel: Level 2 (type) + Level 3 (preset) show/hide
+  var remodelTypeInput = document.getElementById("remodel-type-input");
+  function applyPresetGate(typeForm) {
+    var presetSelect = typeForm.querySelector('select[name="remodel_preset"]');
+    if (!presetSelect) return;
+    var preset = presetSelect.value;
+    typeForm.querySelectorAll("[data-preset-gate]").forEach(function(sec) {
+      var gate = sec.dataset.presetGate;
+      if (!gate) { sec.classList.remove("preset-hidden"); return; }
+      var allowed = gate.split(",").filter(Boolean);
+      sec.classList.toggle("preset-hidden", allowed.indexOf(preset) === -1);
+    });
+  }
+
+  // Only the active type form contributes to the submission; inactive
+  // selects stay in the DOM (so state survives toggling) but get `disabled`
+  // so their values aren't posted and the server-side preset lookup is
+  // unambiguous.
+  function syncActiveTypeDisabled(type) {
+    document.querySelectorAll("[data-remodel-type-form]").forEach(function(f) {
+      var active = f.dataset.remodelTypeForm === type;
+      f.querySelectorAll("input, select").forEach(function(el) {
+        if (active) el.removeAttribute("disabled"); else el.setAttribute("disabled", "disabled");
+      });
+    });
+  }
+
+  document.querySelectorAll("[data-remodel-type]").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var type = btn.dataset.remodelType;
+      document.querySelectorAll("[data-remodel-type]").forEach(function(b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      remodelTypeInput.value = type;
+      document.querySelectorAll("[data-remodel-type-form]").forEach(function(f) {
+        f.classList.toggle("active", f.dataset.remodelTypeForm === type);
+      });
+      syncActiveTypeDisabled(type);
+      var active = document.querySelector('[data-remodel-type-form="' + type + '"]');
+      if (active) applyPresetGate(active);
     });
   });
+
+  // Initial sync so a page load with @remodel_type="kitchen" disables bathroom/addition inputs.
+  syncActiveTypeDisabled(remodelTypeInput.value);
+
+  document.querySelectorAll('select[name="remodel_preset"]').forEach(function(sel) {
+    sel.addEventListener("change", function() {
+      var typeForm = sel.closest('[data-remodel-type-form]');
+      if (typeForm) applyPresetGate(typeForm);
+    });
+  });
+
+  // Init preset gating on page load for the active type form
+  var activeForm = document.querySelector('.remodel-type-form.active');
+  if (activeForm) applyPresetGate(activeForm);
+
+  // Auto-calc: when sibling fields change, refresh [auto] fields with spec defaults
+  // (only when user hasn't manually touched them). Simple JS per spec.
+  function setIfAuto(name, value, typeForm) {
+    var el = typeForm.querySelector('[name="' + name + '"]');
+    if (!el) return;
+    if (el.dataset.userTouched === "1") return;
+    el.value = value;
+  }
+  function recomputeAutos(typeForm) {
+    var type = typeForm.dataset.remodelTypeForm;
+    var val = function(n) { var e = typeForm.querySelector('[name="' + n + '"]'); return e ? e.value : ""; };
+    if (type === "kitchen") {
+      var baseLf = parseFloat(val("remodel[kitchen][cabinets][base_cabinet_lf]")) || 0;
+      var kitchenSqft = parseFloat(val("remodel[kitchen][scope][kitchen_sqft]")) || 0;
+      setIfAuto("remodel[kitchen][countertops][counter_sqft]", Math.round(baseLf * 2), typeForm);
+      var counterSqft = parseFloat(val("remodel[kitchen][countertops][counter_sqft]")) || 0;
+      setIfAuto("remodel[kitchen][backsplash][backsplash_sqft]", Math.round((counterSqft / 2) * 1.5), typeForm);
+      setIfAuto("remodel[kitchen][flooring][flooring_sqft]", kitchenSqft, typeForm);
+      setIfAuto("remodel[kitchen][electrical][gfci_outlets]", Math.max(2, Math.ceil(kitchenSqft / 45)), typeForm);
+    } else if (type === "bathroom") {
+      var bathSqft = parseFloat(val("remodel[bathroom][scope][bathroom_sqft]")) || 0;
+      setIfAuto("remodel[bathroom][tile][floor_tile_sqft]", bathSqft, typeForm);
+    }
+  }
+  document.querySelectorAll(".remodel-type-form input, .remodel-type-form select").forEach(function(el) {
+    el.addEventListener("input", function() {
+      el.dataset.userTouched = "1";
+      var form = el.closest('[data-remodel-type-form]');
+      if (form) recomputeAutos(form);
+    });
+  });
+  document.querySelectorAll(".remodel-type-form.active").forEach(recomputeAutos);
 })();
 </script>
 
