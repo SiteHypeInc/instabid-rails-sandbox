@@ -25,6 +25,7 @@ class MaterialListGenerator
     when "painting" then build_painting
     when "siding"   then build_siding
     when "hvac"     then build_hvac
+    when "electrical" then build_electrical
     else
       raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
     end
@@ -1508,6 +1509,329 @@ class MaterialListGenerator
       total_material_cost: (total_material_cost * 100).round / 100.0,
       labor_hours:         (labor_hours * 100).round / 100.0,
       material_list:       material_list
+    }
+  end
+
+  # -- Electrical ----------------------------------------------------------
+
+  ELECTRICAL_AVG_RUN_PER_DEVICE = 25
+  ELECTRICAL_PANEL_MISC  = { "100" => 200, "200" => 250, "400" => 400 }.freeze
+  ELECTRICAL_PANEL_LABOR = { "100" => 8,   "200" => 10,  "400" => 16  }.freeze
+
+  def build_electrical
+    sqft = (@criteria[:squareFootage] ||
+            @criteria[:square_footage] ||
+            @criteria[:squareFeet] ||
+            @criteria[:square_feet] || 0).to_f
+
+    service_type = (@criteria[:serviceType] || @criteria[:service_type] || "general").to_s.downcase
+    amperage     = (@criteria[:amperage] || "200").to_s
+    home_age     = (@criteria[:homeAge] || @criteria[:home_age] || "1990+").to_s
+    stories      = (@criteria[:stories] || 1).to_i
+
+    outlet_count    = (@criteria[:outletCount]     || @criteria[:outlet_count]     || 0).to_i
+    gfci_count      = (@criteria[:gfciCount]       || @criteria[:gfci_count]       || 0).to_i
+    switch_count    = (@criteria[:switchCount]     || @criteria[:switch_count]     || 0).to_i
+    dimmer_count    = (@criteria[:dimmerCount]     || @criteria[:dimmer_count]     || 0).to_i
+    fixture_count   = (@criteria[:fixtureCount]    || @criteria[:fixture_count]    || 0).to_i
+    recessed_count  = (@criteria[:recessedCount]   || @criteria[:recessed_count]   || 0).to_i
+    ceiling_fans    = (@criteria[:ceilingFanCount] || @criteria[:ceiling_fan_count] || 0).to_i
+    circuits_20a    = (@criteria[:circuits20a] || @criteria[:circuits_20a] || 0).to_i
+    circuits_30a    = (@criteria[:circuits30a] || @criteria[:circuits_30a] || 0).to_i
+    circuits_50a    = (@criteria[:circuits50a] || @criteria[:circuits_50a] || 0).to_i
+
+    ev_charger = (@criteria[:evCharger] || @criteria[:ev_charger]).to_s.downcase
+    permit_val = @criteria[:permit]
+
+    labor_rate = @hourly_rate
+    wire_lf    = price("elec_wire_lf", 1.00)
+    avg_run    = ELECTRICAL_AVG_RUN_PER_DEVICE
+
+    age_multiplier = case home_age
+                     when "pre-1960"  then 2.0
+                     when "1960-1990" then 1.25
+                     else                  1.0
+                     end
+
+    story_multiplier = if stories >= 3 then 1.35
+                       elsif stories == 2 then 1.15
+                       else 1.0
+                       end
+
+    complexity_multiplier = age_multiplier * story_multiplier
+    total_labor_hours = 0.0
+
+    panel_costs = {
+      "100" => price("elec_panel_100", 450.00),
+      "200" => price("elec_panel_200", 550.00),
+      "400" => price("elec_panel_400", 1200.00)
+    }
+
+    material_list = []
+
+    if service_type == "panel"
+      panel_hours = ELECTRICAL_PANEL_LABOR[amperage] || 10
+      total_labor_hours += panel_hours
+      panel_cost = panel_costs[amperage] || panel_costs["200"]
+      panel_misc = ELECTRICAL_PANEL_MISC[amperage] || 250
+      material_list << {
+        item:       "#{amperage}A Panel Upgrade",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  panel_cost,
+        total_cost: panel_cost,
+        category:   "Panel"
+      }
+      material_list << {
+        item:       "Breakers, Connectors & Misc",
+        quantity:   1,
+        unit:       "lot",
+        unit_cost:  panel_misc,
+        total_cost: panel_misc,
+        category:   "Panel"
+      }
+    end
+
+    if service_type == "rewire"
+      rewire_sqft_price = price("elec_rewire_sqft", 11.50)
+      rewire_total = sqft * rewire_sqft_price
+      rewire_hours = (sqft / 100.0) * 4
+      total_labor_hours += rewire_hours + (ELECTRICAL_PANEL_LABOR[amperage] || 10)
+
+      panel_cost = panel_costs[amperage] || panel_costs["200"]
+      panel_misc = ELECTRICAL_PANEL_MISC[amperage] || 250
+
+      material_list << {
+        item:       "Full Rewire (#{sqft} sqft)",
+        quantity:   sqft,
+        unit:       "sqft",
+        unit_cost:  rewire_sqft_price,
+        total_cost: rewire_total,
+        category:   "Rewire"
+      }
+      material_list << {
+        item:       "#{amperage}A Panel",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  panel_cost,
+        total_cost: panel_cost,
+        category:   "Panel"
+      }
+      material_list << {
+        item:       "Breakers, Connectors & Misc",
+        quantity:   1,
+        unit:       "lot",
+        unit_cost:  panel_misc,
+        total_cost: panel_misc,
+        category:   "Panel"
+      }
+    end
+
+    if service_type == "circuits" || service_type == "general"
+      if ceiling_fans > 0
+        install = price("elec_ceiling_fan_install", 200.00)
+        hardware = 15
+        wire_cost = avg_run * wire_lf
+        unit_cost = install + hardware + wire_cost
+        material_list << {
+          item:       "Ceiling Fan Install (labor + hardware + wire)",
+          quantity:   ceiling_fans,
+          unit:       "each",
+          unit_cost:  unit_cost,
+          total_cost: ceiling_fans * unit_cost,
+          category:   "Lighting"
+        }
+        total_labor_hours += ceiling_fans * (install / labor_rate)
+      end
+
+      if outlet_count > 0
+        p = price("elec_outlet", 12.00)
+        wire_cost = avg_run * wire_lf
+        unit_cost = p + wire_cost
+        material_list << {
+          item:       "Standard Outlets (w/ wire)",
+          quantity:   outlet_count,
+          unit:       "each",
+          unit_cost:  unit_cost,
+          total_cost: outlet_count * unit_cost,
+          category:   "Outlets"
+        }
+        total_labor_hours += outlet_count * 0.75
+      end
+
+      if gfci_count > 0
+        p = price("elec_outlet_gfci", 35.00)
+        wire_cost = avg_run * wire_lf
+        unit_cost = p + wire_cost
+        material_list << {
+          item:       "GFCI Outlets (w/ wire)",
+          quantity:   gfci_count,
+          unit:       "each",
+          unit_cost:  unit_cost,
+          total_cost: gfci_count * unit_cost,
+          category:   "Outlets"
+        }
+        total_labor_hours += gfci_count * 1.0
+      end
+
+      if switch_count > 0
+        p = price("elec_switch", 10.00)
+        wire_cost = avg_run * wire_lf
+        unit_cost = p + wire_cost
+        material_list << {
+          item:       "Standard Switches (w/ wire)",
+          quantity:   switch_count,
+          unit:       "each",
+          unit_cost:  unit_cost,
+          total_cost: switch_count * unit_cost,
+          category:   "Switches"
+        }
+        total_labor_hours += switch_count * 0.5
+      end
+
+      if dimmer_count > 0
+        p = price("elec_switch_dimmer", 50.00)
+        wire_cost = avg_run * wire_lf
+        unit_cost = p + wire_cost
+        material_list << {
+          item:       "Dimmer Switches (w/ wire)",
+          quantity:   dimmer_count,
+          unit:       "each",
+          unit_cost:  unit_cost,
+          total_cost: dimmer_count * unit_cost,
+          category:   "Switches"
+        }
+        total_labor_hours += dimmer_count * 0.75
+      end
+
+      if fixture_count > 0
+        install = price("elec_light_install", 35.00)
+        hardware = 15
+        unit_cost = install + hardware
+        material_list << {
+          item:       "Light Fixture Install (labor + hardware)",
+          quantity:   fixture_count,
+          unit:       "each",
+          unit_cost:  unit_cost,
+          total_cost: fixture_count * unit_cost,
+          category:   "Lighting"
+        }
+        total_labor_hours += fixture_count * (install / labor_rate)
+      end
+
+      if recessed_count > 0
+        p = price("elec_recessed", 55.00)
+        material_list << {
+          item:       "Recessed Lights",
+          quantity:   recessed_count,
+          unit:       "each",
+          unit_cost:  p,
+          total_cost: recessed_count * p,
+          category:   "Lighting"
+        }
+        total_labor_hours += recessed_count * 1.5
+      end
+
+      if circuits_20a > 0
+        p = price("elec_circuit_20a", 95.00)
+        material_list << {
+          item:       "20A Dedicated Circuit",
+          quantity:   circuits_20a,
+          unit:       "each",
+          unit_cost:  p,
+          total_cost: circuits_20a * p,
+          category:   "Circuits"
+        }
+        total_labor_hours += circuits_20a * 2.0
+      end
+
+      if circuits_30a > 0
+        p = price("elec_circuit_30a", 130.00)
+        material_list << {
+          item:       "30A Dedicated Circuit",
+          quantity:   circuits_30a,
+          unit:       "each",
+          unit_cost:  p,
+          total_cost: circuits_30a * p,
+          category:   "Circuits"
+        }
+        total_labor_hours += circuits_30a * 2.5
+      end
+
+      if circuits_50a > 0
+        p = price("elec_circuit_50a", 185.00)
+        material_list << {
+          item:       "50A Dedicated Circuit",
+          quantity:   circuits_50a,
+          unit:       "each",
+          unit_cost:  p,
+          total_cost: circuits_50a * p,
+          category:   "Circuits"
+        }
+        total_labor_hours += circuits_50a * 3.0
+      end
+    end
+
+    if ev_charger == "yes"
+      ev_price = price("elec_ev_charger", 350.00)
+      ev_wire_run = 100
+      unit_cost = ev_price + ev_wire_run
+      material_list << {
+        item:       "EV Charger Install + Wire Run",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  unit_cost,
+        total_cost: unit_cost,
+        category:   "Specialty"
+      }
+      total_labor_hours += 4
+    end
+
+    # Legacy JS parity: permit included unless explicitly "no".
+    permit_str = permit_val.to_s.downcase
+    unless permit_str == "no"
+      permit_price = price("elec_permit", 200.00)
+      material_list << {
+        item:       "Electrical Permit",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  permit_price,
+        total_cost: permit_price,
+        category:   "Permit"
+      }
+    end
+
+    material_list << {
+      item:       "Equipment & Consumables",
+      quantity:   1,
+      unit:       "lot",
+      unit_cost:  150,
+      total_cost: 150,
+      category:   "Equipment"
+    }
+
+    total_labor_hours *= complexity_multiplier
+    total_labor_hours = 2 if total_labor_hours < 2
+
+    labor_cost = total_labor_hours * labor_rate
+    material_list << {
+      item:       "Labor (#{home_age} home, #{stories}-story)",
+      quantity:   (total_labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  labor_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
+                                       .sum { |i| i[:total_cost] }
+
+    {
+      trade:                 "electrical",
+      total_material_cost:   (total_material_cost * 100).round / 100.0,
+      labor_hours:           (total_labor_hours * 10).round / 10.0,
+      material_list:         material_list,
+      complexity_multiplier: complexity_multiplier
     }
   end
 
