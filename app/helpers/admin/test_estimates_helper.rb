@@ -519,14 +519,45 @@ module Admin
       REMODEL_PACKAGE_LABELS[pkg.to_s] || pkg.to_s.tr("_", " ").capitalize
     end
 
-    # [Manual] / [BigBox Live HD] / [Web Search] label for a material list line.
-    # The MaterialListGenerator stamps each line's source via PricingResolver.
-    # A missing source (pre-patch lines / tests) falls back to [Manual] so the
-    # column is always populated.
+    # [Manual] / [BigBox Live HD] / [Web Search] / [Web Search Range · pending]
+    # label for a material list line. The MaterialListGenerator stamps each
+    # line's source via PricingResolver. A missing source (pre-patch lines /
+    # tests) falls back to [Manual] so the column is always populated.
+    # Medium-confidence lines append "· pending" to make the estimate's softness
+    # visible without dropping the underlying source (TEA-236 smoke #1).
     def price_source_label(line)
       raw = (line[:source] || line["source"]).to_s
       raw = "Manual" if raw.empty?
-      "[#{raw}]"
+      confidence = (line[:confidence] || line["confidence"]).to_s
+      suffix = confidence == "medium" ? " · pending" : ""
+      "[#{raw}#{suffix}]"
+    end
+
+    # Render unit_cost as a "$low–$high" range when the resolver returned one
+    # (web_search_range seeds carry price_low/price_high). Falls back to the
+    # flat price otherwise so existing lines are unaffected.
+    def format_unit_cost(line)
+      low  = line[:price_low]  || line["price_low"]
+      high = line[:price_high] || line["price_high"]
+      if low && high
+        "#{format_money(low)}–#{format_money(high)}"
+      else
+        format_money(line[:unit_cost] || line["unit_cost"])
+      end
+    end
+
+    # Total renders as a range when price_low/price_high are present. Quantity
+    # scales both bounds so the total card's sum stays consistent with the
+    # midpoint unit_cost used for @total_material_cost.
+    def format_line_total(line)
+      low  = line[:price_low]  || line["price_low"]
+      high = line[:price_high] || line["price_high"]
+      qty  = (line[:quantity] || line["quantity"] || 1).to_f
+      if low && high
+        "#{format_money(low.to_f * qty)}–#{format_money(high.to_f * qty)}"
+      else
+        format_money(line[:total_cost] || line["total_cost"])
+      end
     end
   end
 end
