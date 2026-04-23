@@ -35,7 +35,13 @@ class MaterialListGenerator
              when "backsplash"  then build_backsplash
              when "appliances"  then build_appliances
              when "demolition"  then build_demolition
-             when "trim"        then build_trim
+             when "trim"          then build_trim
+             when "vanity"        then build_vanity
+             when "tile"          then build_tile
+             when "glass"         then build_glass_enclosure
+             when "shower"        then build_shower_system
+             when "waterproofing" then build_waterproofing
+             when "heated_floor"  then build_heated_floor
              else
                raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
              end
@@ -2589,6 +2595,422 @@ class MaterialListGenerator
 
     {
       trade:               "trim",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  # ============================================================================
+  # Bath-cluster builders (TEA-240)
+  # Covers Bath Standard and Shower-Focused Gut presets from the TEA-238 spec.
+  # ============================================================================
+
+  VANITY_TYPE_MULT = {
+    "stock"       => 1.0,
+    "semi"        => 1.6,
+    "semi-custom" => 1.6,
+    "custom"      => 2.4,
+    "floating"    => 1.8,
+  }.freeze
+
+  VANITY_WIDTH_BASE = {
+    "24" => 350.00,
+    "30" => 475.00,
+    "36" => 625.00,
+    "48" => 850.00,
+    "60" => 1350.00,  # double
+    "72" => 1650.00,  # double
+  }.freeze
+
+  def build_vanity
+    type   = (@criteria[:vanityType]  || @criteria[:vanity_type]  || "stock").to_s.downcase
+    width  = (@criteria[:vanityWidth] || @criteria[:vanity_width] || "30").to_s
+    medicine_cab = (@criteria[:medicineCabinet] || @criteria[:medicine_cabinet] || "none").to_s.downcase
+
+    width_key = width.gsub(/[^\d]/, "")
+    base_price = VANITY_WIDTH_BASE[width_key] || 475.00
+    mult = VANITY_TYPE_MULT[type] || 1.0
+
+    vanity_default = (base_price * mult).round(2)
+    pricing_key = "vanity_#{type.tr('-', '_')}_#{width_key}"
+    unit_cost = price(pricing_key, vanity_default)
+
+    material_list = []
+    labor_hours = 0.0
+
+    material_list << {
+      item:       "Vanity #{width}in (#{type})",
+      quantity:   1,
+      unit:       "each",
+      unit_cost:  unit_cost,
+      total_cost: unit_cost,
+      category:   "Vanity"
+    }
+    # Double-wide: 60in+ gets twice the installation time
+    labor_hours += width_key.to_i >= 60 ? 5.0 : 3.0
+
+    if medicine_cab == "surface"
+      mc_unit = price("vanity_medicine_cab_surface", 185.00)
+      material_list << { item: "Medicine Cabinet (surface)", quantity: 1, unit: "each",
+                         unit_cost: mc_unit, total_cost: mc_unit, category: "Vanity" }
+      labor_hours += 0.75
+    elsif medicine_cab == "recessed"
+      mc_unit = price("vanity_medicine_cab_recessed", 325.00)
+      material_list << { item: "Medicine Cabinet (recessed)", quantity: 1, unit: "each",
+                         unit_cost: mc_unit, total_cost: mc_unit, category: "Vanity" }
+      labor_hours += 2.5
+    end
+
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Vanity Install Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "vanity",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  TILE_MATERIAL_KEYS = {
+    "ceramic"        => ["floor_tile_ceramic",   5.50],
+    "porcelain"      => ["floor_tile_porcelain", 7.25],
+    "natural stone"  => ["floor_marble",        12.00],
+    "natural_stone"  => ["floor_marble",        12.00],
+    "marble"         => ["floor_marble",        12.00],
+    "travertine"     => ["floor_marble",        10.50],
+  }.freeze
+
+  TILE_COMPLEXITY_LABOR_MULT = {
+    "standard"    => 1.0,
+    "subway"      => 1.1,
+    "herringbone" => 1.4,
+    "mosaic"      => 1.5,
+  }.freeze
+
+  def build_tile
+    floor_material = (@criteria[:floorTileMaterial] || @criteria[:floor_tile_material] || "ceramic").to_s.downcase
+    floor_area     = (@criteria[:floorTileArea]     || @criteria[:floor_tile_area]     || 0).to_f
+    wall_height    = (@criteria[:showerWallTile]    || @criteria[:shower_wall_tile]    || "none").to_s.downcase
+    shower_size    = (@criteria[:showerSize]        || @criteria[:shower_size]         || "standard_36x36").to_s.downcase
+    complexity     = (@criteria[:tileComplexity]    || @criteria[:tile_complexity]     || "standard").to_s.downcase
+    accent         = truthy?(@criteria[:accentTile] || @criteria[:accent_tile])
+
+    material_list = []
+    labor_hours = 0.0
+
+    # Floor tile
+    if floor_area > 0
+      fkey, fdefault = TILE_MATERIAL_KEYS[floor_material] || TILE_MATERIAL_KEYS["ceramic"]
+      unit = price(fkey, fdefault)
+      material_list << {
+        item:       "Floor Tile (#{floor_material})",
+        quantity:   floor_area,
+        unit:       "sqft",
+        unit_cost:  unit,
+        total_cost: (unit * floor_area * 100).round / 100.0,
+        category:   "Tile"
+      }
+      lmult = TILE_COMPLEXITY_LABOR_MULT.fetch(complexity, 1.0)
+      labor_hours += floor_area * 0.4 * lmult
+    end
+
+    # Shower walls (ceramic default pricing)
+    wall_area = case wall_height
+                when "none" then 0
+                when "partial", "partial_height", "partial (48\")", "partial_48" then shower_perimeter(shower_size) * 4.0
+                when "full", "full_height"                                       then shower_perimeter(shower_size) * 7.0
+                when "floor_to_ceiling", "floor-to-ceiling", "ceiling"           then shower_perimeter(shower_size) * 8.5
+                else 0
+                end
+    if wall_area > 0
+      wall_unit = price("floor_tile_ceramic", 5.50)
+      material_list << {
+        item:       "Shower Wall Tile",
+        quantity:   wall_area.round(1),
+        unit:       "sqft",
+        unit_cost:  wall_unit,
+        total_cost: (wall_unit * wall_area * 100).round / 100.0,
+        category:   "Tile"
+      }
+      labor_hours += wall_area * 0.5
+    end
+
+    total_area = floor_area + wall_area
+    if total_area > 0
+      thinset_bags = (total_area / 50.0).ceil
+      thinset_unit = price("tile_thinset_bag", 17.74)
+      material_list << {
+        item:       "Thinset Mortar",
+        quantity:   thinset_bags,
+        unit:       "bags",
+        unit_cost:  thinset_unit,
+        total_cost: (thinset_unit * thinset_bags * 100).round / 100.0,
+        category:   "Tile"
+      }
+      grout_bags = (total_area / 40.0).ceil
+      grout_unit = price("tile_grout_bag", 12.00)
+      material_list << {
+        item:       "Grout",
+        quantity:   grout_bags,
+        unit:       "bags",
+        unit_cost:  grout_unit,
+        total_cost: (grout_unit * grout_bags * 100).round / 100.0,
+        category:   "Tile"
+      }
+    end
+
+    if accent && wall_area > 0
+      accent_area = [wall_area * 0.1, 6.0].max
+      accent_unit = price("backsplash_mosaic_sqft", 22.00)
+      material_list << {
+        item:       "Accent Tile / Feature Wall",
+        quantity:   accent_area.round(1),
+        unit:       "sqft",
+        unit_cost:  accent_unit,
+        total_cost: (accent_unit * accent_area * 100).round / 100.0,
+        category:   "Tile"
+      }
+      labor_hours += accent_area * 0.8
+    end
+
+    if labor_hours > 0
+      labor_cost = labor_hours * @hourly_rate
+      material_list << {
+        item:       "Tile Install Labor",
+        quantity:   (labor_hours * 100).round / 100.0,
+        unit:       "hours",
+        unit_cost:  @hourly_rate,
+        total_cost: (labor_cost * 100).round / 100.0,
+        category:   "Labor"
+      }
+    end
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "tile",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def shower_perimeter(size)
+    # Perimeter in LF; assumes wall tile covers three walls (2 short + 1 long)
+    case size
+    when /48/ then 10.0  # 48x36 → 48+36+36 inches → 10 LF
+    when /60/ then 12.0  # 60x36 → 60+36+36 inches → 11 LF, round up
+    when /custom/ then 12.0
+    else 9.0             # 36x36 → 108 inches → 9 LF
+    end
+  end
+
+  GLASS_ENCLOSURE_KEYS = {
+    "none"              => [nil, 0],
+    "framed"            => ["glass_enclosure_framed",          950.00],
+    "semi-frameless"    => ["glass_enclosure_semi_frameless", 1850.00],
+    "semi_frameless"    => ["glass_enclosure_semi_frameless", 1850.00],
+    "frameless"         => ["glass_enclosure_frameless",      3500.00],
+    "curtain"           => [nil, 0],
+  }.freeze
+
+  def build_glass_enclosure
+    type = (@criteria[:showerGlass] || @criteria[:shower_glass] || "none").to_s.downcase
+    key, default = GLASS_ENCLOSURE_KEYS[type] || GLASS_ENCLOSURE_KEYS["none"]
+    return empty_trade_result("glass") if key.nil?
+
+    unit = price(key, default)
+    material_list = [{
+      item:       "Shower Glass Enclosure (#{type})",
+      quantity:   1,
+      unit:       "each",
+      unit_cost:  unit,
+      total_cost: unit,
+      category:   "Glass"
+    }]
+
+    labor_hours = case type
+                  when "framed" then 3.0
+                  when "semi-frameless", "semi_frameless" then 4.5
+                  when "frameless" then 6.0
+                  else 2.0
+                  end
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Glass Install Labor",
+      quantity:   labor_hours,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = unit
+    {
+      trade:               "glass",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  SHOWER_SYSTEM_KEYS = {
+    "single"        => ["shower_system_single",      425.00],
+    "single_head"   => ["shower_system_single",      425.00],
+    "rain"          => ["shower_system_rain",        850.00],
+    "rain + handheld" => ["shower_system_rain",      850.00],
+    "rain_handheld" => ["shower_system_rain",        850.00],
+    "multi"         => ["shower_system_multi",      2250.00],
+    "spa"           => ["shower_system_multi",      2250.00],
+    "multi-head"    => ["shower_system_multi",      2250.00],
+  }.freeze
+
+  def build_shower_system
+    type = (@criteria[:showerSystem] || @criteria[:shower_system] || "single").to_s.downcase
+    niche = (@criteria[:showerNiche] || @criteria[:shower_niche] || "none").to_s.downcase
+
+    key, default = SHOWER_SYSTEM_KEYS[type] || SHOWER_SYSTEM_KEYS["single"]
+    unit = price(key, default)
+
+    material_list = []
+    labor_hours = 0.0
+
+    material_list << {
+      item:       "Shower System (#{type})",
+      quantity:   1,
+      unit:       "each",
+      unit_cost:  unit,
+      total_cost: unit,
+      category:   "Shower"
+    }
+    labor_hours += case type
+                   when "single", "single_head" then 2.5
+                   when "rain", "rain_handheld" then 4.0
+                   else 6.5
+                   end
+
+    niche_count = case niche
+                  when "single" then 1
+                  when "double" then 2
+                  when "triple" then 3
+                  else 0
+                  end
+    if niche_count > 0
+      niche_unit = price("shower_niche_each", 225.00)
+      material_list << {
+        item:       "Shower Niche",
+        quantity:   niche_count,
+        unit:       "each",
+        unit_cost:  niche_unit,
+        total_cost: (niche_unit * niche_count * 100).round / 100.0,
+        category:   "Shower"
+      }
+      labor_hours += niche_count * 2.0
+    end
+
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Shower System Install Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "shower",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def build_waterproofing
+    sqft = (@criteria[:squareFeet] || @criteria[:square_feet] || @criteria[:waterproofingSqft] || @criteria[:waterproofing_sqft] || 0).to_f
+    return empty_trade_result("waterproofing") if sqft <= 0
+
+    unit = price("waterproofing_sqft", 8.50)
+    material_list = [{
+      item:       "Waterproofing Membrane",
+      quantity:   sqft,
+      unit:       "sqft",
+      unit_cost:  unit,
+      total_cost: (unit * sqft * 100).round / 100.0,
+      category:   "Waterproofing"
+    }]
+
+    labor_hours = sqft * 0.15
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Waterproofing Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "waterproofing",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def build_heated_floor
+    sqft = (@criteria[:heatedFloorSqft] || @criteria[:heated_floor_sqft] || @criteria[:squareFeet] || @criteria[:square_feet] || 0).to_f
+    enabled = @criteria.key?(:heatedFloor) || @criteria.key?(:heated_floor) ? truthy?(@criteria[:heatedFloor] || @criteria[:heated_floor]) : sqft > 0
+    return empty_trade_result("heated_floor") unless enabled && sqft > 0
+
+    mat_unit = price("heated_floor_mat_sqft", 14.00)
+    thermostat = price("heated_floor_thermostat", 185.00)
+
+    material_list = [
+      {
+        item:       "Heated Floor Mat",
+        quantity:   sqft,
+        unit:       "sqft",
+        unit_cost:  mat_unit,
+        total_cost: (mat_unit * sqft * 100).round / 100.0,
+        category:   "Heated Floor"
+      },
+      {
+        item:       "Programmable Thermostat",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  thermostat,
+        total_cost: thermostat,
+        category:   "Heated Floor"
+      }
+    ]
+
+    labor_hours = sqft * 0.2 + 1.5  # base 1.5h for thermostat + wiring
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Heated Floor Install Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+    {
+      trade:               "heated_floor",
       total_material_cost: (total_material_cost * 100).round / 100.0,
       labor_hours:         (labor_hours * 10).round / 10.0,
       material_list:       material_list
