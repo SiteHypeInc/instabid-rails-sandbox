@@ -20,6 +20,7 @@ class MaterialListGenerator
     case @trade
     when "roofing"  then build_roofing
     when "plumbing" then build_plumbing
+    when "drywall"  then build_drywall
     else
       raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
     end
@@ -606,6 +607,204 @@ class MaterialListGenerator
       unit_cost:  unit,
       total_cost: unit,
       category:   "Add-ons"
+    }
+  end
+
+  # -- Drywall -------------------------------------------------------------
+
+  DRYWALL_WASTE = 1.12
+
+  def build_drywall
+    sqft          = (@criteria[:squareFeet]     || @criteria[:square_feet]     || 0).to_f
+    project_type  = (@criteria[:projectType]    || @criteria[:project_type]    || "new_construction").to_s.downcase
+    rooms         = (@criteria[:rooms]          || 1).to_i
+    ceiling_raw   = (@criteria[:ceilingHeight]  || @criteria[:ceiling_height]  || "8ft").to_s
+    ceil_height   = ceiling_raw.to_i.nonzero? || 8
+    finish_level  = (@criteria[:finishLevel]    || @criteria[:finish_level]    || "level_3_standard").to_s.downcase
+    texture_type  = (@criteria[:textureType]    || @criteria[:texture_type]    || "none").to_s.downcase
+    damage_extent = (@criteria[:damageExtent]   || @criteria[:damage_extent]   || "minor").to_s.downcase
+
+    sheet_half     = price("sheet_half",      12.00)
+    joint_compound = price("joint_compound",  18.00)
+    tape_unit      = price("tape",             8.00)
+    screws_unit    = price("screws",          12.00)
+    corner_bead    = price("corner_bead",      5.00)
+    hang_sqft      = price("hang_sqft",        0.75)
+    tape_sqft_rate = price("tape_sqft",        0.65)
+    sand_sqft_rate = price("sand_sqft",        0.35)
+    finish_3_mult  = price("finish_3",         1.0)
+    finish_4_mult  = price("finish_4",         1.25)
+    finish_5_mult  = price("finish_5",         1.50)
+    tex_orange     = price("texture_orange_peel", 0.80)
+    tex_knockdown  = price("texture_knockdown",   1.00)
+    tex_popcorn    = price("texture_popcorn",     0.65)
+    ceiling_10     = price("ceiling_10",       1.15)
+    ceiling_12     = price("ceiling_12",       1.30)
+    repair_minor   = price("repair_minor",   175.00)
+    repair_mod     = price("repair_moderate", 400.00)
+    repair_ext     = price("repair_extensive", 900.00)
+    labor_rate     = @hourly_rate
+
+    material_list = []
+    labor_hours   = 0.0
+
+    if project_type == "new_construction"
+      adjusted_sqft  = sqft * DRYWALL_WASTE
+      sheets_needed  = (adjusted_sqft / 32.0).ceil
+
+      material_list << {
+        item:       'Drywall Sheets (4x8, 1/2")',
+        quantity:   sheets_needed,
+        unit:       "sheets",
+        unit_cost:  sheet_half,
+        total_cost: sheets_needed * sheet_half,
+        category:   "Materials"
+      }
+
+      compound_buckets = (sheets_needed / 4.0).ceil
+      material_list << {
+        item:       "Joint Compound",
+        quantity:   compound_buckets,
+        unit:       "buckets",
+        unit_cost:  joint_compound,
+        total_cost: compound_buckets * joint_compound,
+        category:   "Materials"
+      }
+
+      tape_rolls = (sheets_needed / 8.0).ceil
+      material_list << {
+        item:       "Drywall Tape",
+        quantity:   tape_rolls,
+        unit:       "rolls",
+        unit_cost:  tape_unit,
+        total_cost: tape_rolls * tape_unit,
+        category:   "Materials"
+      }
+
+      screw_boxes = (sheets_needed / 5.0).ceil
+      material_list << {
+        item:       "Drywall Screws",
+        quantity:   screw_boxes,
+        unit:       "boxes",
+        unit_cost:  screws_unit,
+        total_cost: screw_boxes * screws_unit,
+        category:   "Materials"
+      }
+
+      corner_beads = (rooms * 4).ceil
+      material_list << {
+        item:       "Corner Beads (8ft)",
+        quantity:   corner_beads,
+        unit:       "pieces",
+        unit_cost:  corner_bead,
+        total_cost: corner_beads * corner_bead,
+        category:   "Materials"
+      }
+
+      labor_cost = sqft * (hang_sqft + tape_sqft_rate + sand_sqft_rate)
+
+      finish_mult, finish_label =
+        case finish_level
+        when "level_4_smooth" then [finish_4_mult, "Level 4 Smooth"]
+        when "level_5_glass"  then [finish_5_mult, "Level 5 Glass"]
+        else                       [finish_3_mult, "Level 3 Standard"]
+        end
+      labor_cost *= finish_mult
+
+      height_label = ""
+      if ceil_height >= 12
+        labor_cost  *= ceiling_12
+        height_label = ", 12ft+ ceilings"
+      elsif ceil_height >= 10
+        labor_cost  *= ceiling_10
+        height_label = ", 10ft ceilings"
+      end
+
+      labor_hours = labor_cost / labor_rate
+
+      if texture_type != "none"
+        texture_rate, texture_label =
+          case texture_type
+          when "orange_peel" then [tex_orange,    "Orange Peel"]
+          when "knockdown"   then [tex_knockdown, "Knockdown"]
+          when "popcorn"     then [tex_popcorn,   "Popcorn"]
+          end
+
+        if texture_rate
+          texture_cost = sqft * texture_rate
+          material_list << {
+            item:       "#{texture_label} Texture",
+            quantity:   sqft,
+            unit:       "sqft",
+            unit_cost:  sqft > 0 ? texture_cost / sqft : texture_rate,
+            total_cost: texture_cost,
+            category:   "Texture"
+          }
+          labor_hours += texture_cost / labor_rate
+        end
+      end
+
+      material_list << {
+        item:       "Installation Labor (#{finish_label}#{height_label})",
+        quantity:   (labor_hours * 10).round / 10.0,
+        unit:       "hours",
+        unit_cost:  labor_rate,
+        total_cost: labor_hours * labor_rate,
+        category:   "Labor"
+      }
+
+    elsif project_type == "repair"
+      repair_cost, repair_label =
+        case damage_extent
+        when "moderate"   then [repair_mod,   "Moderate"]
+        when "extensive"  then [repair_ext,   "Extensive"]
+        else                   [repair_minor, "Minor"]
+        end
+
+      material_list << {
+        item:       "Drywall Repair - #{repair_label}",
+        quantity:   1,
+        unit:       "job",
+        unit_cost:  repair_cost,
+        total_cost: repair_cost,
+        category:   "Repair"
+      }
+
+      labor_hours = (repair_cost * 0.7) / labor_rate
+
+      if texture_type != "none"
+        repair_sqft = [sqft, 100].min
+        texture_rate, texture_label =
+          case texture_type
+          when "orange_peel" then [tex_orange,    "Orange Peel"]
+          when "knockdown"   then [tex_knockdown, "Knockdown"]
+          when "popcorn"     then [tex_popcorn,   "Popcorn"]
+          end
+
+        if texture_rate && repair_sqft > 0
+          texture_cost = repair_sqft * texture_rate
+          material_list << {
+            item:       "#{texture_label} Texture Match",
+            quantity:   repair_sqft,
+            unit:       "sqft",
+            unit_cost:  texture_cost / repair_sqft,
+            total_cost: texture_cost,
+            category:   "Texture"
+          }
+          labor_hours += texture_cost / labor_rate
+        end
+      end
+    end
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
+                                       .sum { |i| i[:total_cost] }
+    total_material_cost = (total_material_cost * 100).round / 100.0
+
+    {
+      trade:               "drywall",
+      total_material_cost: total_material_cost,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
     }
   end
 end
