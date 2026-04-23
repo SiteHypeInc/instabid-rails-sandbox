@@ -1,0 +1,369 @@
+<%# TEA-236 — Test Estimate sandbox form. Internal only, not customer-facing. %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Test Estimate — InstaBid Sandbox Admin</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0a0e1a;
+      color: #e2e8f0;
+      font-size: 13px;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    a { color: inherit; text-decoration: none; }
+    .mono { font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace; }
+
+    .header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    .header h1 { font-size: 20px; font-weight: 700; color: #06b6d4; }
+    .header p { font-size: 12px; color: #64748b; margin-top: 4px; }
+    .header .breadcrumbs { font-size: 11px; color: #475569; margin-bottom: 6px; }
+    .header .breadcrumbs a:hover { color: #94a3b8; }
+
+    .mode-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
+    .mode-btn {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 1px solid #1e293b;
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .mode-btn.active { border: 2px solid #06b6d4; color: #06b6d4; background: rgba(6,182,212,0.12); }
+
+    .panel {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+    }
+    .panel h2 { font-size: 15px; font-weight: 700; color: #e2e8f0; margin-bottom: 12px; }
+    .panel h3 { font-size: 13px; font-weight: 700; color: #94a3b8; margin: 16px 0 8px; text-transform: uppercase; letter-spacing: .05em; }
+
+    .trade-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .trade-tab {
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid #1e293b;
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-transform: capitalize;
+    }
+    .trade-tab:hover { border-color: #334155; color: #e2e8f0; }
+    .trade-tab.active { border: 2px solid #06b6d4; background: rgba(6,182,212,0.12); color: #06b6d4; }
+
+    .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; }
+    .field input, .field select {
+      background: #1e293b; border: 1px solid #334155; color: #e2e8f0; border-radius: 6px;
+      padding: 7px 10px; font-size: 13px; font-family: inherit;
+    }
+    .field input:focus, .field select:focus { outline: none; border-color: #06b6d4; }
+
+    .submit-row { margin-top: 20px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .submit-btn {
+      background: #06b6d4; color: #0a0e1a; border: 0; border-radius: 8px;
+      padding: 10px 24px; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .submit-btn:hover { background: #0891b2; }
+    .hourly-field { display: flex; align-items: center; gap: 8px; }
+    .hourly-field input { width: 80px; }
+
+    .trade-form { display: none; }
+    .trade-form.active { display: block; }
+
+    .remodel-picker { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+    .remodel-picker label {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border: 1px solid #334155; border-radius: 6px;
+      font-size: 12px; text-transform: capitalize; cursor: pointer;
+    }
+    .remodel-picker input[type=checkbox] { accent-color: #06b6d4; }
+    .remodel-section { margin-top: 16px; padding: 16px; border: 1px solid #1e293b; border-radius: 8px; display: none; }
+    .remodel-section.active { display: block; }
+    .remodel-section h4 { font-size: 13px; color: #06b6d4; margin-bottom: 10px; text-transform: capitalize; }
+
+    .results table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    .results th, .results td { text-align: left; padding: 7px 10px; font-size: 12px; border-bottom: 1px solid #1e293b; }
+    .results th { color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: .05em; }
+    .results tr:hover { background: rgba(6,182,212,0.04); }
+    .results .num { text-align: right; font-family: 'JetBrains Mono', monospace; }
+    .results .src { color: #64748b; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+
+    .totals { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+    .total-card {
+      background: #0a0e1a; border: 1px solid #1e293b; border-radius: 8px;
+      padding: 10px 16px; min-width: 150px;
+    }
+    .total-card .label { color: #64748b; font-size: 10px; text-transform: uppercase; font-weight: 600; }
+    .total-card .value { font-size: 18px; font-weight: 700; margin-top: 4px; color: #e2e8f0; }
+    .total-card.grand { border-color: #06b6d4; background: rgba(6,182,212,0.08); }
+    .total-card.grand .value { color: #06b6d4; }
+
+    .error { padding: 12px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; color: #f87171; font-size: 12px; }
+    .grand-summary { margin-top: 20px; padding: 16px; background: rgba(6,182,212,0.05); border: 1px solid #06b6d4; border-radius: 10px; }
+    .grand-summary h3 { color: #06b6d4; }
+    .note { color: #64748b; font-size: 11px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="breadcrumbs"><a href="<%= admin_pricing_dashboard_path %>">Admin</a> / Test Estimate</div>
+  <h1>Test Estimate — Internal Sandbox</h1>
+  <p>Fill trade inputs &rarr; calls <code class="mono">MaterialListGenerator</code> &rarr; renders itemized material list, labor, and totals. Not customer-facing. (TEA-236)</p>
+</div>
+
+<form method="post" action="<%= admin_test_estimate_path %>" id="estimate-form">
+  <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+
+  <div class="mode-toggle">
+    <button type="button" class="mode-btn <%= 'active' if @mode == 'single' %>" data-mode="single">Single Trade</button>
+    <button type="button" class="mode-btn <%= 'active' if @mode == 'remodel' %>" data-mode="remodel">Remodel Scope (multi-trade)</button>
+  </div>
+  <input type="hidden" name="mode" id="mode-input" value="<%= @mode %>">
+
+  <%# ================= SINGLE-TRADE SECTION ================= %>
+  <div class="panel" id="single-panel" style="<%= 'display:none' if @mode == 'remodel' %>">
+    <div class="trade-tabs">
+      <% @trades.each do |trade| %>
+        <button type="button" class="trade-tab <%= 'active' if trade == @selected %>" data-trade="<%= trade %>"><%= trade %></button>
+      <% end %>
+    </div>
+    <input type="hidden" name="trade" id="trade-input" value="<%= @selected %>">
+
+    <% @trades.each do |trade| %>
+      <div class="trade-form <%= 'active' if trade == @selected %>" data-trade-form="<%= trade %>">
+        <h3><%= trade.capitalize %> inputs</h3>
+        <div class="field-grid">
+          <% trade_fields(trade).each do |field| %>
+            <div class="field">
+              <label><%= field[:label] %></label>
+              <% value = test_estimate_field_value(trade, field, @criteria) %>
+              <% input_name = "criteria[#{trade}][#{field[:name]}]" %>
+              <% case field[:type] %>
+              <% when :select %>
+                <select name="<%= input_name %>">
+                  <% field[:options].each do |opt| %>
+                    <option value="<%= opt %>" <%= 'selected' if opt.to_s == value.to_s %>><%= opt %></option>
+                  <% end %>
+                </select>
+              <% when :number %>
+                <input type="number" name="<%= input_name %>" step="<%= field[:step] || 'any' %>" value="<%= value %>">
+              <% else %>
+                <input type="text" name="<%= input_name %>" value="<%= value %>">
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# ================= REMODEL-SCOPE SECTION ================= %>
+  <div class="panel" id="remodel-panel" style="<%= 'display:none' if @mode == 'single' %>">
+    <h2>Pick trades to include</h2>
+    <div class="remodel-picker">
+      <% selected_remodel = Array(params[:remodel_trades]).map(&:to_s) %>
+      <% @trades.each do |trade| %>
+        <label>
+          <input type="checkbox" name="remodel_trades[]" value="<%= trade %>" data-remodel-toggle="<%= trade %>" <%= 'checked' if selected_remodel.include?(trade) %>>
+          <%= trade %>
+        </label>
+      <% end %>
+    </div>
+
+    <% @trades.each do |trade| %>
+      <div class="remodel-section <%= 'active' if selected_remodel.include?(trade) %>" data-remodel-section="<%= trade %>">
+        <h4><%= trade.capitalize %></h4>
+        <div class="field-grid">
+          <% trade_fields(trade).each do |field| %>
+            <div class="field">
+              <label><%= field[:label] %></label>
+              <% value = test_estimate_field_value(trade, field, @criteria) %>
+              <% input_name = "criteria[#{trade}][#{field[:name]}]" %>
+              <% case field[:type] %>
+              <% when :select %>
+                <select name="<%= input_name %>">
+                  <% field[:options].each do |opt| %>
+                    <option value="<%= opt %>" <%= 'selected' if opt.to_s == value.to_s %>><%= opt %></option>
+                  <% end %>
+                </select>
+              <% when :number %>
+                <input type="number" name="<%= input_name %>" step="<%= field[:step] || 'any' %>" value="<%= value %>">
+              <% else %>
+                <input type="text" name="<%= input_name %>" value="<%= value %>">
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="submit-row">
+    <div class="hourly-field">
+      <label class="mono" for="hourly_rate">Hourly rate $</label>
+      <input type="number" name="hourly_rate" id="hourly_rate" step="1" value="<%= @hourly_rate %>">
+    </div>
+    <button type="submit" class="submit-btn">Run estimate</button>
+    <span class="note">Read-only. No save, no PDF.</span>
+  </div>
+</form>
+
+<%# ================= RESULTS ================= %>
+<% if @submitted && @results.any? %>
+  <div class="panel results">
+    <h2>Results</h2>
+    <% @results.each do |r| %>
+      <div style="margin-bottom: 24px;">
+        <h3><%= r[:trade].capitalize %></h3>
+        <% if r[:error] %>
+          <div class="error">Error: <%= r[:error] %></div>
+        <% else %>
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Source</th>
+                <th class="num">Qty</th>
+                <th>Unit</th>
+                <th class="num">Unit $</th>
+                <th class="num">Line Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% r[:material_list].each do |line| %>
+                <tr>
+                  <td><%= line[:item] || line["item"] %></td>
+                  <td class="src"><%= line[:category] || line["category"] %></td>
+                  <td class="num"><%= line[:quantity] || line["quantity"] %></td>
+                  <td><%= line[:unit] || line["unit"] %></td>
+                  <td class="num"><%= format_money(line[:unit_cost] || line["unit_cost"]) %></td>
+                  <td class="num"><%= format_money(line[:total_cost] || line["total_cost"]) %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+          <div class="totals">
+            <div class="total-card">
+              <div class="label">Materials</div>
+              <div class="value"><%= format_money(r[:total_material_cost]) %></div>
+            </div>
+            <div class="total-card">
+              <div class="label">Labor Hours</div>
+              <div class="value"><%= format_hours(r[:labor_hours]) %></div>
+            </div>
+            <div class="total-card">
+              <div class="label">Labor Cost</div>
+              <div class="value"><%= format_money(r[:labor_cost]) %></div>
+            </div>
+            <div class="total-card grand">
+              <div class="label">Trade Total</div>
+              <div class="value"><%= format_money(r[:trade_total]) %></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <% if @mode == "remodel" && @results.length > 1 %>
+      <% grand_material = @results.sum { |r| r[:total_material_cost].to_f } %>
+      <% grand_hours    = @results.sum { |r| r[:labor_hours].to_f } %>
+      <% grand_labor    = @results.sum { |r| r[:labor_cost].to_f } %>
+      <% grand_total    = @results.sum { |r| r[:trade_total].to_f } %>
+      <div class="grand-summary">
+        <h3>Remodel Scope — Grand Totals</h3>
+        <table style="margin-top: 12px;">
+          <thead>
+            <tr>
+              <th>Trade</th>
+              <th class="num">Materials</th>
+              <th class="num">Labor Hours</th>
+              <th class="num">Labor Cost</th>
+              <th class="num">Trade Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @results.each do |r| %>
+              <tr>
+                <td><%= r[:trade].capitalize %></td>
+                <td class="num"><%= format_money(r[:total_material_cost]) %></td>
+                <td class="num"><%= format_hours(r[:labor_hours]) %></td>
+                <td class="num"><%= format_money(r[:labor_cost]) %></td>
+                <td class="num"><%= format_money(r[:trade_total]) %></td>
+              </tr>
+            <% end %>
+            <tr style="border-top: 2px solid #06b6d4;">
+              <td><strong>Grand Total</strong></td>
+              <td class="num"><strong><%= format_money(grand_material) %></strong></td>
+              <td class="num"><strong><%= format_hours(grand_hours) %></strong></td>
+              <td class="num"><strong><%= format_money(grand_labor) %></strong></td>
+              <td class="num"><strong style="color: #06b6d4;"><%= format_money(grand_total) %></strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<script>
+(function() {
+  var modeInput = document.getElementById("mode-input");
+  var singlePanel = document.getElementById("single-panel");
+  var remodelPanel = document.getElementById("remodel-panel");
+
+  document.querySelectorAll(".mode-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var mode = btn.dataset.mode;
+      document.querySelectorAll(".mode-btn").forEach(function(b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      modeInput.value = mode;
+      singlePanel.style.display  = (mode === "single")  ? "" : "none";
+      remodelPanel.style.display = (mode === "remodel") ? "" : "none";
+    });
+  });
+
+  var tradeInput = document.getElementById("trade-input");
+  document.querySelectorAll(".trade-tab").forEach(function(tab) {
+    tab.addEventListener("click", function() {
+      var trade = tab.dataset.trade;
+      document.querySelectorAll(".trade-tab").forEach(function(t) { t.classList.remove("active"); });
+      tab.classList.add("active");
+      tradeInput.value = trade;
+      document.querySelectorAll("[data-trade-form]").forEach(function(f) {
+        f.classList.toggle("active", f.dataset.tradeForm === trade);
+      });
+    });
+  });
+
+  document.querySelectorAll("[data-remodel-toggle]").forEach(function(cb) {
+    cb.addEventListener("change", function() {
+      var trade = cb.dataset.remodelToggle;
+      var section = document.querySelector('[data-remodel-section="' + trade + '"]');
+      if (section) section.classList.toggle("active", cb.checked);
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
