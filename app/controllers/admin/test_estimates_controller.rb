@@ -9,19 +9,28 @@ module Admin
     VALID_MODES = %w[single remodel].freeze
 
     def index
-      @trades         = TRADES
-      @mode           = (params[:mode].presence_in(VALID_MODES) || "single")
-      @selected       = selected_trade
-      @hourly_rate    = parsed_hourly_rate
-      @submitted      = request.post?
-      @criteria       = criteria_for_form
-      @remodel_type   = (params[:remodel_type].presence_in(REMODEL_TYPES) || "kitchen")
-      @remodel_preset = selected_remodel_preset(@remodel_type)
-      @remodel_input  = remodel_input_for_form
-      @results        = []
+      @trades          = TRADES
+      @mode            = (params[:mode].presence_in(VALID_MODES) || "single")
+      @selected        = selected_trade
+      @hourly_rate     = parsed_hourly_rate
+      @submitted       = request.post?
+      @criteria        = criteria_for_form
+      @remodel_type    = (params[:remodel_type].presence_in(REMODEL_TYPES) || "kitchen")
+      @remodel_preset  = selected_remodel_preset(@remodel_type)
+      @remodel_input   = remodel_input_for_form
+      @results         = []
       @remodel_summary = nil
+      @input_errors    = []
 
       return unless @submitted
+
+      validate_inputs!
+
+      if @input_errors.any?
+        # Halt before hitting the generator — bad input should never render a
+        # plausible-looking $0 estimate (TEA-234 smoke item #1).
+        return
+      end
 
       if @mode == "remodel"
         @results, @remodel_summary = run_remodel(@remodel_type, @remodel_preset, @remodel_input)
@@ -32,6 +41,56 @@ module Admin
     end
 
     private
+
+    # Reject non-positive / non-numeric sqft inputs before they reach the
+    # generator. TEA-234 smoke items #1 + guard against Math::DomainError on
+    # negative sqrt in roofing/plumbing/etc.
+    CRITICAL_SQFT_FIELDS = %w[squareFeet square_feet kitchen_sqft bathroom_sqft addition_sqft floor_tile_sqft flooring_sqft backsplash_sqft counter_sqft].freeze
+
+    def validate_inputs!
+      errors = []
+      if @mode == "single"
+        posted = @criteria[@selected] || {}
+        posted.each do |k, v|
+          msg = sqft_error(@selected, k, v)
+          errors << msg if msg
+        end
+      else
+        (@remodel_input[@remodel_type] || {}).each do |_section, fields|
+          (fields || {}).each do |k, v|
+            msg = sqft_error("remodel:#{@remodel_type}", k, v)
+            errors << msg if msg
+          end
+        end
+      end
+      @input_errors = errors
+    end
+
+    def sqft_error(scope, key, raw)
+      return nil unless CRITICAL_SQFT_FIELDS.include?(key.to_s)
+      return nil if raw.nil? || raw.to_s.strip.empty?
+      return "#{scope} / #{key} must be a number (got #{raw.inspect})" unless raw.to_s.match?(/\A-?\d+(\.\d+)?\z/)
+
+      numeric = raw.to_f
+      if numeric < 0
+        "#{scope} / #{key} cannot be negative (got #{raw})"
+      elsif numeric.zero? && critical_sqft_required?(scope, key)
+        "#{scope} / #{key} must be greater than zero"
+      end
+    end
+
+    # Zero is only meaningful for the primary dimension of a trade — every
+    # other "count" field is legitimately zero (no fixtures, no windows, etc.).
+    def critical_sqft_required?(scope, key)
+      return true if %w[squareFeet square_feet].include?(key.to_s) && TRADES.include?(scope.to_s)
+
+      case scope
+      when "remodel:kitchen"  then key.to_s == "kitchen_sqft"
+      when "remodel:bathroom" then key.to_s == "bathroom_sqft"
+      when "remodel:addition" then key.to_s == "addition_sqft"
+      else false
+      end
+    end
 
     def selected_trade
       requested = params[:trade].to_s.downcase
@@ -104,6 +163,8 @@ module Admin
       }
     rescue MaterialListGenerator::UnsupportedTrade => e
       blank_result(trade, error: e.message)
+    rescue MaterialListGenerator::InvalidCriteria => e
+      blank_result(trade, error: "Invalid input: #{e.message}")
     rescue => e
       Rails.logger.error("[TEA-239] test estimate crashed for #{trade}: #{e.class} #{e.message}")
       blank_result(trade, error: "#{e.class}: #{e.message}")
