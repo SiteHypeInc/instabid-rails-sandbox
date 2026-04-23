@@ -7,6 +7,10 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   # SpecialtyPriceLoaderService uses find_or_initialize_by + per-row rescue,
   # so reruns are safe and a failure here must not block server startup.
   ./bin/rails specialty_prices:load || echo "[specialty_prices:load] failed, continuing boot"
+  # TEA-203: idempotently load Road B (Tavily + Haiku) web_search prices on each boot.
+  # WebSearchPriceLoaderService uses find_or_initialize_by + per-row rescue,
+  # so reruns are safe and a failure here must not block server startup.
+  ./bin/rails web_search_prices:load || echo "[web_search_prices:load] failed, continuing boot"
 fi
 
 exec "${@}"
