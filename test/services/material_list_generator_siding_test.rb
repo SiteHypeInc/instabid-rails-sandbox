@@ -14,7 +14,8 @@ class MaterialListGeneratorSidingTest < ActiveSupport::TestCase
     siding = items.fetch("Vinyl Siding")
     assert_equal 1793, siding[:quantity] # ceil(1600 * 1.12) — IEEE-754 ε → 1793
     assert_equal 5.50, siding[:unit_cost]
-    assert_in_delta 9856.0, siding[:total_cost] # 1792 * 5.50
+    # TEA-244: line total reconciles with displayed qty × unit_cost
+    assert_in_delta 9861.5, siding[:total_cost] # 1793 * 5.50
 
     assert_equal 2, items.fetch("House Wrap")[:quantity]
     assert_equal 14, items.fetch("J-Channel")[:quantity] # ceil(160/12)
@@ -28,7 +29,7 @@ class MaterialListGeneratorSidingTest < ActiveSupport::TestCase
 
     refute items.key?("Old Siding Removal & Disposal")
 
-    assert_in_delta 13_639.0, result[:total_material_cost]
+    assert_in_delta 13_644.5, result[:total_material_cost]
     # 1600 * 3.50 / 45 = 124.444 → 124.44
     assert_in_delta 124.44, result[:labor_hours], 0.01
   end

@@ -332,5 +332,51 @@ module Admin
         refute_match(/Error:/, @response.body, "#{trade} surfaced an error")
       end
     end
+
+    # TEA-244: displayed qty × displayed unit_cost must reconcile to displayed
+    # line total, and the sum of line totals must match the displayed Materials
+    # subtotal — for siding at any sqft.
+    [
+      { label: "small",  sqft: "1600" },
+      { label: "large", sqft: "4800" }
+    ].each do |scenario|
+      test "POST siding reconciles displayed qty × unit_cost to materials subtotal — #{scenario[:label]}" do
+        post admin_test_estimate_path, params: {
+          mode: "single",
+          trade: "siding",
+          hourly_rate: "65",
+          criteria: {
+            "siding" => { "squareFeet" => scenario[:sqft], "sidingType" => "fiber_cement" }
+          }
+        }
+        assert_response :success
+
+        doc   = Nokogiri::HTML(@response.body)
+        rows  = doc.css("table tbody tr").select { |r| r.css("td").length >= 7 }
+        assert rows.any?, "expected at least one materials row to render"
+
+        expected_subtotal = 0.0
+        rows.each do |row|
+          cells      = row.css("td").map(&:text).map(&:strip)
+          item       = cells[0]
+          qty        = cells[3].tr(",", "").to_f
+          unit_cost  = cells[5].delete("$,").to_f
+          line_total = cells[6].delete("$,").to_f
+
+          expected_line = ((qty * unit_cost) * 100).round / 100.0
+          assert_in_delta expected_line, line_total, 0.01,
+            "#{item}: displayed qty (#{qty}) × unit_cost ($#{unit_cost}) = $#{expected_line} but line total shows $#{line_total}"
+
+          expected_subtotal += line_total
+        end
+        expected_subtotal = (expected_subtotal * 100).round / 100.0
+
+        materials_card = doc.at_css(".total-card .value")
+        assert materials_card, "expected Materials total card to render"
+        displayed_subtotal = materials_card.text.delete("$,").to_f
+        assert_in_delta expected_subtotal, displayed_subtotal, 0.01,
+          "sum of line totals ($#{expected_subtotal}) does not match displayed Materials subtotal ($#{displayed_subtotal})"
+      end
+    end
   end
 end

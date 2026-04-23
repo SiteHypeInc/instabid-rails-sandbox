@@ -1349,12 +1349,13 @@ class MaterialListGenerator
 
     label = SIDING_LABEL[siding_type] ||
             siding_type.split("_").map(&:capitalize).join(" ")
+    siding_qty = adjusted_sqft.ceil
     material_list << {
       item:       "#{label} Siding",
-      quantity:   adjusted_sqft.ceil,
+      quantity:   siding_qty,
       unit:       "sqft",
       unit_cost:  cost_per_sqft,
-      total_cost: adjusted_sqft * cost_per_sqft,
+      total_cost: (siding_qty * cost_per_sqft * 100).round / 100.0,
       category:   "siding_material"
     }
 
@@ -1418,22 +1419,24 @@ class MaterialListGenerator
     perimeter    = Math.sqrt(sqft) * 4
     soffit_sqft  = perimeter * 1.5
     soffit_cost  = price("siding_soffit_sqft", 8.00)
+    soffit_qty   = soffit_sqft.ceil
     material_list << {
       item:       "Soffit",
-      quantity:   soffit_sqft.ceil,
+      quantity:   soffit_qty,
       unit:       "sqft",
       unit_cost:  soffit_cost,
-      total_cost: soffit_sqft * soffit_cost,
+      total_cost: (soffit_qty * soffit_cost * 100).round / 100.0,
       category:   "soffit"
     }
 
     fascia_cost = price("siding_fascia_lf", 6.00)
+    fascia_qty  = perimeter.ceil
     material_list << {
       item:       "Fascia",
-      quantity:   perimeter.ceil,
+      quantity:   fascia_qty,
       unit:       "linear ft",
       unit_cost:  fascia_cost,
-      total_cost: perimeter * fascia_cost,
+      total_cost: (fascia_qty * fascia_cost * 100).round / 100.0,
       category:   "fascia"
     }
 
