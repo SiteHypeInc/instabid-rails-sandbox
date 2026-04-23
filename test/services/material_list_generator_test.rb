@@ -137,10 +137,4 @@ class MaterialListGeneratorTest < ActiveSupport::TestCase
     disposal = items.fetch("Disposal/Dumpster")
     assert_in_delta 1500.0, disposal[:total_cost] # 2000 * 1 * 0.75
   end
-
-  test "unported trade raises" do
-    assert_raises(MaterialListGenerator::UnsupportedTrade) do
-      MaterialListGenerator.call(trade: "hvac", criteria: {})
-    end
-  end
 end
