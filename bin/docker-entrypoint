@@ -11,6 +11,11 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   # WebSearchPriceLoaderService uses find_or_initialize_by + per-row rescue,
   # so reruns are safe and a failure here must not block server startup.
   ./bin/rails web_search_prices:load || echo "[web_search_prices:load] failed, continuing boot"
+  # TEA-236: sandbox smoke fixtures — one confidence=medium material_prices row
+  # and shared-material (corner_bead/screws) default_pricings across drywall +
+  # siding so Commander's 7-item smoke can exercise the pending/range render
+  # and 2-trade dedup paths. Task uses find_or_initialize_by and is idempotent.
+  ./bin/rails tea236:smoke_seeds || echo "[tea236:smoke_seeds] failed, continuing boot"
 fi
 
 exec "${@}"
