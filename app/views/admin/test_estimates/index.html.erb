@@ -302,6 +302,13 @@
               <% end %>
             </tbody>
           </table>
+          <% summary = r[:price_source_summary] || {} %>
+          <% if summary.any? %>
+            <div class="price-source-summary" style="margin-top: 8px; font-size: 11px; color: #64748b;">
+              <strong style="color: #94a3b8;">Price Sources:</strong>
+              <% summary.each_with_index do |(src, n), i| %><%= ', ' unless i.zero? %><span class="mono"><%= src %></span> (<%= n %>)<% end %>
+            </div>
+          <% end %>
           <div class="totals">
             <div class="total-card">
               <div class="label">Materials</div>
