@@ -92,6 +92,42 @@ class MaterialListGenerator
     resolution[:price]
   end
 
+  # TEA-241: per-line pricing attribution. `resolve_price` returns the full
+  # resolution hash — price scalar + the pricing_key and source tag — so
+  # emission sites can stamp each line with its true origin instead of relying
+  # on `stamp_sources` to flood every line with one dominant label. Still
+  # updates @dominant_source so un-refactored builders (Phase 2) keep working.
+  def resolve_price(key, default)
+    resolution = PricingResolver.resolve(trade: @trade, key: key, contractor_id: @contractor_id, default: default)
+    if resolution[:source] && resolution[:source] != "Manual"
+      @dominant_source = resolution[:source]
+    end
+    {
+      price:       resolution[:price],
+      pricing_key: key.to_s,
+      source:      resolution[:source] || "Manual"
+    }
+  end
+
+  # Builds a material-list line with pricing_key + source threaded through.
+  # Pass `price:` as the hash returned from `resolve_price`. For lines whose
+  # unit_cost is derived from additional components (install + hardware + wire),
+  # pass `unit_cost:` to override the resolved scalar while keeping the primary
+  # pricing_key's source attribution.
+  def emit_line(item:, quantity:, unit:, price:, category:, unit_cost: nil)
+    cost = unit_cost || price[:price]
+    {
+      item:        item,
+      quantity:    quantity,
+      unit:        unit,
+      unit_cost:   cost,
+      total_cost:  quantity * cost,
+      category:    category,
+      pricing_key: price[:pricing_key],
+      source:      price[:source]
+    }
+  end
+
   # -- Roofing -------------------------------------------------------------
 
   ROOFING_PITCH_MULTIPLIERS = {
@@ -130,159 +166,130 @@ class MaterialListGenerator
     material_list << roofing_shingles_line(material_type, square_feet)
 
     underlayment_rolls = (square_feet / 400.0).ceil
-    underlayment_unit  = price("underlayment_roll", 45.00)
-    material_list << {
-      item:       "Underlayment",
-      quantity:   underlayment_rolls,
-      unit:       "rolls",
-      unit_cost:  underlayment_unit,
-      total_cost: underlayment_rolls * underlayment_unit,
-      category:   "underlayment"
-    }
+    material_list << emit_line(
+      item:     "Underlayment",
+      quantity: underlayment_rolls,
+      unit:     "rolls",
+      price:    resolve_price("underlayment_roll", 45.00),
+      category: "underlayment"
+    )
 
     nail_boxes = (square_feet / 1000.0).ceil
-    nail_unit  = price("nails_box", 85.00)
-    material_list << {
-      item:       "Roofing Nails",
-      quantity:   nail_boxes,
-      unit:       "boxes",
-      unit_cost:  nail_unit,
-      total_cost: nail_boxes * nail_unit,
-      category:   "fasteners"
-    }
+    material_list << emit_line(
+      item:     "Roofing Nails",
+      quantity: nail_boxes,
+      unit:     "boxes",
+      price:    resolve_price("nails_box", 85.00),
+      category: "fasteners"
+    )
 
-    starter_qty  = perimeter.ceil
-    starter_unit = price("starter_lf", 2.50)
-    material_list << {
-      item:       "Starter Shingles",
-      quantity:   starter_qty,
-      unit:       "linear ft",
-      unit_cost:  starter_unit,
-      total_cost: starter_qty * starter_unit,
-      category:   "shingles"
-    }
+    material_list << emit_line(
+      item:     "Starter Shingles",
+      quantity: perimeter.ceil,
+      unit:     "linear ft",
+      price:    resolve_price("starter_lf", 2.50),
+      category: "shingles"
+    )
 
-    ridge_qty  = ridge_length.ceil
-    ridge_unit = price("ridge_lf", 3.00)
-    material_list << {
-      item:       "Ridge Cap",
-      quantity:   ridge_qty,
-      unit:       "linear ft",
-      unit_cost:  ridge_unit,
-      total_cost: ridge_qty * ridge_unit,
-      category:   "shingles"
-    }
+    material_list << emit_line(
+      item:     "Ridge Cap",
+      quantity: ridge_length.ceil,
+      unit:     "linear ft",
+      price:    resolve_price("ridge_lf", 3.00),
+      category: "shingles"
+    )
 
-    drip_qty  = perimeter.ceil
-    drip_unit = price("drip_edge_lf", 2.75)
-    material_list << {
-      item:       "Drip Edge",
-      quantity:   drip_qty,
-      unit:       "linear ft",
-      unit_cost:  drip_unit,
-      total_cost: drip_qty * drip_unit,
-      category:   "flashing"
-    }
+    material_list << emit_line(
+      item:     "Drip Edge",
+      quantity: perimeter.ceil,
+      unit:     "linear ft",
+      price:    resolve_price("drip_edge_lf", 2.75),
+      category: "flashing"
+    )
 
-    ice_water_lf   = (perimeter * 0.4).ceil
-    ice_water_unit = price("ice_shield_lf", 4.50)
-    material_list << {
-      item:       "Ice & Water Shield",
-      quantity:   ice_water_lf,
-      unit:       "linear ft",
-      unit_cost:  ice_water_unit,
-      total_cost: ice_water_lf * ice_water_unit,
-      category:   "underlayment"
-    }
+    material_list << emit_line(
+      item:     "Ice & Water Shield",
+      quantity: (perimeter * 0.4).ceil,
+      unit:     "linear ft",
+      price:    resolve_price("ice_shield_lf", 4.50),
+      category: "underlayment"
+    )
 
-    vents_needed = (square_feet / 150.0).ceil
-    vent_unit    = price("vent_unit", 25.00)
-    material_list << {
-      item:       "Roof Vents",
-      quantity:   vents_needed,
-      unit:       "vents",
-      unit_cost:  vent_unit,
-      total_cost: vents_needed * vent_unit,
-      category:   "ventilation"
-    }
+    material_list << emit_line(
+      item:     "Roof Vents",
+      quantity: (square_feet / 150.0).ceil,
+      unit:     "vents",
+      price:    resolve_price("vent_unit", 25.00),
+      category: "ventilation"
+    )
 
     if ridge_vent_feet > 0
-      rv_qty  = ridge_vent_feet.ceil
-      rv_unit = price("ridge_vent_lf", 5.50)
-      material_list << {
-        item:       "Ridge Vent",
-        quantity:   rv_qty,
-        unit:       "linear ft",
-        unit_cost:  rv_unit,
-        total_cost: rv_qty * rv_unit,
-        category:   "ventilation"
-      }
+      material_list << emit_line(
+        item:     "Ridge Vent",
+        quantity: ridge_vent_feet.ceil,
+        unit:     "linear ft",
+        price:    resolve_price("ridge_vent_lf", 5.50),
+        category: "ventilation"
+      )
     end
 
     if plywood_sqft > 0
       sheets_needed = ((plywood_sqft / 32.0) * ROOFING_WASTE).ceil
-      osb_unit      = price("osb_sheet", 28.00)
-      material_list << {
-        item:       "OSB Sheathing",
-        quantity:   sheets_needed,
-        unit:       "sheets",
-        unit_cost:  osb_unit,
-        total_cost: sheets_needed * osb_unit,
-        category:   "sheathing"
-      }
+      material_list << emit_line(
+        item:     "OSB Sheathing",
+        quantity: sheets_needed,
+        unit:     "sheets",
+        price:    resolve_price("osb_sheet", 28.00),
+        category: "sheathing"
+      )
     end
 
-    disposal_rate = case existing_roof_type
-                    when "wood_shake" then price("disposal_wood_sqft",    0.40)
-                    when "metal"      then price("disposal_metal_sqft",   0.50)
-                    when "tile"       then price("disposal_tile_sqft",    0.75)
-                    else                    price("disposal_asphalt_sqft", 0.40)
-                    end
-    disposal_cost = square_feet * layers * disposal_rate
-    material_list << {
-      item:       "Disposal/Dumpster",
-      quantity:   layers,
-      unit:       "layer(s)",
-      unit_cost:  square_feet * disposal_rate,
-      total_cost: disposal_cost,
-      category:   "disposal"
-    }
+    # Disposal line attributes to the pricing_key for the matching roof type;
+    # unit_cost is derived (rate × sqft) so override the emit_line scalar.
+    disposal_price = case existing_roof_type
+                     when "wood_shake" then resolve_price("disposal_wood_sqft",    0.40)
+                     when "metal"      then resolve_price("disposal_metal_sqft",   0.50)
+                     when "tile"       then resolve_price("disposal_tile_sqft",    0.75)
+                     else                   resolve_price("disposal_asphalt_sqft", 0.40)
+                     end
+    disposal_rate = disposal_price[:price]
+    material_list << emit_line(
+      item:      "Disposal/Dumpster",
+      quantity:  layers,
+      unit:      "layer(s)",
+      price:     disposal_price,
+      unit_cost: square_feet * disposal_rate,
+      category:  "disposal"
+    )
 
     if chimneys > 0
-      cf_unit = price("chimney_flash", 125.00)
-      material_list << {
-        item:       "Chimney Flashing Kit",
-        quantity:   chimneys,
-        unit:       "kits",
-        unit_cost:  cf_unit,
-        total_cost: chimneys * cf_unit,
-        category:   "flashing"
-      }
+      material_list << emit_line(
+        item:     "Chimney Flashing Kit",
+        quantity: chimneys,
+        unit:     "kits",
+        price:    resolve_price("chimney_flash", 125.00),
+        category: "flashing"
+      )
     end
 
     if skylights > 0
-      sf_unit = price("skylight_flash", 85.00)
-      material_list << {
-        item:       "Skylight Flashing Kit",
-        quantity:   skylights,
-        unit:       "kits",
-        unit_cost:  sf_unit,
-        total_cost: skylights * sf_unit,
-        category:   "flashing"
-      }
+      material_list << emit_line(
+        item:     "Skylight Flashing Kit",
+        quantity: skylights,
+        unit:     "kits",
+        price:    resolve_price("skylight_flash", 85.00),
+        category: "flashing"
+      )
     end
 
     if valleys > 0
-      valley_lf   = valleys * 10
-      valley_unit = price("valley_lf", 6.00)
-      material_list << {
-        item:       "Valley Flashing",
-        quantity:   valley_lf,
-        unit:       "linear ft",
-        unit_cost:  valley_unit,
-        total_cost: valley_lf * valley_unit,
-        category:   "flashing"
-      }
+      material_list << emit_line(
+        item:     "Valley Flashing",
+        quantity: valleys * 10,
+        unit:     "linear ft",
+        price:    resolve_price("valley_lf", 6.00),
+        category: "flashing"
+      )
     end
 
     total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
@@ -304,19 +311,19 @@ class MaterialListGenerator
   end
 
   def roofing_shingles_line(material_type, square_feet)
-    unit_price, calc_method, item_name =
+    resolved, calc_method, item_name =
       if material_type.include?("3-tab") || material_type.include?("asphalt")
-        [price("mat_asphalt", 40.00), :bundle, "Architectural Shingles"]
+        [resolve_price("mat_asphalt", 40.00), :bundle, "Architectural Shingles"]
       elsif material_type.include?("architectural")
-        [price("mat_arch", 44.96), :bundle, "Architectural Shingles"]
+        [resolve_price("mat_arch", 44.96), :bundle, "Architectural Shingles"]
       elsif material_type.include?("metal")
-        [price("mat_metal", 9.50), :sqft, "Metal Roofing"]
+        [resolve_price("mat_metal", 9.50), :sqft, "Metal Roofing"]
       elsif material_type.include?("tile")
-        [price("mat_tile", 12.00), :sqft, "Tile Roofing"]
+        [resolve_price("mat_tile", 12.00), :sqft, "Tile Roofing"]
       elsif material_type.include?("wood") || material_type.include?("shake")
-        [price("mat_wood_shake", 14.00), :sqft, "Wood Shake"]
+        [resolve_price("mat_wood_shake", 14.00), :sqft, "Wood Shake"]
       else
-        [price("mat_arch", 44.96), :bundle, "Architectural Shingles"]
+        [resolve_price("mat_arch", 44.96), :bundle, "Architectural Shingles"]
       end
 
     if calc_method == :bundle
@@ -328,14 +335,13 @@ class MaterialListGenerator
       unit     = "sqft"
     end
 
-    {
-      item:       item_name,
-      quantity:   quantity,
-      unit:       unit,
-      unit_cost:  unit_price,
-      total_cost: quantity * unit_price,
-      category:   "shingles"
-    }
+    emit_line(
+      item:     item_name,
+      quantity: quantity,
+      unit:     unit,
+      price:    resolved,
+      category: "shingles"
+    )
   end
 
   # -- Plumbing ------------------------------------------------------------
@@ -385,23 +391,23 @@ class MaterialListGenerator
     # material_list + labor_hours in the enclosing scope.
     emit_fixtures = lambda do
       if toilet_count > 0
-        toilet_unit = price("fixture_toilet", 375.00)
-        material_list << { item: "Toilet Installation",  quantity: toilet_count,  unit: "fixtures", unit_cost: toilet_unit,  total_cost: toilet_unit  * toilet_count,  category: "Fixtures" }
+        material_list << emit_line(item: "Toilet Installation", quantity: toilet_count, unit: "fixtures",
+                                   price: resolve_price("fixture_toilet", 375.00), category: "Fixtures")
         labor_hours += 2.5 * toilet_count
       end
       if sink_count > 0
-        sink_unit = price("fixture_sink", 450.00)
-        material_list << { item: "Sink Installation",    quantity: sink_count,    unit: "fixtures", unit_cost: sink_unit,    total_cost: sink_unit    * sink_count,    category: "Fixtures" }
+        material_list << emit_line(item: "Sink Installation", quantity: sink_count, unit: "fixtures",
+                                   price: resolve_price("fixture_sink", 450.00), category: "Fixtures")
         labor_hours += 3 * sink_count
       end
       if faucet_count > 0
-        faucet_unit = price("fixture_faucet", 262.00)
-        material_list << { item: "Faucet Installation",  quantity: faucet_count,  unit: "fixtures", unit_cost: faucet_unit,  total_cost: faucet_unit  * faucet_count,  category: "Fixtures" }
+        material_list << emit_line(item: "Faucet Installation", quantity: faucet_count, unit: "fixtures",
+                                   price: resolve_price("fixture_faucet", 262.00), category: "Fixtures")
         labor_hours += 1.5 * faucet_count
       end
       if tub_shower_count > 0
-        tub_unit = price("fixture_tub_shower", 1200.00)
-        material_list << { item: "Tub/Shower Installation", quantity: tub_shower_count, unit: "fixtures", unit_cost: tub_unit, total_cost: tub_unit * tub_shower_count, category: "Fixtures" }
+        material_list << emit_line(item: "Tub/Shower Installation", quantity: tub_shower_count, unit: "fixtures",
+                                   price: resolve_price("fixture_tub_shower", 1200.00), category: "Fixtures")
         labor_hours += 6 * tub_shower_count
       end
       if garbage_disposal == "yes"
@@ -413,8 +419,8 @@ class MaterialListGenerator
         labor_hours += 1
       end
       if dishwasher_hookup == "yes"
-        dw_unit = price("dishwasher_hookup", 200.00)
-        material_list << { item: "Dishwasher Hookup", quantity: 1, unit: "hookup", unit_cost: dw_unit, total_cost: dw_unit, category: "Add-ons" }
+        material_list << emit_line(item: "Dishwasher Hookup", quantity: 1, unit: "hookup",
+                                   price: resolve_price("dishwasher_hookup", 200.00), category: "Add-ons")
         labor_hours += 2
       end
     end
@@ -425,37 +431,36 @@ class MaterialListGenerator
         base_pipe_feet    = square_feet * 0.5
         fixture_pipe_feet = (bathrooms * 25) + (kitchens * 30) + (laundry_rooms * 15)
         total_pipe_feet   = (base_pipe_feet + fixture_pipe_feet).ceil
-        pex_unit          = price("pex_pipe_lf", 2.50)
+        pex_resolved      = resolve_price("pex_pipe_lf", 2.50)
+        pex_unit          = pex_resolved[:price]
 
-        material_list << {
-          item:       "PEX Pipe",
-          quantity:   total_pipe_feet,
-          unit:       "linear feet",
-          unit_cost:  pex_unit,
-          total_cost: total_pipe_feet * pex_unit,
-          category:   "Pipe"
-        }
+        material_list << emit_line(
+          item:     "PEX Pipe",
+          quantity: total_pipe_feet,
+          unit:     "linear feet",
+          price:    pex_resolved,
+          category: "Pipe"
+        )
 
+        # Fittings are attributed to pex_pipe_lf (they're a derived 30% add-on).
         fittings_cost = total_pipe_feet * pex_unit * 0.30
-        material_list << {
-          item:       "Fittings & Connectors",
-          quantity:   1,
-          unit:       "set",
-          unit_cost:  fittings_cost,
-          total_cost: fittings_cost,
-          category:   "Pipe"
-        }
+        material_list << emit_line(
+          item:      "Fittings & Connectors",
+          quantity:  1,
+          unit:      "set",
+          price:     pex_resolved,
+          unit_cost: fittings_cost,
+          category:  "Pipe"
+        )
 
         valve_count = (bathrooms * 2) + (kitchens * 2) + laundry_rooms
-        valve_unit  = price("shutoff_valve", 25.00)
-        material_list << {
-          item:       "Shutoff Valves",
-          quantity:   valve_count,
-          unit:       "valves",
-          unit_cost:  valve_unit,
-          total_cost: valve_count * valve_unit,
-          category:   "Pipe"
-        }
+        material_list << emit_line(
+          item:     "Shutoff Valves",
+          quantity: valve_count,
+          unit:     "valves",
+          price:    resolve_price("shutoff_valve", 25.00),
+          category: "Pipe"
+        )
 
         labor_hours  = (square_feet / 100.0) * 5
         labor_hours *= 1.2  if stories >= 2
@@ -463,15 +468,13 @@ class MaterialListGenerator
         labor_hours *= access_mult
 
         if main_line_replacement == "yes"
-          main_unit = price("main_line_replacement", 1200.00)
-          material_list << {
-            item:       "Main Line Replacement",
-            quantity:   1,
-            unit:       "job",
-            unit_cost:  main_unit,
-            total_cost: main_unit,
-            category:   "Main Line"
-          }
+          material_list << emit_line(
+            item:     "Main Line Replacement",
+            quantity: 1,
+            unit:     "job",
+            price:    resolve_price("main_line_replacement", 1200.00),
+            category: "Main Line"
+          )
           labor_hours += 8
         end
       end
@@ -479,51 +482,46 @@ class MaterialListGenerator
     when "water_heater"
       if heater_type == "tankless"
         if gas_line_needed == "yes"
-          heater_unit = price("water_heater_tankless_gas",      3500.00)
-          heater_name = "Tankless Water Heater (Gas)"
-          labor_hours = 10
+          heater_resolved = resolve_price("water_heater_tankless_gas",      3500.00)
+          heater_name     = "Tankless Water Heater (Gas)"
+          labor_hours     = 10
         else
-          heater_unit = price("water_heater_tankless_electric", 2200.00)
-          heater_name = "Tankless Water Heater (Electric)"
-          labor_hours = 8
+          heater_resolved = resolve_price("water_heater_tankless_electric", 2200.00)
+          heater_name     = "Tankless Water Heater (Electric)"
+          labor_hours     = 8
         end
       else
-        heater_unit = price("water_heater_tank_50gal",          1600.00)
-        heater_name = "Tank Water Heater (50 gal)"
-        labor_hours = 6
+        heater_resolved = resolve_price("water_heater_tank_50gal",          1600.00)
+        heater_name     = "Tank Water Heater (50 gal)"
+        labor_hours     = 6
       end
 
-      material_list << {
-        item:       heater_name,
-        quantity:   1,
-        unit:       "unit",
-        unit_cost:  heater_unit,
-        total_cost: heater_unit,
-        category:   "Water Heater"
-      }
+      material_list << emit_line(
+        item:     heater_name,
+        quantity: 1,
+        unit:     "unit",
+        price:    heater_resolved,
+        category: "Water Heater"
+      )
 
-      supplies_unit = price("water_heater_install_supplies", 150.00)
-      material_list << {
-        item:       "Installation Supplies (flex lines, fittings)",
-        quantity:   1,
-        unit:       "set",
-        unit_cost:  supplies_unit,
-        total_cost: supplies_unit,
-        category:   "Water Heater"
-      }
+      material_list << emit_line(
+        item:     "Installation Supplies (flex lines, fittings)",
+        quantity: 1,
+        unit:     "set",
+        price:    resolve_price("water_heater_install_supplies", 150.00),
+        category: "Water Heater"
+      )
 
       labor_hours *= location_mult
 
       if gas_line_needed == "yes"
-        gas_unit = price("gas_line_install", 500.00)
-        material_list << {
-          item:       "Gas Line Installation",
-          quantity:   1,
-          unit:       "job",
-          unit_cost:  gas_unit,
-          total_cost: gas_unit,
-          category:   "Gas"
-        }
+        material_list << emit_line(
+          item:     "Gas Line Installation",
+          quantity: 1,
+          unit:     "job",
+          price:    resolve_price("gas_line_install", 500.00),
+          category: "Gas"
+        )
         labor_hours += 4
       end
 
@@ -532,38 +530,32 @@ class MaterialListGenerator
       # Keyed off room counts so controller-mapped remodel inputs flow through.
       rough_units = bathrooms + kitchens + laundry_rooms
       if rough_units > 0
-        pex_unit = price("pex_pipe_lf", 2.50)
         pex_feet = (bathrooms * 40) + (kitchens * 25) + (laundry_rooms * 20)
-        material_list << {
-          item:       "PEX Supply Lines (rough-in)",
-          quantity:   pex_feet,
-          unit:       "linear feet",
-          unit_cost:  pex_unit,
-          total_cost: pex_feet * pex_unit,
-          category:   "Pipe"
-        }
+        material_list << emit_line(
+          item:     "PEX Supply Lines (rough-in)",
+          quantity: pex_feet,
+          unit:     "linear feet",
+          price:    resolve_price("pex_pipe_lf", 2.50),
+          category: "Pipe"
+        )
 
-        dwv_unit = price("dwv_pipe_lf", 4.25)
         dwv_feet = (bathrooms * 20) + (kitchens * 10) + (laundry_rooms * 8)
-        material_list << {
-          item:       "DWV Drain Lines",
-          quantity:   dwv_feet,
-          unit:       "linear feet",
-          unit_cost:  dwv_unit,
-          total_cost: dwv_feet * dwv_unit,
-          category:   "Pipe"
-        }
+        material_list << emit_line(
+          item:     "DWV Drain Lines",
+          quantity: dwv_feet,
+          unit:     "linear feet",
+          price:    resolve_price("dwv_pipe_lf", 4.25),
+          category: "Pipe"
+        )
 
-        valve_unit = price("shutoff_valve", 25.00)
         valve_count = (bathrooms * 3) + (kitchens * 2) + laundry_rooms
-        material_list << {
-          item:       "Shutoff Valves",
-          quantity:   valve_count,
-          unit:       "valves",
-          unit_cost:  valve_unit,
-          total_cost: valve_count * valve_unit,
-          category:   "Pipe"
-        }
+        material_list << emit_line(
+          item:     "Shutoff Valves",
+          quantity: valve_count,
+          unit:     "valves",
+          price:    resolve_price("shutoff_valve", 25.00),
+          category: "Pipe"
+        )
 
         labor_hours += (bathrooms * 12) + (kitchens * 8) + (laundry_rooms * 5)
         labor_hours *= 1.2  if stories >= 2
@@ -571,15 +563,13 @@ class MaterialListGenerator
       end
 
       if gas_line_needed == "yes"
-        gas_unit = price("gas_line_install", 500.00)
-        material_list << {
-          item:       "Gas Line Installation",
-          quantity:   1,
-          unit:       "job",
-          unit_cost:  gas_unit,
-          total_cost: gas_unit,
-          category:   "Gas"
-        }
+        material_list << emit_line(
+          item:     "Gas Line Installation",
+          quantity: 1,
+          unit:     "job",
+          price:    resolve_price("gas_line_install", 500.00),
+          category: "Gas"
+        )
         labor_hours += 4
       end
 
@@ -589,26 +579,22 @@ class MaterialListGenerator
       # with service_type re-bound; simpler to inline the fixture block here.
       rough_units = bathrooms + kitchens + laundry_rooms
       if rough_units > 0
-        pex_unit = price("pex_pipe_lf", 2.50)
         pex_feet = (bathrooms * 40) + (kitchens * 25) + (laundry_rooms * 20)
-        material_list << {
-          item:       "PEX Supply Lines (rough-in)",
-          quantity:   pex_feet,
-          unit:       "linear feet",
-          unit_cost:  pex_unit,
-          total_cost: pex_feet * pex_unit,
-          category:   "Pipe"
-        }
-        dwv_unit = price("dwv_pipe_lf", 4.25)
+        material_list << emit_line(
+          item:     "PEX Supply Lines (rough-in)",
+          quantity: pex_feet,
+          unit:     "linear feet",
+          price:    resolve_price("pex_pipe_lf", 2.50),
+          category: "Pipe"
+        )
         dwv_feet = (bathrooms * 20) + (kitchens * 10) + (laundry_rooms * 8)
-        material_list << {
-          item:       "DWV Drain Lines",
-          quantity:   dwv_feet,
-          unit:       "linear feet",
-          unit_cost:  dwv_unit,
-          total_cost: dwv_feet * dwv_unit,
-          category:   "Pipe"
-        }
+        material_list << emit_line(
+          item:     "DWV Drain Lines",
+          quantity: dwv_feet,
+          unit:     "linear feet",
+          price:    resolve_price("dwv_pipe_lf", 4.25),
+          category: "Pipe"
+        )
         labor_hours += (bathrooms * 10) + (kitchens * 6) + (laundry_rooms * 4)
       end
 
@@ -623,15 +609,13 @@ class MaterialListGenerator
       labor_hours  = [labor_hours, 2].max
 
     else # general
-      service_unit = price("service_call", 95.00)
-      material_list << {
-        item:       "Service Call",
-        quantity:   1,
-        unit:       "visit",
-        unit_cost:  service_unit,
-        total_cost: service_unit,
-        category:   "Service"
-      }
+      material_list << emit_line(
+        item:     "Service Call",
+        quantity: 1,
+        unit:     "visit",
+        price:    resolve_price("service_call", 95.00),
+        category: "Service"
+      )
       labor_hours = 2.0
 
       if garbage_disposal == "yes"
@@ -643,45 +627,42 @@ class MaterialListGenerator
         labor_hours += 1
       end
       if water_softener == "yes"
-        softener_unit = price("water_softener", 1800.00)
-        material_list << {
-          item:       "Water Softener Installation",
-          quantity:   1,
-          unit:       "unit",
-          unit_cost:  softener_unit,
-          total_cost: softener_unit,
-          category:   "Add-ons"
-        }
+        material_list << emit_line(
+          item:     "Water Softener Installation",
+          quantity: 1,
+          unit:     "unit",
+          price:    resolve_price("water_softener", 1800.00),
+          category: "Add-ons"
+        )
         labor_hours += 4
       end
       if main_line_replacement == "yes"
-        main_unit = price("main_line_replacement", 1200.00)
-        material_list << {
-          item:       "Main Line Replacement",
-          quantity:   1,
-          unit:       "job",
-          unit_cost:  main_unit,
-          total_cost: main_unit,
-          category:   "Main Line"
-        }
+        material_list << emit_line(
+          item:     "Main Line Replacement",
+          quantity: 1,
+          unit:     "job",
+          price:    resolve_price("main_line_replacement", 1200.00),
+          category: "Main Line"
+        )
         labor_hours += 8
       end
       if gas_line_needed == "yes"
-        gas_unit = price("gas_line_install", 500.00)
-        material_list << {
-          item:       "Gas Line Installation",
-          quantity:   1,
-          unit:       "job",
-          unit_cost:  gas_unit,
-          total_cost: gas_unit,
-          category:   "Gas"
-        }
+        material_list << emit_line(
+          item:     "Gas Line Installation",
+          quantity: 1,
+          unit:     "job",
+          price:    resolve_price("gas_line_install", 500.00),
+          category: "Gas"
+        )
         labor_hours += 4
       end
     end
 
     labor_rounded = (labor_hours * 10).round / 10.0
     labor_total   = (labor_hours * @hourly_rate * 100).round / 100.0
+    # Labor lines are kept as-is (no pricing_key): labor rate comes from
+    # @hourly_rate, not from PricingResolver. stamp_sources still stamps a
+    # source for consistency with existing Labor row rendering.
     material_list << {
       item:       "Plumbing Labor (#{access_type} access)",
       quantity:   labor_rounded,
@@ -704,27 +685,23 @@ class MaterialListGenerator
   end
 
   def plumbing_garbage_disposal_line
-    unit = price("garbage_disposal", 325.00)
-    {
-      item:       "Garbage Disposal Installation",
-      quantity:   1,
-      unit:       "unit",
-      unit_cost:  unit,
-      total_cost: unit,
-      category:   "Add-ons"
-    }
+    emit_line(
+      item:     "Garbage Disposal Installation",
+      quantity: 1,
+      unit:     "unit",
+      price:    resolve_price("garbage_disposal", 325.00),
+      category: "Add-ons"
+    )
   end
 
   def plumbing_ice_maker_line
-    unit = price("ice_maker_line", 150.00)
-    {
-      item:       "Ice Maker Line Installation",
-      quantity:   1,
-      unit:       "line",
-      unit_cost:  unit,
-      total_cost: unit,
-      category:   "Add-ons"
-    }
+    emit_line(
+      item:     "Ice Maker Line Installation",
+      quantity: 1,
+      unit:     "line",
+      price:    resolve_price("ice_maker_line", 150.00),
+      category: "Add-ons"
+    )
   end
 
   # -- Drywall -------------------------------------------------------------
@@ -1665,9 +1642,10 @@ class MaterialListGenerator
     ev_charger = (@criteria[:evCharger] || @criteria[:ev_charger]).to_s.downcase
     permit_val = @criteria[:permit]
 
-    labor_rate = @hourly_rate
-    wire_lf    = price("elec_wire_lf", 1.00)
-    avg_run    = ELECTRICAL_AVG_RUN_PER_DEVICE
+    labor_rate     = @hourly_rate
+    wire_resolved  = resolve_price("elec_wire_lf", 1.00)
+    wire_lf        = wire_resolved[:price]
+    avg_run        = ELECTRICAL_AVG_RUN_PER_DEVICE
 
     age_multiplier = case home_age
                      when "pre-1960"  then 2.0
@@ -1683,10 +1661,10 @@ class MaterialListGenerator
     complexity_multiplier = age_multiplier * story_multiplier
     total_labor_hours = 0.0
 
-    panel_costs = {
-      "100" => price("elec_panel_100", 450.00),
-      "200" => price("elec_panel_200", 550.00),
-      "400" => price("elec_panel_400", 1200.00)
+    panel_prices = {
+      "100" => resolve_price("elec_panel_100", 450.00),
+      "200" => resolve_price("elec_panel_200", 550.00),
+      "400" => resolve_price("elec_panel_400", 1200.00)
     }
 
     material_list = []
@@ -1694,235 +1672,229 @@ class MaterialListGenerator
     if service_type == "panel"
       panel_hours = ELECTRICAL_PANEL_LABOR[amperage] || 10
       total_labor_hours += panel_hours
-      panel_cost = panel_costs[amperage] || panel_costs["200"]
-      panel_misc = ELECTRICAL_PANEL_MISC[amperage] || 250
-      material_list << {
-        item:       "#{amperage}A Panel Upgrade",
-        quantity:   1,
-        unit:       "each",
-        unit_cost:  panel_cost,
-        total_cost: panel_cost,
-        category:   "Panel"
-      }
-      material_list << {
-        item:       "Breakers, Connectors & Misc",
-        quantity:   1,
-        unit:       "lot",
-        unit_cost:  panel_misc,
-        total_cost: panel_misc,
-        category:   "Panel"
-      }
+      panel_resolved = panel_prices[amperage] || panel_prices["200"]
+      panel_misc     = ELECTRICAL_PANEL_MISC[amperage] || 250
+      material_list << emit_line(
+        item:     "#{amperage}A Panel Upgrade",
+        quantity: 1,
+        unit:     "each",
+        price:    panel_resolved,
+        category: "Panel"
+      )
+      # Panel misc is a bundled lot cost; attribute to the same panel pricing_key.
+      material_list << emit_line(
+        item:      "Breakers, Connectors & Misc",
+        quantity:  1,
+        unit:      "lot",
+        price:     panel_resolved,
+        unit_cost: panel_misc,
+        category:  "Panel"
+      )
     end
 
     if service_type == "rewire"
-      rewire_sqft_price = price("elec_rewire_sqft", 11.50)
-      rewire_total = sqft * rewire_sqft_price
-      rewire_hours = (sqft / 100.0) * 4
+      rewire_resolved   = resolve_price("elec_rewire_sqft", 11.50)
+      rewire_sqft_price = rewire_resolved[:price]
+      rewire_total      = sqft * rewire_sqft_price
+      rewire_hours      = (sqft / 100.0) * 4
       total_labor_hours += rewire_hours + (ELECTRICAL_PANEL_LABOR[amperage] || 10)
 
-      panel_cost = panel_costs[amperage] || panel_costs["200"]
-      panel_misc = ELECTRICAL_PANEL_MISC[amperage] || 250
+      panel_resolved = panel_prices[amperage] || panel_prices["200"]
+      panel_misc     = ELECTRICAL_PANEL_MISC[amperage] || 250
 
-      material_list << {
-        item:       "Full Rewire (#{sqft} sqft)",
-        quantity:   sqft,
-        unit:       "sqft",
-        unit_cost:  rewire_sqft_price,
-        total_cost: rewire_total,
-        category:   "Rewire"
-      }
-      material_list << {
-        item:       "#{amperage}A Panel",
-        quantity:   1,
-        unit:       "each",
-        unit_cost:  panel_cost,
-        total_cost: panel_cost,
-        category:   "Panel"
-      }
-      material_list << {
-        item:       "Breakers, Connectors & Misc",
-        quantity:   1,
-        unit:       "lot",
-        unit_cost:  panel_misc,
-        total_cost: panel_misc,
-        category:   "Panel"
-      }
+      material_list << emit_line(
+        item:     "Full Rewire (#{sqft} sqft)",
+        quantity: sqft,
+        unit:     "sqft",
+        price:    rewire_resolved,
+        category: "Rewire"
+      )
+      material_list << emit_line(
+        item:     "#{amperage}A Panel",
+        quantity: 1,
+        unit:     "each",
+        price:    panel_resolved,
+        category: "Panel"
+      )
+      material_list << emit_line(
+        item:      "Breakers, Connectors & Misc",
+        quantity:  1,
+        unit:      "lot",
+        price:     panel_resolved,
+        unit_cost: panel_misc,
+        category:  "Panel"
+      )
     end
 
     if service_type == "circuits" || service_type == "general"
       if ceiling_fans > 0
-        install = price("elec_ceiling_fan_install", 200.00)
-        hardware = 15
-        wire_cost = avg_run * wire_lf
-        unit_cost = install + hardware + wire_cost
-        material_list << {
-          item:       "Ceiling Fan Install (labor + hardware + wire)",
-          quantity:   ceiling_fans,
-          unit:       "each",
-          unit_cost:  unit_cost,
-          total_cost: ceiling_fans * unit_cost,
-          category:   "Lighting"
-        }
+        install_resolved = resolve_price("elec_ceiling_fan_install", 200.00)
+        install          = install_resolved[:price]
+        hardware         = 15
+        wire_cost        = avg_run * wire_lf
+        unit_cost        = install + hardware + wire_cost
+        material_list << emit_line(
+          item:      "Ceiling Fan Install (labor + hardware + wire)",
+          quantity:  ceiling_fans,
+          unit:      "each",
+          price:     install_resolved,
+          unit_cost: unit_cost,
+          category:  "Lighting"
+        )
         total_labor_hours += ceiling_fans * (install / labor_rate)
       end
 
       if outlet_count > 0
-        p = price("elec_outlet", 12.00)
-        wire_cost = avg_run * wire_lf
-        unit_cost = p + wire_cost
-        material_list << {
-          item:       "Standard Outlets (w/ wire)",
-          quantity:   outlet_count,
-          unit:       "each",
-          unit_cost:  unit_cost,
-          total_cost: outlet_count * unit_cost,
-          category:   "Outlets"
-        }
+        outlet_resolved = resolve_price("elec_outlet", 12.00)
+        wire_cost       = avg_run * wire_lf
+        unit_cost       = outlet_resolved[:price] + wire_cost
+        material_list << emit_line(
+          item:      "Standard Outlets (w/ wire)",
+          quantity:  outlet_count,
+          unit:      "each",
+          price:     outlet_resolved,
+          unit_cost: unit_cost,
+          category:  "Outlets"
+        )
         total_labor_hours += outlet_count * 0.75
       end
 
       if gfci_count > 0
-        p = price("elec_outlet_gfci", 35.00)
-        wire_cost = avg_run * wire_lf
-        unit_cost = p + wire_cost
-        material_list << {
-          item:       "GFCI Outlets (w/ wire)",
-          quantity:   gfci_count,
-          unit:       "each",
-          unit_cost:  unit_cost,
-          total_cost: gfci_count * unit_cost,
-          category:   "Outlets"
-        }
+        gfci_resolved = resolve_price("elec_outlet_gfci", 35.00)
+        wire_cost     = avg_run * wire_lf
+        unit_cost     = gfci_resolved[:price] + wire_cost
+        material_list << emit_line(
+          item:      "GFCI Outlets (w/ wire)",
+          quantity:  gfci_count,
+          unit:      "each",
+          price:     gfci_resolved,
+          unit_cost: unit_cost,
+          category:  "Outlets"
+        )
         total_labor_hours += gfci_count * 1.0
       end
 
       if switch_count > 0
-        p = price("elec_switch", 10.00)
-        wire_cost = avg_run * wire_lf
-        unit_cost = p + wire_cost
-        material_list << {
-          item:       "Standard Switches (w/ wire)",
-          quantity:   switch_count,
-          unit:       "each",
-          unit_cost:  unit_cost,
-          total_cost: switch_count * unit_cost,
-          category:   "Switches"
-        }
+        switch_resolved = resolve_price("elec_switch", 10.00)
+        wire_cost       = avg_run * wire_lf
+        unit_cost       = switch_resolved[:price] + wire_cost
+        material_list << emit_line(
+          item:      "Standard Switches (w/ wire)",
+          quantity:  switch_count,
+          unit:      "each",
+          price:     switch_resolved,
+          unit_cost: unit_cost,
+          category:  "Switches"
+        )
         total_labor_hours += switch_count * 0.5
       end
 
       if dimmer_count > 0
-        p = price("elec_switch_dimmer", 50.00)
-        wire_cost = avg_run * wire_lf
-        unit_cost = p + wire_cost
-        material_list << {
-          item:       "Dimmer Switches (w/ wire)",
-          quantity:   dimmer_count,
-          unit:       "each",
-          unit_cost:  unit_cost,
-          total_cost: dimmer_count * unit_cost,
-          category:   "Switches"
-        }
+        dimmer_resolved = resolve_price("elec_switch_dimmer", 50.00)
+        wire_cost       = avg_run * wire_lf
+        unit_cost       = dimmer_resolved[:price] + wire_cost
+        material_list << emit_line(
+          item:      "Dimmer Switches (w/ wire)",
+          quantity:  dimmer_count,
+          unit:      "each",
+          price:     dimmer_resolved,
+          unit_cost: unit_cost,
+          category:  "Switches"
+        )
         total_labor_hours += dimmer_count * 0.75
       end
 
       if fixture_count > 0
-        install = price("elec_light_install", 35.00)
-        hardware = 15
-        unit_cost = install + hardware
-        material_list << {
-          item:       "Light Fixture Install (labor + hardware)",
-          quantity:   fixture_count,
-          unit:       "each",
-          unit_cost:  unit_cost,
-          total_cost: fixture_count * unit_cost,
-          category:   "Lighting"
-        }
+        install_resolved = resolve_price("elec_light_install", 35.00)
+        install          = install_resolved[:price]
+        hardware         = 15
+        unit_cost        = install + hardware
+        material_list << emit_line(
+          item:      "Light Fixture Install (labor + hardware)",
+          quantity:  fixture_count,
+          unit:      "each",
+          price:     install_resolved,
+          unit_cost: unit_cost,
+          category:  "Lighting"
+        )
         total_labor_hours += fixture_count * (install / labor_rate)
       end
 
       if recessed_count > 0
-        p = price("elec_recessed", 55.00)
-        material_list << {
-          item:       "Recessed Lights",
-          quantity:   recessed_count,
-          unit:       "each",
-          unit_cost:  p,
-          total_cost: recessed_count * p,
-          category:   "Lighting"
-        }
+        material_list << emit_line(
+          item:     "Recessed Lights",
+          quantity: recessed_count,
+          unit:     "each",
+          price:    resolve_price("elec_recessed", 55.00),
+          category: "Lighting"
+        )
         total_labor_hours += recessed_count * 1.5
       end
 
       if circuits_20a > 0
-        p = price("elec_circuit_20a", 95.00)
-        material_list << {
-          item:       "20A Dedicated Circuit",
-          quantity:   circuits_20a,
-          unit:       "each",
-          unit_cost:  p,
-          total_cost: circuits_20a * p,
-          category:   "Circuits"
-        }
+        material_list << emit_line(
+          item:     "20A Dedicated Circuit",
+          quantity: circuits_20a,
+          unit:     "each",
+          price:    resolve_price("elec_circuit_20a", 95.00),
+          category: "Circuits"
+        )
         total_labor_hours += circuits_20a * 2.0
       end
 
       if circuits_30a > 0
-        p = price("elec_circuit_30a", 130.00)
-        material_list << {
-          item:       "30A Dedicated Circuit",
-          quantity:   circuits_30a,
-          unit:       "each",
-          unit_cost:  p,
-          total_cost: circuits_30a * p,
-          category:   "Circuits"
-        }
+        material_list << emit_line(
+          item:     "30A Dedicated Circuit",
+          quantity: circuits_30a,
+          unit:     "each",
+          price:    resolve_price("elec_circuit_30a", 130.00),
+          category: "Circuits"
+        )
         total_labor_hours += circuits_30a * 2.5
       end
 
       if circuits_50a > 0
-        p = price("elec_circuit_50a", 185.00)
-        material_list << {
-          item:       "50A Dedicated Circuit",
-          quantity:   circuits_50a,
-          unit:       "each",
-          unit_cost:  p,
-          total_cost: circuits_50a * p,
-          category:   "Circuits"
-        }
+        material_list << emit_line(
+          item:     "50A Dedicated Circuit",
+          quantity: circuits_50a,
+          unit:     "each",
+          price:    resolve_price("elec_circuit_50a", 185.00),
+          category: "Circuits"
+        )
         total_labor_hours += circuits_50a * 3.0
       end
     end
 
     if ev_charger == "yes"
-      ev_price = price("elec_ev_charger", 350.00)
+      ev_resolved = resolve_price("elec_ev_charger", 350.00)
       ev_wire_run = 100
-      unit_cost = ev_price + ev_wire_run
-      material_list << {
-        item:       "EV Charger Install + Wire Run",
-        quantity:   1,
-        unit:       "each",
-        unit_cost:  unit_cost,
-        total_cost: unit_cost,
-        category:   "Specialty"
-      }
+      unit_cost   = ev_resolved[:price] + ev_wire_run
+      material_list << emit_line(
+        item:      "EV Charger Install + Wire Run",
+        quantity:  1,
+        unit:      "each",
+        price:     ev_resolved,
+        unit_cost: unit_cost,
+        category:  "Specialty"
+      )
       total_labor_hours += 4
     end
 
     # Legacy JS parity: permit included unless explicitly "no".
     permit_str = permit_val.to_s.downcase
     unless permit_str == "no"
-      permit_price = price("elec_permit", 200.00)
-      material_list << {
-        item:       "Electrical Permit",
-        quantity:   1,
-        unit:       "each",
-        unit_cost:  permit_price,
-        total_cost: permit_price,
-        category:   "Permit"
-      }
+      material_list << emit_line(
+        item:     "Electrical Permit",
+        quantity: 1,
+        unit:     "each",
+        price:    resolve_price("elec_permit", 200.00),
+        category: "Permit"
+      )
     end
 
+    # Equipment & Consumables is a flat lot — no underlying pricing_key exists.
+    # Leave pricing_key nil; stamp_sources will stamp the dominant source so
+    # the UI still shows something, matching today's behavior.
     material_list << {
       item:       "Equipment & Consumables",
       quantity:   1,
