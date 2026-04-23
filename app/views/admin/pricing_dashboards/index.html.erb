@@ -175,6 +175,16 @@
       font-size: 11px; color: #10b981; font-weight: 600; white-space: nowrap;
     }
     .live-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; }
+    .web-search-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; color: #3b82f6; font-weight: 600; white-space: nowrap;
+    }
+    .web-search-dot { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; }
+    .web-search-range-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; color: #a78bfa; font-weight: 600; white-space: nowrap;
+    }
+    .web-search-range-dot { width: 6px; height: 6px; border-radius: 50%; background: #a78bfa; }
     .manual-badge { font-size: 11px; color: #64748b; white-space: nowrap; }
     .fetched-at { font-size: 10px; color: #475569; margin-top: 2px; }
 
@@ -242,6 +252,10 @@
       <div class="label">BigBox Live</div>
       <div class="value"><%= @trade[:live_keys] %></div>
     </div>
+    <div class="stat">
+      <div class="label">Web Search</div>
+      <div class="value"><%= @trade[:web_search_keys] %></div>
+    </div>
   </div>
 <% end %>
 
@@ -287,6 +301,14 @@
               <% if item[:bigbox_live] %>
                 <span class="live-badge" title="Live BigBox data; SKUs: <%= item[:hd_skus].join(', ') %>">
                   <span class="live-dot"></span>HD Live
+                </span>
+              <% elsif item[:web_search_live] && item[:price_source] == "web_search_range" %>
+                <span class="web-search-range-badge" title="Researched range midpoint; pricing_key: <%= item[:web_search_sku] %>">
+                  <span class="web-search-range-dot"></span>Range
+                </span>
+              <% elsif item[:web_search_live] %>
+                <span class="web-search-badge" title="Tavily + Haiku extract; pricing_key: <%= item[:web_search_sku] %>">
+                  <span class="web-search-dot"></span>Web Search
                 </span>
               <% else %>
                 <span class="manual-badge">Manual</span>

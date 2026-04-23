@@ -67,6 +67,16 @@ roofing:
         - { key: labor_rate_sqft,    label: "Base Labor Hours",     unit: "/sqft" }
         - { key: chimney_labor_hrs,  label: "Chimney Labor",        unit: "hrs" }
         - { key: skylight_labor_hrs, label: "Skylight Labor",       unit: "hrs" }
+    - title: "Additional Materials (Gap Fill)"
+      type: MATERIAL
+      type_label: "Material Only — gap-filled from web search (TEA-203)"
+      items:
+        - { key: mat_synthetic_slate,  label: "Synthetic Slate",      unit: "/sqft" }
+        - { key: roof_sealant,         label: "Roof Sealant/Coating", unit: "/gallon" }
+        - { key: pipe_boot,            label: "Pipe Boot/Jack",       unit: "each" }
+        - { key: step_flashing_lf,     label: "Step Flashing",        unit: "each" }
+        - { key: gutter_lf,            label: "Gutter",               unit: "/lf" }
+        - { key: gutter_downspout,     label: "Gutter Downspout",     unit: "each" }
 
 siding:
   icon: "🏗️"
@@ -117,6 +127,22 @@ siding:
       items:
         - { key: siding_story_2, label: "2-Story", unit: "×" }
         - { key: siding_story_3, label: "3-Story", unit: "×" }
+    - title: "Additional Materials (Gap Fill)"
+      type: MATERIAL
+      type_label: "Material Only — gap-filled from web search (TEA-203)"
+      items:
+        - { key: siding_vinyl_trim_coil,    label: "Vinyl Trim Coil 24\"",       unit: "/roll" }
+        - { key: siding_starter_strip,      label: "Vinyl Starter Strip",        unit: "/12ft" }
+        - { key: siding_undersill_trim,     label: "Vinyl Undersill Trim",       unit: "/12ft" }
+        - { key: siding_fiber_cement_shake, label: "Fiber Cement Shakes",        unit: "/sqft" }
+        - { key: siding_fiber_trim,         label: "Fiber Cement Trim Boards",   unit: "/12ft" }
+        - { key: siding_stucco_finish,      label: "Stucco Finish Coat",         unit: "/bag" }
+        - { key: siding_stucco_mesh,        label: "Stucco Mesh/Lath",           unit: "/sqft" }
+        - { key: siding_stucco_bond,        label: "Stucco Bonding Agent",       unit: "/gallon" }
+        - { key: siding_metal_trim,         label: "Metal Trim Coil",            unit: "/roll" }
+        - { key: siding_caulk,              label: "Exterior Caulk/Sealant",     unit: "/tube" }
+        - { key: siding_nails,              label: "Vinyl Siding Nails",         unit: "/box" }
+        - { key: siding_fiber_screws,       label: "Fiber Cement Screws",        unit: "/box" }
 
 electrical:
   icon: "⚡"
@@ -158,6 +184,27 @@ electrical:
       type_label: "Permit — flat municipal fee"
       items:
         - { key: elec_permit, label: "Electrical Permit", unit: "flat" }
+    - title: "Additional Materials (Gap Fill)"
+      type: MATERIAL
+      type_label: "Material Only — gap-filled from web search (TEA-203)"
+      items:
+        - { key: elec_wire_10_2,         label: "Romex 10/2 250ft",           unit: "/roll" }
+        - { key: elec_wire_10_3,         label: "Romex 10/3 250ft",           unit: "/roll" }
+        - { key: elec_wire_6_3_lf,       label: "Romex 6/3",                  unit: "/lf" }
+        - { key: elec_thhn_12,           label: "THHN Wire 12AWG 500ft",      unit: "/roll" }
+        - { key: elec_uf_cable,          label: "UF-B Cable 12/2 250ft",      unit: "/roll" }
+        - { key: elec_emt_half,          label: "EMT Conduit 1/2\" 10ft",     unit: "each" }
+        - { key: elec_emt_3_4,           label: "EMT Conduit 3/4\" 10ft",     unit: "each" }
+        - { key: elec_flex_conduit,      label: "Flex Conduit 1/2\" 25ft",    unit: "/roll" }
+        - { key: elec_box_old_work,      label: "Old Work Box 1-gang",        unit: "each" }
+        - { key: elec_junction_box,      label: "Junction Box 4x4\"",         unit: "each" }
+        - { key: elec_wp_box,            label: "Weatherproof Box",           unit: "each" }
+        - { key: elec_outlet_20a,        label: "20A Standard Outlet",        unit: "each" }
+        - { key: elec_outlet_usb,        label: "USB Outlet Combo",           unit: "each" }
+        - { key: elec_outlet_wp_cover,   label: "Weatherproof Outlet Cover",  unit: "each" }
+        - { key: elec_smart_switch,      label: "Smart Switch (WiFi)",        unit: "each" }
+        - { key: elec_switch_3way,       label: "3-Way Switch",               unit: "each" }
+        - { key: elec_occupancy_switch,  label: "Occupancy Sensor Switch",    unit: "each" }
 
 plumbing:
   icon: "🔧"
@@ -224,6 +271,28 @@ plumbing:
         - { key: plumb_location_basement, label: "Basement", unit: "×" }
         - { key: plumb_location_closet,   label: "Closet",   unit: "×" }
         - { key: plumb_location_attic,    label: "Attic (hardest)", unit: "×" }
+    - title: "Pipes & Fittings (Gap Fill)"
+      type: MATERIAL
+      type_label: "Material Only — gap-filled from web search (TEA-203)"
+      items:
+        - { key: plumb_pex_1in,            label: "PEX 1\" 100ft",          unit: "/roll" }
+        - { key: plumb_copper_3_4,         label: "Copper 3/4\" 10ft",      unit: "each" }
+        - { key: plumb_cpvc_half,          label: "CPVC 1/2\" 10ft",        unit: "each" }
+        - { key: plumb_cpvc_3_4,           label: "CPVC 3/4\" 10ft",        unit: "each" }
+        - { key: plumb_abs_3in,            label: "ABS 3\" 10ft",           unit: "each" }
+        - { key: plumb_pvc_3in,            label: "PVC 3\" 10ft",           unit: "each" }
+        - { key: plumb_pvc_4in,            label: "PVC 4\" 10ft",           unit: "each" }
+        - { key: plumb_pex_tee_half,       label: "PEX Tee 1/2\"",          unit: "each" }
+        - { key: plumb_pex_coupling_half,  label: "PEX Coupling 1/2\"",     unit: "each" }
+        - { key: plumb_copper_tee_half,    label: "Copper Tee 1/2\"",       unit: "each" }
+        - { key: plumb_pvc_tee_2in,        label: "PVC Tee 2\"",            unit: "each" }
+        - { key: plumb_brass_adapter,      label: "Brass Adapter",          unit: "each" }
+        - { key: plumb_ball_valve_half,    label: "Ball Valve 1/2\"",       unit: "each" }
+        - { key: plumb_ball_valve_3_4,     label: "Ball Valve 3/4\"",       unit: "each" }
+        - { key: plumb_angle_stop,         label: "Angle Stop Valve",       unit: "each" }
+        - { key: plumb_check_valve,        label: "Check Valve",            unit: "each" }
+        - { key: plumb_prv,                label: "Pressure Relief Valve",  unit: "each" }
+        - { key: plumb_wax_ring,           label: "Wax Ring (toilet)",      unit: "each" }
 
 hvac:
   icon: "❄️"
@@ -275,6 +344,24 @@ hvac:
       items:
         - { key: hvac_story_2, label: "2-Story", unit: "×" }
         - { key: hvac_story_3, label: "3-Story", unit: "×" }
+    - title: "Additional Materials (Gap Fill)"
+      type: MATERIAL
+      type_label: "Material Only — gap-filled from web search (TEA-203)"
+      items:
+        - { key: hvac_flex_duct_6,       label: "Flex Duct 6\" 25ft",       unit: "each" }
+        - { key: hvac_flex_duct_8,       label: "Flex Duct 8\" 25ft",       unit: "each" }
+        - { key: hvac_rigid_duct_lf,     label: "Rigid Sheet Metal Duct",   unit: "/lf" }
+        - { key: hvac_duct_insulation,   label: "Duct Insulation Wrap",     unit: "/roll" }
+        - { key: hvac_duct_mastic,       label: "Duct Mastic/Sealant",      unit: "/gallon" }
+        - { key: hvac_duct_tape,         label: "Duct Tape (HVAC rated)",   unit: "/roll" }
+        - { key: hvac_duct_hangers,      label: "Duct Hangers/Supports",    unit: "/box" }
+        - { key: hvac_line_set,          label: "Copper Line Set 25ft",     unit: "each" }
+        - { key: hvac_condensate_pump,   label: "Condensate Pump",          unit: "each" }
+        - { key: hvac_disconnect,        label: "Disconnect Box 60A",       unit: "each" }
+        - { key: hvac_pad,               label: "AC Pad/Stand",             unit: "each" }
+        - { key: hvac_thermostat_wire,   label: "Thermostat Wire 18/5",     unit: "/roll" }
+        - { key: hvac_range_hood,        label: "Range Hood",               unit: "each" }
+        - { key: hvac_dryer_vent,        label: "Dryer Vent Kit",           unit: "/kit" }
 
 painting:
   icon: "🎨"
@@ -339,6 +426,18 @@ painting:
       items:
         - { key: paint_lead_mat,   label: "Lead Abatement Materials", unit: "flat" }
         - { key: paint_lead_labor, label: "Lead Abatement Labor",     unit: "flat" }
+    - title: "Additional Materials (Gap Fill)"
+      type: MATERIAL
+      type_label: "Material Only — gap-filled from web search (TEA-203)"
+      items:
+        - { key: paint_epoxy_mat,        label: "Epoxy Floor Coating",   unit: "/gallon" }
+        - { key: paint_elastomeric_mat,  label: "Elastomeric Coating",   unit: "/gallon" }
+    - title: "Additional Labor (Gap Fill)"
+      type: LABOR_PER_UNIT
+      type_label: "Labor Per Unit — gap-filled from web search (TEA-203)"
+      items:
+        - { key: paint_deck_stain_labor,    label: "Deck Stain Labor",     unit: "/sqft" }
+        - { key: paint_wallpaper_removal,   label: "Wallpaper Removal",    unit: "/sqft" }
 
 drywall:
   icon: "🧱"
@@ -393,6 +492,19 @@ drywall:
         - { key: drywall_repair_minor,     label: "Minor Repair",     unit: "flat" }
         - { key: drywall_repair_moderate,  label: "Moderate Repair",  unit: "flat" }
         - { key: drywall_repair_extensive, label: "Extensive Repair", unit: "flat" }
+    - title: "Additional Materials (Gap Fill)"
+      type: MATERIAL
+      type_label: "Material Only — gap-filled from web search (TEA-203)"
+      items:
+        - { key: drywall_sheet_fire,         label: "Fire-Rated Board (Type X)",  unit: "/sheet" }
+        - { key: drywall_sheet_mold,         label: "Mold-Resistant Board",       unit: "/sheet" }
+        - { key: drywall_sheet_sound,        label: "Soundproof Drywall",         unit: "/sheet" }
+        - { key: drywall_setting_compound,   label: "Setting Compound (hot mud)", unit: "/bag" }
+        - { key: drywall_mesh_tape,          label: "Mesh Tape",                  unit: "/roll" }
+        - { key: drywall_bullnose_bead,      label: "Bullnose Corner Bead",       unit: "each" }
+        - { key: drywall_l_bead,             label: "L-Bead",                     unit: "each" }
+        - { key: drywall_resilient_channel,  label: "Resilient Channel",          unit: "/12ft" }
+        - { key: insulation_batt_r13,        label: "Batt Insulation R-13",       unit: "/sqft" }
 
 flooring:
   icon: "🪵"
@@ -436,3 +548,19 @@ flooring:
         - { key: floor_standard, label: "Standard (simple)",    unit: "×" }
         - { key: floor_moderate, label: "Moderate (some cuts)", unit: "×" }
         - { key: floor_complex,  label: "Complex (heavy cuts)", unit: "×" }
+    - title: "Additional Materials (Gap Fill)"
+      type: MATERIAL
+      type_label: "Material Only — gap-filled from web search (TEA-203)"
+      items:
+        - { key: floor_sheet_vinyl,         label: "Sheet Vinyl",           unit: "/sqft" }
+        - { key: floor_vct,                 label: "VCT",                   unit: "/sqft" }
+        - { key: floor_marble,              label: "Natural Stone (marble)", unit: "/sqft" }
+        - { key: floor_travertine,          label: "Natural Stone (travertine)", unit: "/sqft" }
+        - { key: floor_mosaic,              label: "Mosaic Tile",           unit: "/sqft" }
+        - { key: floor_thinset,             label: "Thinset Mortar",        unit: "/bag" }
+        - { key: floor_grout_sanded,        label: "Grout (sanded)",        unit: "/bag" }
+        - { key: floor_tile_sealer,         label: "Tile Sealer",           unit: "/gallon" }
+        - { key: floor_transition_t,        label: "T-Molding Transition",  unit: "each" }
+        - { key: floor_transition_reducer,  label: "Reducer Transition",    unit: "each" }
+        - { key: floor_self_level,          label: "Self-Leveling Compound", unit: "/bag" }
+        - { key: floor_moisture_barrier,    label: "Moisture Barrier",      unit: "/sqft" }
