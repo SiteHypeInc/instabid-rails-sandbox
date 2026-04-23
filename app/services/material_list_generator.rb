@@ -10,31 +10,44 @@ class MaterialListGenerator
   end
 
   def initialize(trade:, criteria:, contractor_id:, hourly_rate:)
-    @trade         = trade.to_s.downcase
-    @criteria      = criteria.with_indifferent_access
-    @contractor_id = contractor_id
-    @hourly_rate   = hourly_rate
+    @trade          = trade.to_s.downcase
+    @criteria       = criteria.with_indifferent_access
+    @contractor_id  = contractor_id
+    @hourly_rate    = hourly_rate
+    @price_sources  = {}
   end
 
   def call
-    case @trade
-    when "roofing"  then build_roofing
-    when "plumbing" then build_plumbing
-    when "drywall"  then build_drywall
-    when "flooring" then build_flooring
-    when "painting" then build_painting
-    when "siding"   then build_siding
-    when "hvac"     then build_hvac
-    when "electrical" then build_electrical
-    else
-      raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
-    end
+    result =
+      case @trade
+      when "roofing"  then build_roofing
+      when "plumbing" then build_plumbing
+      when "drywall"  then build_drywall
+      when "flooring" then build_flooring
+      when "painting" then build_painting
+      when "siding"   then build_siding
+      when "hvac"     then build_hvac
+      when "electrical" then build_electrical
+      else
+        raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
+      end
+
+    # Attach an aggregate of which price sources fed this trade's line items.
+    # Keys are pricing_keys we actually looked up, values are the resolved
+    # source label ("BigBox Live HD" / "Web Search" / "Manual" / "Default").
+    result[:price_sources] = @price_sources.dup
+    result[:price_source_summary] = @price_sources.values.tally
+    result
   end
 
   private
 
   def price(key, default)
-    PricingResolver.price(trade: @trade, key: key, contractor_id: @contractor_id, default: default)
+    resolved = PricingResolver.price_with_source(
+      trade: @trade, key: key, contractor_id: @contractor_id, default: default
+    )
+    @price_sources[key] = resolved[:source]
+    resolved[:price]
   end
 
   # -- Roofing -------------------------------------------------------------
@@ -322,6 +335,15 @@ class MaterialListGenerator
     access_mult   = PLUMBING_ACCESS_MULTIPLIERS[access_type]             || 1.0
     location_mult = PLUMBING_LOCATION_MULTIPLIERS[water_heater_location] || 1.0
 
+    # Form submits "rough_in", "fixture_swap", "remodel", "general". The legacy
+    # switch below only knew "repipe", "water_heater", "fixture". Normalize:
+    # rough_in is pipe work without new fixtures → reuse repipe. fixture_swap
+    # is a drop-in replacement → reuse fixture. remodel handled explicitly.
+    case service_type
+    when "rough_in"     then service_type = "repipe"
+    when "fixture_swap" then service_type = "fixture"
+    end
+
     material_list = []
     labor_hours   = 0.0
 
@@ -505,6 +527,139 @@ class MaterialListGenerator
           category:   "Add-ons"
         }
         labor_hours += 2
+      end
+
+      labor_hours *= access_mult
+      labor_hours  = [labor_hours, 2].max
+
+    when "remodel"
+      # Remodel = replacing pipe + fixtures in an existing footprint. Produces
+      # both the pipe-work lines (sized to sqft + bath/kitchen/laundry counts)
+      # and the per-fixture install lines.
+      if square_feet > 0
+        base_pipe_feet    = square_feet * 0.5
+        fixture_pipe_feet = (bathrooms * 25) + (kitchens * 30) + (laundry_rooms * 15)
+        total_pipe_feet   = (base_pipe_feet + fixture_pipe_feet).ceil
+        pex_unit          = price("pex_pipe_lf", 2.50)
+
+        material_list << {
+          item:       "PEX Pipe",
+          quantity:   total_pipe_feet,
+          unit:       "linear feet",
+          unit_cost:  pex_unit,
+          total_cost: total_pipe_feet * pex_unit,
+          category:   "Pipe"
+        }
+
+        fittings_cost = total_pipe_feet * pex_unit * 0.30
+        material_list << {
+          item:       "Fittings & Connectors",
+          quantity:   1,
+          unit:       "set",
+          unit_cost:  fittings_cost,
+          total_cost: fittings_cost,
+          category:   "Pipe"
+        }
+
+        valve_count = (bathrooms * 2) + (kitchens * 2) + laundry_rooms
+        valve_unit  = price("shutoff_valve", 25.00)
+        material_list << {
+          item:       "Shutoff Valves",
+          quantity:   valve_count,
+          unit:       "valves",
+          unit_cost:  valve_unit,
+          total_cost: valve_count * valve_unit,
+          category:   "Pipe"
+        }
+
+        labor_hours += (square_feet / 100.0) * 5
+        labor_hours *= 1.2  if stories >= 2
+        labor_hours *= 1.15 if stories >= 3
+      end
+
+      if toilet_count > 0
+        toilet_unit = price("fixture_toilet", 375.00)
+        material_list << {
+          item:       "Toilet Installation",
+          quantity:   toilet_count,
+          unit:       "fixtures",
+          unit_cost:  toilet_unit,
+          total_cost: toilet_unit * toilet_count,
+          category:   "Fixtures"
+        }
+        labor_hours += 2.5 * toilet_count
+      end
+
+      if sink_count > 0
+        sink_unit = price("fixture_sink", 450.00)
+        material_list << {
+          item:       "Sink Installation",
+          quantity:   sink_count,
+          unit:       "fixtures",
+          unit_cost:  sink_unit,
+          total_cost: sink_unit * sink_count,
+          category:   "Fixtures"
+        }
+        labor_hours += 3 * sink_count
+      end
+
+      if faucet_count > 0
+        faucet_unit = price("fixture_faucet", 262.00)
+        material_list << {
+          item:       "Faucet Installation",
+          quantity:   faucet_count,
+          unit:       "fixtures",
+          unit_cost:  faucet_unit,
+          total_cost: faucet_unit * faucet_count,
+          category:   "Fixtures"
+        }
+        labor_hours += 1.5 * faucet_count
+      end
+
+      if tub_shower_count > 0
+        tub_unit = price("fixture_tub_shower", 1200.00)
+        material_list << {
+          item:       "Tub/Shower Installation",
+          quantity:   tub_shower_count,
+          unit:       "fixtures",
+          unit_cost:  tub_unit,
+          total_cost: tub_unit * tub_shower_count,
+          category:   "Fixtures"
+        }
+        labor_hours += 6 * tub_shower_count
+      end
+
+      if garbage_disposal == "yes"
+        material_list << plumbing_garbage_disposal_line
+        labor_hours += 1.5
+      end
+      if ice_maker == "yes"
+        material_list << plumbing_ice_maker_line
+        labor_hours += 1
+      end
+      if dishwasher_hookup == "yes"
+        dw_unit = price("dishwasher_hookup", 200.00)
+        material_list << {
+          item:       "Dishwasher Hookup",
+          quantity:   1,
+          unit:       "hookup",
+          unit_cost:  dw_unit,
+          total_cost: dw_unit,
+          category:   "Add-ons"
+        }
+        labor_hours += 2
+      end
+      if main_line_replacement == "yes"
+        main_unit = price("main_line_replacement", 1200.00)
+        material_list << {
+          item:       "Main Line Replacement",
+          quantity:   1,
+          unit:       "job",
+          unit_cost:  main_unit,
+          total_cost: main_unit,
+          category:   "Main Line"
+        }
+        labor_hours += 8
       end
 
       labor_hours *= access_mult
@@ -758,27 +913,93 @@ class MaterialListGenerator
         category:   "Labor"
       }
 
-    elsif project_type == "repair"
+    elsif project_type == "repair" || project_type == "remodel"
+      # Remodel = partial tear-out + re-hang over an existing footprint. We
+      # scale the repair baseline up for the larger scope and add proportional
+      # sheet / compound / tape / screw / corner-bead lines sized to sqft.
+      is_remodel = (project_type == "remodel")
+
       repair_cost, repair_label =
         case damage_extent
         when "moderate"   then [repair_mod,   "Moderate"]
         when "extensive"  then [repair_ext,   "Extensive"]
         else                   [repair_minor, "Minor"]
         end
+      if is_remodel
+        # Remodels touch more surface than a pure repair — bump the baseline.
+        repair_cost *= 1.5
+      end
 
       material_list << {
-        item:       "Drywall Repair - #{repair_label}",
+        item:       "Drywall #{is_remodel ? 'Remodel' : 'Repair'} - #{repair_label}",
         quantity:   1,
         unit:       "job",
         unit_cost:  repair_cost,
         total_cost: repair_cost,
-        category:   "Repair"
+        category:   is_remodel ? "Remodel" : "Repair"
       }
 
+      if is_remodel && sqft > 0
+        adjusted_sqft = sqft * DRYWALL_WASTE
+        sheets_needed = (adjusted_sqft / 32.0).ceil
+
+        material_list << {
+          item:       'Drywall Sheets (4x8, 1/2")',
+          quantity:   sheets_needed,
+          unit:       "sheets",
+          unit_cost:  sheet_half,
+          total_cost: sheets_needed * sheet_half,
+          category:   "Materials"
+        }
+
+        compound_buckets = (sheets_needed / 4.0).ceil
+        material_list << {
+          item:       "Joint Compound",
+          quantity:   compound_buckets,
+          unit:       "buckets",
+          unit_cost:  joint_compound,
+          total_cost: compound_buckets * joint_compound,
+          category:   "Materials"
+        }
+
+        tape_rolls = (sheets_needed / 8.0).ceil
+        material_list << {
+          item:       "Drywall Tape",
+          quantity:   tape_rolls,
+          unit:       "rolls",
+          unit_cost:  tape_unit,
+          total_cost: tape_rolls * tape_unit,
+          category:   "Materials"
+        }
+
+        screw_boxes = (sheets_needed / 5.0).ceil
+        material_list << {
+          item:       "Drywall Screws",
+          quantity:   screw_boxes,
+          unit:       "boxes",
+          unit_cost:  screws_unit,
+          total_cost: screw_boxes * screws_unit,
+          category:   "Materials"
+        }
+
+        corner_beads = (rooms * 4).ceil
+        material_list << {
+          item:       "Corner Beads (8ft)",
+          quantity:   corner_beads,
+          unit:       "pieces",
+          unit_cost:  corner_bead,
+          total_cost: corner_beads * corner_bead,
+          category:   "Materials"
+        }
+      end
+
       labor_hours = (repair_cost * 0.7) / labor_rate
+      labor_hours += sqft * (hang_sqft + tape_sqft_rate + sand_sqft_rate) / labor_rate if is_remodel && sqft > 0
 
       if texture_type != "none"
-        repair_sqft = [sqft, 100].min
+        # Repair textures match a spot (cap at 100 sqft). Remodels cover the
+        # full wall area.
+        repair_sqft = is_remodel ? sqft : [sqft, 100].min
         texture_rate, texture_label =
           case texture_type
           when "orange_peel" then [tex_orange,    "Orange Peel"]
@@ -1163,10 +1384,15 @@ class MaterialListGenerator
     total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
                                        .sum { |i| i[:total_cost] }
 
+    # Painting builds labor_cost piecewise (per-sqft, per-linear-foot, per-unit).
+    # Reverse-derive hours from the hourly rate so the totals card doesn't show
+    # "0.00 hours" when labor is clearly non-zero.
+    labor_hours_derived = @hourly_rate > 0 ? (total_labor_cost / @hourly_rate) : 0
+
     {
       trade:               "painting",
       total_material_cost: (total_material_cost * 100).round / 100.0,
-      labor_hours:         0,
+      labor_hours:         (labor_hours_derived * 10).round / 10.0,
       labor_cost:          (total_labor_cost * 100).round / 100.0,
       material_list:       material_list
     }

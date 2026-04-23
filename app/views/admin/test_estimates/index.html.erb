@@ -228,6 +228,20 @@
   </div>
 </form>
 
+<%# ================= VALIDATION ERRORS ================= %>
+<% if @submitted && @errors.any? %>
+  <div class="panel">
+    <h2 style="color: #f87171;">Validation Errors</h2>
+    <div class="error">
+      <ul style="list-style: disc; padding-left: 20px;">
+        <% @errors.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+<% end %>
+
 <%# ================= RESULTS ================= %>
 <% if @submitted && @results.any? %>
   <div class="panel results">
@@ -242,7 +256,7 @@
             <thead>
               <tr>
                 <th>Item</th>
-                <th>Source</th>
+                <th>Category</th>
                 <th class="num">Qty</th>
                 <th>Unit</th>
                 <th class="num">Unit $</th>
@@ -262,6 +276,13 @@
               <% end %>
             </tbody>
           </table>
+          <% summary = r[:price_source_summary] || {} %>
+          <% if summary.any? %>
+            <div style="margin-top: 8px; font-size: 11px; color: #64748b;">
+              <strong style="color: #94a3b8;">Price Sources:</strong>
+              <% summary.each_with_index do |(src, n), i| %><%= ', ' unless i.zero? %><span class="mono"><%= src %></span> (<%= n %>)<% end %>
+            </div>
+          <% end %>
           <div class="totals">
             <div class="total-card">
               <div class="label">Materials</div>

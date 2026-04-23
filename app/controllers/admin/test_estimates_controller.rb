@@ -18,13 +18,81 @@ module Admin
       return unless @submitted
 
       trades_to_run = @mode == "remodel" ? selected_remodel_trades : [@selected]
+
+      if trades_to_run.empty?
+        @errors << "Pick at least one trade to run."
+        return
+      end
+
       trades_to_run.each do |trade|
         criteria = @criteria[trade] || {}
+        validation_errors = validate_criteria(trade, criteria)
+        if validation_errors.any?
+          @errors.concat(validation_errors.map { |msg| "#{trade.capitalize}: #{msg}" })
+          @results << {
+            trade:               trade,
+            criteria:            criteria,
+            material_list:       [],
+            total_material_cost: 0,
+            labor_hours:         0,
+            labor_cost:          0,
+            trade_total:         0,
+            error:               validation_errors.join("; ")
+          }
+          next
+        end
         @results << run_trade(trade, criteria)
       end
     end
 
     private
+
+    # Required-positive fields per trade. squareFeet > 0 is a hard requirement
+    # because the generator's math (sqrt, per-sqft multipliers) goes sideways
+    # on zero/negative inputs. Other numeric fields just need to be >= 0.
+    REQUIRED_POSITIVE_FIELDS = {
+      "roofing"    => %w[squareFeet],
+      "plumbing"   => %w[squareFeet],
+      "drywall"    => %w[squareFeet],
+      "flooring"   => %w[squareFeet],
+      "painting"   => %w[squareFeet],
+      "siding"     => %w[squareFeet],
+      "hvac"       => %w[squareFeet],
+      "electrical" => %w[squareFeet]
+    }.freeze
+
+    def validate_criteria(trade, criteria)
+      errors = []
+      fields = Admin::TestEstimatesHelper::TRADE_FIELDS[trade] || []
+      required = REQUIRED_POSITIVE_FIELDS[trade] || []
+
+      fields.each do |field|
+        next unless field[:type] == :number
+        name = field[:name].to_s
+        raw  = criteria[name]
+        raw  = raw.to_s.strip if raw.is_a?(String)
+
+        if required.include?(name) && (raw.nil? || raw == "")
+          errors << "#{field[:label]} is required."
+          next
+        end
+        next if raw.nil? || raw == ""
+
+        unless raw.to_s.match?(/\A-?\d+(\.\d+)?\z/)
+          errors << "#{field[:label]} must be a number (got #{raw.inspect})."
+          next
+        end
+
+        num = raw.to_s.include?(".") ? raw.to_f : raw.to_i
+        if required.include?(name) && num <= 0
+          errors << "#{field[:label]} must be greater than zero."
+        elsif num.negative?
+          errors << "#{field[:label]} cannot be negative."
+        end
+      end
+
+      errors
+    end
 
     def selected_trade
       requested = params[:trade].to_s.downcase
@@ -65,22 +133,24 @@ module Admin
       total_material_cost = (result[:total_material_cost] || result["total_material_cost"] || 0).to_f
       labor_hours         = (result[:labor_hours] || result["labor_hours"] || 0).to_f
       labor_cost          = (result[:labor_cost] || result["labor_cost"] || (labor_hours * @hourly_rate)).to_f
+      source_summary      = (result[:price_source_summary] || result["price_source_summary"] || {})
 
       {
-        trade:               trade,
-        criteria:            criteria,
-        material_list:       material_list,
-        total_material_cost: total_material_cost,
-        labor_hours:         labor_hours,
-        labor_cost:          labor_cost,
-        trade_total:         total_material_cost + labor_cost,
-        error:               nil
+        trade:                 trade,
+        criteria:              criteria,
+        material_list:         material_list,
+        total_material_cost:   total_material_cost,
+        labor_hours:           labor_hours,
+        labor_cost:            labor_cost,
+        trade_total:           total_material_cost + labor_cost,
+        price_source_summary:  source_summary,
+        error:                 nil
       }
     rescue MaterialListGenerator::UnsupportedTrade => e
       { trade: trade, error: e.message, material_list: [], total_material_cost: 0, labor_hours: 0, labor_cost: 0, trade_total: 0 }
     rescue => e
-      Rails.logger.error("[TEA-236] test estimate crashed for #{trade}: #{e.class} #{e.message}")
-      { trade: trade, error: "#{e.class}: #{e.message}", material_list: [], total_material_cost: 0, labor_hours: 0, labor_cost: 0, trade_total: 0 }
+      Rails.logger.error("[TEA-236] test estimate crashed for #{trade}: #{e.class} #{e.message}\n#{e.backtrace&.first(5)&.join("\n")}")
+      { trade: trade, error: "Generator error — please check your inputs and try again.", material_list: [], total_material_cost: 0, labor_hours: 0, labor_cost: 0, trade_total: 0 }
     end
 
     # Coerce blank strings to nil so the service's own defaults apply, and
