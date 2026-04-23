@@ -24,6 +24,7 @@ class MaterialListGenerator
     when "flooring" then build_flooring
     when "painting" then build_painting
     when "siding"   then build_siding
+    when "hvac"     then build_hvac
     else
       raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
     end
@@ -1354,6 +1355,156 @@ class MaterialListGenerator
 
     {
       trade:               "siding",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 100).round / 100.0,
+      material_list:       material_list
+    }
+  end
+
+  # -- HVAC ----------------------------------------------------------------
+
+  HVAC_EQUIPMENT_NAMES = {
+    "furnace"   => { "standard" => "Standard Furnace",     "high" => "High-Efficiency Furnace" },
+    "ac"        => { "standard" => "Central AC Unit",      "high" => "High-Efficiency AC Unit" },
+    "heatpump"  => { "standard" => "Heat Pump",            "high" => "High-Efficiency Heat Pump" },
+    "minisplit" => { "standard" => "Mini-Split System",    "high" => "Mini-Split System" }
+  }.freeze
+
+  def build_hvac
+    sqft        = (@criteria[:squareFeet] || @criteria[:square_feet] || 0).to_f
+    system_type = (@criteria[:systemType]  || @criteria[:system_type] || "furnace").to_s.downcase
+    efficiency  = (@criteria[:efficiency]  || "standard").to_s.downcase
+    ductwork    = (@criteria[:ductwork]    || "existing").to_s.downcase
+    stories     = (@criteria[:stories] || 1).to_i
+    zones       = (@criteria[:zoneCount]   || @criteria[:zone_count]   || 1).to_i
+    thermostats = (@criteria[:thermostats] || 1).to_i
+
+    size_small  = price("hvac_size_small",  0.9)
+    size_med    = price("hvac_size_med",    1.0)
+    size_large  = price("hvac_size_large",  1.2)
+    size_xlarge = price("hvac_size_xlarge", 1.4)
+
+    size_mult = if    sqft <  1500 then size_small
+                elsif sqft <= 2500 then size_med
+                elsif sqft <= 4000 then size_large
+                else                    size_xlarge
+                end
+
+    equipment_prices = {
+      "furnace"   => { "standard" => price("hvac_furnace_standard",  3500.00),
+                       "high"     => price("hvac_furnace_high",      4500.00) },
+      "ac"        => { "standard" => price("hvac_ac_standard",       4000.00),
+                       "high"     => price("hvac_ac_high",           5500.00) },
+      "heatpump"  => { "standard" => price("hvac_heatpump_standard", 5500.00),
+                       "high"     => price("hvac_heatpump_high",     7500.00) },
+      "minisplit" => { "standard" => price("hvac_minisplit",         2500.00),
+                       "high"     => price("hvac_minisplit",         2500.00) }
+    }
+
+    equipment_cost = equipment_prices.dig(system_type, efficiency) ||
+                     price("hvac_furnace_standard", 3500.00)
+    equipment_cost *= zones if system_type == "minisplit"
+    equipment_cost *= size_mult
+
+    equipment_name = if system_type == "minisplit"
+                       "Mini-Split System (#{zones} zones)"
+                     else
+                       HVAC_EQUIPMENT_NAMES.dig(system_type, efficiency) || "HVAC Unit"
+                     end
+
+    material_list = []
+    material_list << {
+      item:       equipment_name,
+      quantity:   1,
+      unit:       "unit",
+      unit_cost:  equipment_cost,
+      total_cost: equipment_cost,
+      category:   "hvac_units"
+    }
+
+    ductwork_feet = 0
+    case ductwork
+    when "new"
+      d_cost = price("hvac_duct_new", 15.00)
+      ductwork_feet = (sqft / 10.0).ceil
+      material_list << {
+        item:       "New Ductwork",
+        quantity:   ductwork_feet,
+        unit:       "linear feet",
+        unit_cost:  d_cost,
+        total_cost: ductwork_feet * d_cost,
+        category:   "ductwork"
+      }
+    when "repair"
+      d_cost = price("hvac_duct_repair", 8.00)
+      ductwork_feet = (sqft / 20.0).ceil
+      material_list << {
+        item:       "Ductwork Repair",
+        quantity:   ductwork_feet,
+        unit:       "linear feet",
+        unit_cost:  d_cost,
+        total_cost: ductwork_feet * d_cost,
+        category:   "ductwork"
+      }
+    end
+
+    thermo_cost = price("hvac_thermostat", 350.00)
+    material_list << {
+      item:       "Smart Thermostat",
+      quantity:   thermostats,
+      unit:       "units",
+      unit_cost:  thermo_cost,
+      total_cost: thermostats * thermo_cost,
+      category:   "thermostats"
+    }
+
+    if system_type != "furnace"
+      r_cost = price("hvac_refrigerant", 250.00)
+      material_list << {
+        item:       "Refrigerant",
+        quantity:   1,
+        unit:       "charge",
+        unit_cost:  r_cost,
+        total_cost: r_cost,
+        category:   "refrigerant"
+      }
+    end
+
+    filter_cost = price("hvac_filters", 200.00)
+    material_list << {
+      item:       "Filters & Supplies",
+      quantity:   1,
+      unit:       "set",
+      unit_cost:  filter_cost,
+      total_cost: filter_cost,
+      category:   "filters"
+    }
+
+    base_labor = {
+      "furnace"   => price("hvac_labor_furnace",   12.00),
+      "ac"        => price("hvac_labor_ac",        10.00),
+      "heatpump"  => price("hvac_labor_heatpump",  14.00),
+      "minisplit" => price("hvac_labor_minisplit", 8.00)
+    }
+
+    labor_hours  = base_labor[system_type] || 10.0
+    labor_hours *= zones if system_type == "minisplit"
+    labor_hours += ductwork_feet / 20.0 if ductwork == "new"
+    labor_hours += ductwork_feet / 30.0 if ductwork == "repair"
+
+    story2_mult = price("hvac_story_2", 1.2)
+    story3_mult = price("hvac_story_3", 1.4)
+    if stories >= 3
+      labor_hours *= story3_mult
+    elsif stories >= 2
+      labor_hours *= story2_mult
+    end
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }
+                                       .sum { |i| i[:total_cost] }
+
+    {
+      trade:               "hvac",
       total_material_cost: (total_material_cost * 100).round / 100.0,
       labor_hours:         (labor_hours * 100).round / 100.0,
       material_list:       material_list
