@@ -17,6 +17,12 @@ Rails.application.routes.draw do
     # grouped by trade/section with TYPE badges and BigBox live indicator.
     get "pricing_dashboard", to: "pricing_dashboards#index", as: :pricing_dashboard
 
+    # TEA-236: internal test estimate form (operator sandbox). GET renders the
+    # form; POST re-renders the same page with rendered MaterialListGenerator
+    # results. Read-only. NOT customer-facing.
+    get  "test_estimate", to: "test_estimates#index",  as: :test_estimate
+    post "test_estimate", to: "test_estimates#index"
+
     resources :material_prices, only: [:index] do
       collection do
         # TEA-164: mirrors bigbox:purge_junk_rows rake. Dry-run by default;
