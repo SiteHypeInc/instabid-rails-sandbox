@@ -11,6 +11,14 @@ if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   # WebSearchPriceLoaderService uses find_or_initialize_by + per-row rescue,
   # so reruns are safe and a failure here must not block server startup.
   ./bin/rails web_search_prices:load || echo "[web_search_prices:load] failed, continuing boot"
+  # TEA-236: sandbox-only fixture loader for the Test Estimate dashboard re-smoke.
+  # Seeds one confidence=medium material_prices row and shared-material
+  # default_pricings (corner_bead, screws on drywall+siding) so Commander's
+  # 7-item smoke exercises the pending/range render path and multi-trade
+  # dedup path. find_or_initialize_by + save! — idempotent, safe on every boot.
+  # Lives in the entrypoint (not a one-shot rake) because the agent runtime
+  # has no Railway CLI access. This is a SANDBOX FIXTURE, not production seed.
+  ./bin/rails tea236:smoke_seeds || echo "[tea236:smoke_seeds] failed, continuing boot"
 fi
 
 exec "${@}"
