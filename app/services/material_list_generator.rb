@@ -22,14 +22,20 @@ class MaterialListGenerator
     guard_critical_sqft!
 
     result = case @trade
-             when "roofing"    then build_roofing
-             when "plumbing"   then build_plumbing
-             when "drywall"    then build_drywall
-             when "flooring"   then build_flooring
-             when "painting"   then build_painting
-             when "siding"     then build_siding
-             when "hvac"       then build_hvac
-             when "electrical" then build_electrical
+             when "roofing"     then build_roofing
+             when "plumbing"    then build_plumbing
+             when "drywall"     then build_drywall
+             when "flooring"    then build_flooring
+             when "painting"    then build_painting
+             when "siding"      then build_siding
+             when "hvac"        then build_hvac
+             when "electrical"  then build_electrical
+             when "cabinets"    then build_cabinets
+             when "countertops" then build_countertops
+             when "backsplash"  then build_backsplash
+             when "appliances"  then build_appliances
+             when "demolition"  then build_demolition
+             when "trim"        then build_trim
              else
                raise UnsupportedTrade, "trade #{@trade.inspect} not yet ported"
              end
@@ -1948,5 +1954,653 @@ class MaterialListGenerator
     when String       then %w[true yes 1 on].include?(v.downcase)
     else                   !!v
     end
+  end
+
+  # ============================================================================
+  # Kitchen-cluster builders (TEA-240)
+  # Formulas and pricing keys follow the TEA-238 spec. Manual defaults used for
+  # every `price(...)` call; DefaultPricing rows are seeded in the Kitchen-cluster
+  # migration so PricingResolver can surface the source tag on each line item.
+  # ============================================================================
+
+  CABINET_GRADE_KEYS = {
+    "stock"       => "cab_base_30_stock",
+    "semi"        => "cab_base_30_semi",
+    "semi-custom" => "cab_base_30_semi",
+    "custom"      => "cab_base_custom_lf",
+  }.freeze
+
+  CABINET_GRADE_DEFAULTS = {
+    "cab_base_30_stock"  => 200.00,  # per LF, stock base cab
+    "cab_base_30_semi"   => 350.00,  # per LF, semi-custom
+    "cab_base_custom_lf" => 600.00,  # per LF, full custom
+  }.freeze
+
+  ISLAND_LF = { "none" => 0, "standard" => 5, "large" => 8 }.freeze
+  HARDWARE_TIER_UNIT = { "basic" => 3.50, "mid" => 7.50, "mid-range" => 7.50, "premium" => 15.00 }.freeze
+
+  def build_cabinets
+    grade         = (@criteria[:cabinetGrade] || @criteria[:cabinet_grade] || "stock").to_s.downcase
+    base_lf       = (@criteria[:baseCabinetLf]  || @criteria[:base_cabinet_lf] || 0).to_f
+    wall_lf       = (@criteria[:wallCabinetLf]  || @criteria[:wall_cabinet_lf] || 0).to_f
+    tall_count    = (@criteria[:tallCabinets]   || @criteria[:tall_cabinets]   || 0).to_i
+    island        = (@criteria[:island]         || "none").to_s.downcase
+    hardware_tier = (@criteria[:cabinetHardware] || @criteria[:cabinet_hardware] || "basic").to_s.downcase
+    soft_close_hinges = truthy?(@criteria[:softCloseHinges] || @criteria[:soft_close_hinges])
+    soft_close_slides = truthy?(@criteria[:softCloseDrawerSlides] || @criteria[:soft_close_drawer_slides])
+    crown_molding     = truthy?(@criteria[:crownMolding] || @criteria[:crown_molding])
+    accessories = Array(@criteria[:accessories] || []).map { |a| a.to_s.downcase }
+
+    base_key = CABINET_GRADE_KEYS[grade] || "cab_base_30_stock"
+    base_default = CABINET_GRADE_DEFAULTS[base_key] || 200.00
+    base_unit = price(base_key, base_default)
+
+    island_lf = ISLAND_LF.fetch(island, 0)
+    total_base_lf = base_lf + island_lf
+
+    material_list = []
+    labor_hours   = 0.0
+
+    if total_base_lf > 0
+      material_list << {
+        item:       "Base Cabinets (#{grade})",
+        quantity:   total_base_lf,
+        unit:       "LF",
+        unit_cost:  base_unit,
+        total_cost: (base_unit * total_base_lf * 100).round / 100.0,
+        category:   "Cabinets"
+      }
+      labor_hours += total_base_lf * 1.2
+    end
+
+    if wall_lf > 0
+      wall_unit = price("cab_wall_lf", base_unit * 0.75)
+      material_list << {
+        item:       "Wall Cabinets (#{grade})",
+        quantity:   wall_lf,
+        unit:       "LF",
+        unit_cost:  wall_unit,
+        total_cost: (wall_unit * wall_lf * 100).round / 100.0,
+        category:   "Cabinets"
+      }
+      labor_hours += wall_lf * 1.0
+    end
+
+    if tall_count > 0
+      tall_unit = price("cab_tall_stock", 450.00)
+      material_list << {
+        item:       "Tall/Pantry Cabinets",
+        quantity:   tall_count,
+        unit:       "each",
+        unit_cost:  tall_unit,
+        total_cost: (tall_unit * tall_count * 100).round / 100.0,
+        category:   "Cabinets"
+      }
+      labor_hours += tall_count * 2.0
+    end
+
+    door_count = (total_base_lf / 2.5).ceil + (wall_lf / 2.5).ceil + tall_count
+    drawer_count = (total_base_lf / 3.0).ceil
+    pull_unit = HARDWARE_TIER_UNIT.fetch(hardware_tier, 3.50)
+    pull_price = price("cab_hardware_pull", pull_unit)
+    total_pulls = door_count + drawer_count
+    if total_pulls > 0
+      material_list << {
+        item:       "Cabinet Pulls/Knobs (#{hardware_tier})",
+        quantity:   total_pulls,
+        unit:       "each",
+        unit_cost:  pull_price,
+        total_cost: (pull_price * total_pulls * 100).round / 100.0,
+        category:   "Hardware"
+      }
+      labor_hours += total_pulls * 0.1
+    end
+
+    if soft_close_hinges && door_count > 0
+      hinge_unit = price("cab_hinge_soft_close", 4.50)
+      hinge_count = door_count * 2
+      material_list << {
+        item:       "Soft-Close Hinges",
+        quantity:   hinge_count,
+        unit:       "each",
+        unit_cost:  hinge_unit,
+        total_cost: (hinge_unit * hinge_count * 100).round / 100.0,
+        category:   "Hardware"
+      }
+    end
+
+    if soft_close_slides && drawer_count > 0
+      slide_unit = price("cab_drawer_slide", 18.00)
+      material_list << {
+        item:       "Soft-Close Drawer Slides",
+        quantity:   drawer_count,
+        unit:       "each",
+        unit_cost:  slide_unit,
+        total_cost: (slide_unit * drawer_count * 100).round / 100.0,
+        category:   "Hardware"
+      }
+    end
+
+    if crown_molding && (total_base_lf + wall_lf) > 0
+      crown_lf = wall_lf
+      crown_unit = price("cab_crown_lf", 12.00)
+      material_list << {
+        item:       "Cabinet Crown Molding",
+        quantity:   crown_lf,
+        unit:       "LF",
+        unit_cost:  crown_unit,
+        total_cost: (crown_unit * crown_lf * 100).round / 100.0,
+        category:   "Trim"
+      }
+      labor_hours += crown_lf * 0.15
+    end
+
+    if accessories.include?("lazy susan") || accessories.include?("lazy_susan")
+      ls_unit = price("cab_lazy_susan", 185.00)
+      material_list << {
+        item:       "Lazy Susan",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  ls_unit,
+        total_cost: ls_unit,
+        category:   "Accessories"
+      }
+    end
+
+    pullout_count = accessories.count { |a| a.include?("pull-out") || a.include?("pullout") }
+    if pullout_count > 0
+      po_unit = price("cab_pullout_shelf", 125.00)
+      material_list << {
+        item:       "Pull-Out Shelves",
+        quantity:   pullout_count,
+        unit:       "each",
+        unit_cost:  po_unit,
+        total_cost: (po_unit * pullout_count * 100).round / 100.0,
+        category:   "Accessories"
+      }
+    end
+
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Cabinet Installation Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+
+    {
+      trade:               "cabinets",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  COUNTERTOP_KEYS = {
+    "laminate"       => ["counter_laminate_sqft",      25.00],
+    "butcher block"  => ["counter_butcherblock_sqft",  45.00],
+    "butcher_block"  => ["counter_butcherblock_sqft",  45.00],
+    "solid surface"  => ["counter_solidsurface_sqft",  55.00],
+    "solid_surface"  => ["counter_solidsurface_sqft",  55.00],
+    "quartz"         => ["counter_quartz_sqft",        75.00],
+    "granite"        => ["counter_granite_sqft",       65.00],
+    "marble"         => ["counter_marble_sqft",       120.00],
+  }.freeze
+
+  EDGE_PROFILE_KEY = {
+    "standard"   => ["counter_edge_basic_lf",    8.00],
+    "ogee"       => ["counter_edge_premium_lf", 18.00],
+    "beveled"    => ["counter_edge_premium_lf", 18.00],
+    "waterfall"  => ["counter_edge_premium_lf", 35.00],
+  }.freeze
+
+  def build_countertops
+    material      = (@criteria[:countertopMaterial] || @criteria[:countertop_material] || "laminate").to_s.downcase
+    sqft          = (@criteria[:countertopSqft]    || @criteria[:countertop_sqft]    || 0).to_f
+    base_lf       = (@criteria[:baseCabinetLf]    || @criteria[:base_cabinet_lf]    || 0).to_f
+    edge_profile  = (@criteria[:edgeProfile]      || @criteria[:edge_profile]      || "standard").to_s.downcase
+    sink_cutout   = @criteria.key?(:sinkCutout) || @criteria.key?(:sink_cutout) ? truthy?(@criteria[:sinkCutout] || @criteria[:sink_cutout]) : true
+    cooktop_cutout = truthy?(@criteria[:cooktopCutout] || @criteria[:cooktop_cutout])
+
+    # Auto-estimate sqft from base LF × 2ft depth if not supplied
+    if sqft <= 0 && base_lf > 0
+      sqft = base_lf * 2.0
+    end
+
+    key, default = COUNTERTOP_KEYS[material] || COUNTERTOP_KEYS["laminate"]
+    unit_cost = price(key, default)
+
+    material_list = []
+    labor_hours = 0.0
+
+    if sqft > 0
+      total = unit_cost * sqft
+      material_list << {
+        item:       "#{material.split('_').map(&:capitalize).join(' ').split(' ').map(&:capitalize).join(' ')} Countertop",
+        quantity:   sqft,
+        unit:       "sqft",
+        unit_cost:  unit_cost,
+        total_cost: (total * 100).round / 100.0,
+        category:   "Countertops"
+      }
+      labor_hours += sqft * 0.35
+    end
+
+    # Edge profile adds per LF (perimeter ~ base LF + finished returns)
+    edge_lf = base_lf > 0 ? base_lf : (sqft > 0 ? (sqft / 2.0) : 0)
+    if edge_lf > 0
+      ekey, edefault = EDGE_PROFILE_KEY[edge_profile] || EDGE_PROFILE_KEY["standard"]
+      eunit = price(ekey, edefault)
+      material_list << {
+        item:       "Edge Profile (#{edge_profile})",
+        quantity:   edge_lf,
+        unit:       "LF",
+        unit_cost:  eunit,
+        total_cost: (eunit * edge_lf * 100).round / 100.0,
+        category:   "Countertops"
+      }
+    end
+
+    if sink_cutout
+      sc_unit = price("counter_sink_cutout", 150.00)
+      material_list << {
+        item:       "Sink Cutout",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  sc_unit,
+        total_cost: sc_unit,
+        category:   "Countertops"
+      }
+      labor_hours += 1.0
+    end
+
+    if cooktop_cutout
+      cc_unit = price("counter_cooktop_cutout", 175.00)
+      material_list << {
+        item:       "Cooktop Cutout",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  cc_unit,
+        total_cost: cc_unit,
+        category:   "Countertops"
+      }
+      labor_hours += 1.0
+    end
+
+    labor_cost = labor_hours * @hourly_rate
+    if labor_hours > 0
+      material_list << {
+        item:       "Countertop Install Labor",
+        quantity:   (labor_hours * 100).round / 100.0,
+        unit:       "hours",
+        unit_cost:  @hourly_rate,
+        total_cost: (labor_cost * 100).round / 100.0,
+        category:   "Labor"
+      }
+    end
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+
+    {
+      trade:               "countertops",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  BACKSPLASH_KEYS = {
+    "subway"         => ["backsplash_subway_sqft",   9.00],
+    "subway tile"    => ["backsplash_subway_sqft",   9.00],
+    "mosaic"         => ["backsplash_mosaic_sqft",  22.00],
+    "full-height"    => ["backsplash_subway_sqft",   9.00],
+    "full_height"    => ["backsplash_subway_sqft",   9.00],
+    "match"          => ["backsplash_subway_sqft",  12.00],
+    "match countertop" => ["backsplash_subway_sqft", 12.00],
+  }.freeze
+
+  def build_backsplash
+    type      = (@criteria[:backsplashType] || @criteria[:backsplash_type] || "none").to_s.downcase
+    return empty_trade_result("backsplash") if type == "none" || type.empty?
+
+    area      = (@criteria[:backsplashArea] || @criteria[:backsplash_area] || 0).to_f
+    counter_lf = (@criteria[:baseCabinetLf] || @criteria[:base_cabinet_lf] || 0).to_f
+
+    # Auto-estimate: counter LF × 18" height = LF × 1.5 sqft
+    if area <= 0 && counter_lf > 0
+      area = counter_lf * 1.5
+    end
+    area = 30.0 if area <= 0
+
+    key, default = BACKSPLASH_KEYS[type] || BACKSPLASH_KEYS["subway"]
+    unit = price(key, default)
+
+    material_list = []
+
+    material_list << {
+      item:       "Backsplash Tile (#{type})",
+      quantity:   area,
+      unit:       "sqft",
+      unit_cost:  unit,
+      total_cost: (unit * area * 100).round / 100.0,
+      category:   "Backsplash"
+    }
+
+    thinset_bags = (area / 50.0).ceil
+    thinset_unit = price("tile_thinset_bag", 17.74)
+    material_list << {
+      item:       "Thinset Mortar",
+      quantity:   thinset_bags,
+      unit:       "bags",
+      unit_cost:  thinset_unit,
+      total_cost: (thinset_unit * thinset_bags * 100).round / 100.0,
+      category:   "Backsplash"
+    }
+
+    grout_bags = (area / 40.0).ceil
+    grout_unit = price("tile_grout_bag", 12.00)
+    material_list << {
+      item:       "Grout",
+      quantity:   grout_bags,
+      unit:       "bags",
+      unit_cost:  grout_unit,
+      total_cost: (grout_unit * grout_bags * 100).round / 100.0,
+      category:   "Backsplash"
+    }
+
+    labor_hours = area * 0.5
+    labor_hours *= 1.4 if type.include?("mosaic")
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Backsplash Install Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+
+    {
+      trade:               "backsplash",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  APPLIANCE_PACKAGE_ALLOWANCE = {
+    "reuse existing" => 0,
+    "reuse"          => 0,
+    "builder"        => 3500.00,
+    "mid"            => 6500.00,
+    "mid-range"      => 6500.00,
+    "premium"        => 11000.00,
+    "luxury"         => 20000.00,
+  }.freeze
+
+  APPLIANCE_PACKAGE_KEYS = {
+    "builder"   => "appliance_builder",
+    "mid"       => "appliance_mid",
+    "mid-range" => "appliance_mid",
+    "premium"   => "appliance_premium",
+    "luxury"    => "appliance_luxury",
+  }.freeze
+
+  def build_appliances
+    package = (@criteria[:appliancePackage] || @criteria[:appliance_package] || "builder").to_s.downcase
+    range_type = (@criteria[:rangeType] || @criteria[:range_type] || "electric").to_s.downcase
+    ventilation = (@criteria[:ventilation] || "recirculating").to_s.downcase
+
+    allowance_default = APPLIANCE_PACKAGE_ALLOWANCE[package] || 0
+    material_list = []
+    labor_hours = 0.0
+
+    if allowance_default > 0
+      key = APPLIANCE_PACKAGE_KEYS[package] || "appliance_builder"
+      allowance = price(key, allowance_default)
+      material_list << {
+        item:       "Appliance Package (#{package})",
+        quantity:   1,
+        unit:       "allowance",
+        unit_cost:  allowance,
+        total_cost: allowance,
+        category:   "Appliances"
+      }
+      labor_hours += 6.0
+    end
+
+    # Gas range adds gas line
+    if range_type == "gas"
+      gas_line = price("appliance_gas_line", 500.00)
+      material_list << {
+        item:       "Gas Line to Range",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  gas_line,
+        total_cost: gas_line,
+        category:   "Appliances"
+      }
+      labor_hours += 3.0
+    end
+
+    # Roof-vented hood adds roofing patch
+    if ventilation == "roof-vented" || ventilation == "roof_vented"
+      roof_patch = price("appliance_hood_roof_patch", 450.00)
+      material_list << {
+        item:       "Roof Penetration Patch (Hood Vent)",
+        quantity:   1,
+        unit:       "each",
+        unit_cost:  roof_patch,
+        total_cost: roof_patch,
+        category:   "Appliances"
+      }
+      labor_hours += 2.5
+    end
+
+    labor_cost = labor_hours * @hourly_rate
+    if labor_hours > 0
+      material_list << {
+        item:       "Appliance Install Labor",
+        quantity:   (labor_hours * 100).round / 100.0,
+        unit:       "hours",
+        unit_cost:  @hourly_rate,
+        total_cost: (labor_cost * 100).round / 100.0,
+        category:   "Labor"
+      }
+    end
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+
+    {
+      trade:               "appliances",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  DEMO_RATE_PER_SQFT = {
+    "kitchen"  => 4.50,
+    "bathroom" => 6.00,
+    "bath"     => 6.00,
+    "addition" => 2.50,  # typically demo limited to tie-in
+    "whole"    => 5.00,
+  }.freeze
+
+  def build_demolition
+    sqft         = (@criteria[:squareFeet] || @criteria[:square_feet] || 0).to_f
+    remodel_type = (@criteria[:remodelType] || @criteria[:remodel_type] || "kitchen").to_s.downcase
+    scope_preset = (@criteria[:scopePreset] || @criteria[:scope_preset] || "").to_s.downcase
+    disposal_yards = (@criteria[:disposalYards] || @criteria[:disposal_yards] || 0).to_f
+
+    # Default disposal: 1 yard per 100 sqft of demo area
+    disposal_yards = (sqft / 100.0).round(1) if disposal_yards <= 0 && sqft > 0
+    disposal_yards = 1.0 if disposal_yards <= 0
+
+    rate_default = DEMO_RATE_PER_SQFT[remodel_type] || DEMO_RATE_PER_SQFT["kitchen"]
+    # Cosmetic scope has no demo; pull-replace has partial; full-gut uses full rate
+    scope_mult = case scope_preset
+                 when "cosmetic" then 0.0
+                 when "pull-replace", "pull_replace" then 0.5
+                 when "full-gut", "full_gut", "full gut same layout" then 1.0
+                 when "full-reconfig", "full_reconfig", "full reconfiguration" then 1.2
+                 else 1.0
+                 end
+
+    return empty_trade_result("demolition") if scope_mult <= 0 || sqft <= 0
+
+    demo_unit = price("demo_per_sqft_#{remodel_type}", rate_default)
+    demo_sqft_cost = demo_unit * scope_mult * sqft
+
+    material_list = []
+    material_list << {
+      item:       "Demolition (#{remodel_type}, #{scope_preset.empty? ? 'standard' : scope_preset})",
+      quantity:   sqft,
+      unit:       "sqft",
+      unit_cost:  (demo_unit * scope_mult * 100).round / 100.0,
+      total_cost: (demo_sqft_cost * 100).round / 100.0,
+      category:   "Demolition"
+    }
+
+    dumpster_unit = price("demo_dumpster_10yd", 425.00)
+    dumpsters = disposal_yards > 10 ? (disposal_yards / 10.0).ceil : 1
+    material_list << {
+      item:       "Dumpster Rental",
+      quantity:   dumpsters,
+      unit:       "each",
+      unit_cost:  dumpster_unit,
+      total_cost: (dumpster_unit * dumpsters * 100).round / 100.0,
+      category:   "Demolition"
+    }
+
+    # Labor is implicit in per-sqft rate but add dumpster haul-out hours
+    labor_hours = dumpsters * 1.0
+    labor_cost = labor_hours * @hourly_rate
+    material_list << {
+      item:       "Disposal Labor",
+      quantity:   (labor_hours * 100).round / 100.0,
+      unit:       "hours",
+      unit_cost:  @hourly_rate,
+      total_cost: (labor_cost * 100).round / 100.0,
+      category:   "Labor"
+    }
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+
+    {
+      trade:               "demolition",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def build_trim
+    action = (@criteria[:trimAction] || @criteria[:trim_action] || "keep").to_s.downcase
+    return empty_trade_result("trim") if action == "keep" || action == "none"
+
+    baseboard_lf = (@criteria[:baseboardLf] || @criteria[:baseboard_lf] || @criteria[:trimLinearFeet] || 0).to_f
+    crown_lf     = (@criteria[:crownMoldingLf] || @criteria[:crown_molding_lf] || 0).to_f
+    door_count   = (@criteria[:interiorDoorCount] || @criteria[:interior_door_count] || 0).to_i
+    window_count = (@criteria[:windowCasingCount] || @criteria[:window_casing_count] || 0).to_i
+    sqft         = (@criteria[:squareFeet] || @criteria[:square_feet] || 0).to_f
+
+    # If no explicit baseboard LF, estimate from perimeter (sqrt(sqft)*4) minus door openings
+    if baseboard_lf <= 0 && sqft > 0
+      baseboard_lf = (Math.sqrt(sqft) * 4 - (door_count * 3)).round(1)
+      baseboard_lf = 0 if baseboard_lf < 0
+    end
+
+    material_list = []
+    labor_hours = 0.0
+
+    if baseboard_lf > 0
+      base_unit = price("trim_baseboard_lf", 2.75)
+      material_list << {
+        item:       "Baseboard Trim",
+        quantity:   baseboard_lf,
+        unit:       "LF",
+        unit_cost:  base_unit,
+        total_cost: (base_unit * baseboard_lf * 100).round / 100.0,
+        category:   "Trim"
+      }
+      labor_hours += baseboard_lf * 0.08
+    end
+
+    if crown_lf > 0 || action == "all"
+      effective_crown_lf = crown_lf > 0 ? crown_lf : baseboard_lf
+      crown_unit = price("crown_molding_lf", 6.50)
+      material_list << {
+        item:       "Crown Molding",
+        quantity:   effective_crown_lf,
+        unit:       "LF",
+        unit_cost:  crown_unit,
+        total_cost: (crown_unit * effective_crown_lf * 100).round / 100.0,
+        category:   "Trim"
+      }
+      labor_hours += effective_crown_lf * 0.12
+    end
+
+    if door_count > 0 && action == "all"
+      door_unit = price("trim_door_casing_set", 48.00)
+      material_list << {
+        item:       "Interior Door Casing Sets",
+        quantity:   door_count,
+        unit:       "each",
+        unit_cost:  door_unit,
+        total_cost: (door_unit * door_count * 100).round / 100.0,
+        category:   "Trim"
+      }
+      labor_hours += door_count * 1.5
+    end
+
+    if window_count > 0 && action == "all"
+      win_unit = price("trim_window_casing_set", 42.00)
+      material_list << {
+        item:       "Window Casing Sets",
+        quantity:   window_count,
+        unit:       "each",
+        unit_cost:  win_unit,
+        total_cost: (win_unit * window_count * 100).round / 100.0,
+        category:   "Trim"
+      }
+      labor_hours += window_count * 1.2
+    end
+
+    if labor_hours > 0
+      labor_cost = labor_hours * @hourly_rate
+      material_list << {
+        item:       "Trim Carpentry Labor",
+        quantity:   (labor_hours * 100).round / 100.0,
+        unit:       "hours",
+        unit_cost:  @hourly_rate,
+        total_cost: (labor_cost * 100).round / 100.0,
+        category:   "Labor"
+      }
+    end
+
+    total_material_cost = material_list.reject { |i| i[:category] == "Labor" }.sum { |i| i[:total_cost] }
+
+    {
+      trade:               "trim",
+      total_material_cost: (total_material_cost * 100).round / 100.0,
+      labor_hours:         (labor_hours * 10).round / 10.0,
+      material_list:       material_list
+    }
+  end
+
+  def empty_trade_result(trade)
+    {
+      trade:               trade,
+      total_material_cost: 0.0,
+      labor_hours:         0.0,
+      material_list:       []
+    }
   end
 end
