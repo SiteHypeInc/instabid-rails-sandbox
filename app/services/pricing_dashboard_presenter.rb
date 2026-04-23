@@ -32,6 +32,7 @@ class PricingDashboardPresenter
       sections: sections,
       total_keys: sections.sum { |s| s[:items].size },
       live_keys: sections.sum { |s| s[:items].count { |i| i[:bigbox_live] } },
+      web_search_keys: sections.sum { |s| s[:items].count { |i| i[:web_search_live] } },
       populated_keys: sections.sum { |s| s[:items].count { |i| i[:has_value] } }
     }
   end
@@ -58,18 +59,40 @@ class PricingDashboardPresenter
     dp  = @defaults[[ trade, key ]]
     value = dp&.value&.to_f
 
-    mapping = @mappings.dig(trade, key)
-    skus    = (mapping&.dig(:skus) || []).map(&:to_s)
-    rows    = skus.flat_map { |s| @prices_by_sku[s] || [] }.select { |mp| mp.price.present? }
+    mapping  = @mappings.dig(trade, key)
+    skus     = (mapping&.dig(:skus) || []).map(&:to_s)
+    hd_rows  = skus.flat_map { |s| @prices_by_sku[s] || [] }
+                   .select { |mp| mp.price.present? && mp.source.to_s.start_with?("bigbox") }
 
-    material_part = nil
-    labor_part    = nil
-    fetched_at    = nil
-    bigbox_live   = rows.any?
+    # TEA-203: web_search rows use pricing_key as sku (no HD item_id). Surface
+    # them as a fallback when BigBox has no match for this key. Same lookup
+    # applies to specialty web_search_range rows.
+    ws_rows  = (@prices_by_sku[key.to_s] || []).select do |mp|
+      mp.price.present? && mp.source.to_s.start_with?("web_search")
+    end
 
-    if bigbox_live
-      material_part = aggregate(rows.map { |r| r.price.to_f }, mapping&.dig(:aggregation) || "average")
-      fetched_at    = rows.map(&:fetched_at).compact.max
+    material_part   = nil
+    labor_part      = nil
+    fetched_at      = nil
+    price_source    = nil
+    bigbox_live     = hd_rows.any?
+    web_search_live = !bigbox_live && ws_rows.any?
+
+    active_rows =
+      if bigbox_live
+        price_source = "bigbox"
+        hd_rows
+      elsif web_search_live
+        price_source = ws_rows.first.source.to_s
+        ws_rows
+      else
+        []
+      end
+
+    if active_rows.any?
+      material_part = aggregate(active_rows.map { |r| r.price.to_f },
+                                mapping&.dig(:aggregation) || "average")
+      fetched_at    = active_rows.map(&:fetched_at).compact.max
       if type == "INSTALLED" && value
         labor_part = (value - material_part).round(2)
       end
@@ -80,15 +103,18 @@ class PricingDashboardPresenter
       label:              item[:label],
       unit:               item[:unit],
       value:              value,
-      has_value:          value.present?,
+      has_value:          value.present? || material_part.present?,
       description:        dp&.description || mapping&.dig(:description),
       last_synced_at:     dp&.last_synced_at,
       material_part:      material_part,
       labor_part:         labor_part,
       labor_adder_config: mapping&.dig(:labor_adder)&.to_f,
       bigbox_live:        bigbox_live,
+      web_search_live:    web_search_live,
+      price_source:       price_source,
       fetched_at:         fetched_at,
-      hd_skus:            skus
+      hd_skus:            skus,
+      web_search_sku:     web_search_live ? key.to_s : nil
     }
   end
 
