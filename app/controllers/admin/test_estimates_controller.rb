@@ -68,7 +68,12 @@ module Admin
 
     def sqft_error(scope, key, raw)
       return nil unless CRITICAL_SQFT_FIELDS.include?(key.to_s)
-      return nil if raw.nil? || raw.to_s.strip.empty?
+      if raw.nil? || raw.to_s.strip.empty?
+        # Margo round-3 #7: blank required-sqft used to silently fall through to
+        # the form's default value="2000" and render a plausible-looking estimate.
+        return "#{scope} / #{key} is required" if critical_sqft_required?(scope, key)
+        return nil
+      end
       return "#{scope} / #{key} must be a number (got #{raw.inspect})" unless raw.to_s.match?(/\A-?\d+(\.\d+)?\z/)
 
       numeric = raw.to_f

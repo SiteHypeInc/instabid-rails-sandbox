@@ -72,24 +72,43 @@ class MaterialListGenerator
     end
   end
 
+  # Round-3 fix: lines that opted into stamp_last_price_on(line) already carry
+  # the correct :source. Unmigrated builders fall back to "Manual" per-line —
+  # do NOT inherit from @dominant_source, because that bleeds one line's
+  # non-Manual source (e.g. a seeded faucet) onto every other line in the list.
   def stamp_sources(result)
     return result unless result.is_a?(Hash)
 
     list = Array(result[:material_list] || result["material_list"])
-    list.each { |line| line[:source] ||= @dominant_source }
+    list.each do |line|
+      line[:source]     ||= "Manual"
+      line[:confidence] ||= "high"
+    end
     result
   end
 
   def price(key, default)
     resolution = PricingResolver.resolve(trade: @trade, key: key, contractor_id: @contractor_id, default: default)
-    # Track the last non-Manual source so line stamping reflects when we're
-    # actually pulling from live pricing data. In the sandbox this is almost
-    # always "Manual"; when DefaultPricing/MaterialPrice get populated the
-    # result rendering will surface that automatically.
-    if resolution[:source] && resolution[:source] != "Manual"
-      @dominant_source = resolution[:source]
-    end
+    # Capture the full resolution so line-emitting sites that opt in via
+    # stamp_last_price_on(line) can thread source+confidence onto the line
+    # they just built.
+    @last_resolution = resolution
     resolution[:price]
+  end
+
+  # Opt-in per-line source threading. Call immediately after building a line
+  # whose unit_cost came from the most recent price(...) call. Idempotent —
+  # safe to call on lines that already have :source set.
+  def stamp_last_price_on(line)
+    return line unless @last_resolution
+
+    line[:source]     ||= @last_resolution[:source]
+    line[:confidence] ||= @last_resolution[:confidence]
+    if @last_resolution[:price_low] && @last_resolution[:price_high]
+      line[:price_low]  ||= @last_resolution[:price_low]
+      line[:price_high] ||= @last_resolution[:price_high]
+    end
+    line
   end
 
   # -- Roofing -------------------------------------------------------------
@@ -386,22 +405,22 @@ class MaterialListGenerator
     emit_fixtures = lambda do
       if toilet_count > 0
         toilet_unit = price("fixture_toilet", 375.00)
-        material_list << { item: "Toilet Installation",  quantity: toilet_count,  unit: "fixtures", unit_cost: toilet_unit,  total_cost: toilet_unit  * toilet_count,  category: "Fixtures" }
+        material_list << stamp_last_price_on({ item: "Toilet Installation",  quantity: toilet_count,  unit: "fixtures", unit_cost: toilet_unit,  total_cost: toilet_unit  * toilet_count,  category: "Fixtures" })
         labor_hours += 2.5 * toilet_count
       end
       if sink_count > 0
         sink_unit = price("fixture_sink", 450.00)
-        material_list << { item: "Sink Installation",    quantity: sink_count,    unit: "fixtures", unit_cost: sink_unit,    total_cost: sink_unit    * sink_count,    category: "Fixtures" }
+        material_list << stamp_last_price_on({ item: "Sink Installation",    quantity: sink_count,    unit: "fixtures", unit_cost: sink_unit,    total_cost: sink_unit    * sink_count,    category: "Fixtures" })
         labor_hours += 3 * sink_count
       end
       if faucet_count > 0
         faucet_unit = price("fixture_faucet", 262.00)
-        material_list << { item: "Faucet Installation",  quantity: faucet_count,  unit: "fixtures", unit_cost: faucet_unit,  total_cost: faucet_unit  * faucet_count,  category: "Fixtures" }
+        material_list << stamp_last_price_on({ item: "Faucet Installation",  quantity: faucet_count,  unit: "fixtures", unit_cost: faucet_unit,  total_cost: faucet_unit  * faucet_count,  category: "Fixtures" })
         labor_hours += 1.5 * faucet_count
       end
       if tub_shower_count > 0
         tub_unit = price("fixture_tub_shower", 1200.00)
-        material_list << { item: "Tub/Shower Installation", quantity: tub_shower_count, unit: "fixtures", unit_cost: tub_unit, total_cost: tub_unit * tub_shower_count, category: "Fixtures" }
+        material_list << stamp_last_price_on({ item: "Tub/Shower Installation", quantity: tub_shower_count, unit: "fixtures", unit_cost: tub_unit, total_cost: tub_unit * tub_shower_count, category: "Fixtures" })
         labor_hours += 6 * tub_shower_count
       end
       if garbage_disposal == "yes"

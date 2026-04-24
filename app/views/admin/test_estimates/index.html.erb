@@ -296,8 +296,8 @@
                   <td class="src"><%= line[:category] || line["category"] %></td>
                   <td class="num"><%= line[:quantity] || line["quantity"] %></td>
                   <td><%= line[:unit] || line["unit"] %></td>
-                  <td class="num"><%= format_money(line[:unit_cost] || line["unit_cost"]) %></td>
-                  <td class="num"><%= format_money(line[:total_cost] || line["total_cost"]) %></td>
+                  <td class="num"><%= format_unit_cost(line) %></td>
+                  <td class="num"><%= format_line_total(line) %></td>
                 </tr>
               <% end %>
             </tbody>

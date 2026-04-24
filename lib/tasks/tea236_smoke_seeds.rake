@@ -4,19 +4,26 @@ namespace :tea236 do
     # 1) Confidence=medium material_price row. Exercises the
     #    web_search_range / pending-confidence render path that otherwise
     #    sits untouched by the default high-confidence bigbox seed.
-    medium_row = MaterialPrice.find_or_initialize_by(sku: "plumbing.fixture_faucet_range", zip_code: "national")
+    #    SKU must match the key MaterialListGenerator#build_plumbing passes to
+    #    PricingResolver — the fixture_swap branch calls price("fixture_faucet",
+    #    262.00). Round-2 smoke used "plumbing.fixture_faucet_range" which
+    #    never matched, so the resolver fell through to the default and the
+    #    row never exercised the web_search_range path.
+    medium_row = MaterialPrice.find_or_initialize_by(sku: "fixture_faucet", zip_code: "national")
     medium_row.assign_attributes(
       name:       "Faucet — mid-range estimate",
       category:   "Fixtures",
       trade:      "plumbing",
       unit:       "each",
       price:      262.00,
+      price_low:  180.00,
+      price_high: 360.00,
       source:     "web_search_range",
       confidence: "medium",
       fetched_at: Time.current
     )
     medium_row.save!
-    puts "seeded medium-confidence row: #{medium_row.sku} @ $#{medium_row.price}"
+    puts "seeded medium-confidence row: #{medium_row.sku} @ $#{medium_row.price} (range $#{medium_row.price_low}–$#{medium_row.price_high})"
 
     # 2) Shared-material 2-trade remodel fixture. "corner_bead" + "screws" are
     #    lines both drywall and siding emit during trim-out. Seed them so a

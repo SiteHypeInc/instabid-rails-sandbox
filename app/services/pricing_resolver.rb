@@ -13,11 +13,14 @@ module PricingResolver
   # Signature is stable — swap the implementation when Jesse's full pricing
   # stack lands without touching callers.
 
-  SOURCE_LABELS = {
-    "bigbox"      => "BigBox Live HD",
-    "web_search"  => "Web Search",
-    "manual"      => "Manual"
-  }.freeze
+  # Ordered longest-prefix-first so more specific labels win (e.g.
+  # "web_search_range" must match before the bare "web_search" prefix).
+  SOURCE_LABELS = [
+    [ "web_search_range", "Web Search Range" ],
+    [ "bigbox",           "BigBox Live HD"   ],
+    [ "web_search",       "Web Search"       ],
+    [ "manual",           "Manual"           ]
+  ].freeze
 
   def self.price(trade:, key:, contractor_id: nil, default:)
     resolve(trade: trade, key: key, contractor_id: contractor_id, default: default)[:price]
@@ -29,18 +32,24 @@ module PricingResolver
     if defined?(MaterialPrice) && MaterialPrice.table_exists?
       live = MaterialPrice.where(trade: trade.to_s, sku: key.to_s).where.not(price: nil).first
       if live
-        return { price: live.price.to_f, source: source_label_for(live.source), confidence: live.confidence.to_s }
+        return {
+          price:      live.price.to_f,
+          price_low:  live.respond_to?(:price_low)  ? live.price_low&.to_f  : nil,
+          price_high: live.respond_to?(:price_high) ? live.price_high&.to_f : nil,
+          source:     source_label_for(live.source),
+          confidence: live.confidence.to_s
+        }
       end
     end
 
     if defined?(DefaultPricing) && DefaultPricing.table_exists?
       dp = DefaultPricing.find_by(trade: trade.to_s, pricing_key: key.to_s)
-      return { price: dp.value.to_f, source: "Manual", confidence: "high" } if dp&.value
+      return { price: dp.value.to_f, price_low: nil, price_high: nil, source: "Manual", confidence: "high" } if dp&.value
     end
 
-    { price: default, source: "Manual", confidence: "high" }
+    { price: default, price_low: nil, price_high: nil, source: "Manual", confidence: "high" }
   rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
-    { price: default, source: "Manual", confidence: "high" }
+    { price: default, price_low: nil, price_high: nil, source: "Manual", confidence: "high" }
   end
 
   def self.source_label_for(raw)
