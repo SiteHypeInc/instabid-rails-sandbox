@@ -1,0 +1,188 @@
+---
+# TEA-319 acceptance scenario: Phoenix bathroom, Standard Full Bath.
+# Truth source: example_bathroom_trade_breakdown.csv attached on TEA-319.
+#
+# Inputs are best-guess scaffolds — tune per trade until rollups match the
+# CSV within $5/rollup tolerance.
+
+name: "Phoenix Bathroom — Standard Full Bath"
+type: bathroom
+preset: standard
+hourly_rate: 65
+gc_pct: 0.08
+contingency_pct: 0.10
+tolerance: 5
+expected_grand_total: 53159  # direct $45,050 + GC 8% ($3,604) + contingency 10% ($4,505)
+
+trades:
+  - key: preconstruction
+    label: "Preconstruction / design"
+    kind: allowance
+    expected: { material: 0, labor: 1200, total: 1200 }
+
+  - key: permits
+    label: "Permits / administration"
+    kind: generator
+    trade: permits
+    inputs: {}
+    expected: { material: 300, labor: 700, total: 1000 }
+
+  - key: site_prep
+    label: "Protection and setup"
+    kind: generator
+    trade: site_prep
+    inputs:
+      squareFeet: 60
+    expected: { material: 250, labor: 450, total: 700 }
+
+  - key: demolition
+    label: "Demolition"
+    kind: generator
+    trade: demolition
+    inputs:
+      squareFeet: 60
+      remodelType: bathroom
+      scopePreset: "standard"
+    expected: { material: 450, labor: 1900, total: 2350 }
+
+  - key: framing
+    label: "Framing / blocking / subfloor repair"
+    kind: generator
+    trade: framing
+    inputs:
+      squareFeet: 60
+    expected: { material: 500, labor: 1100, total: 1600 }
+
+  - key: ventilation
+    label: "Window / ventilation adjustments"
+    kind: generator
+    trade: hvac
+    inputs:
+      squareFeet: 60
+      remodelType: bathroom
+    expected: { material: 250, labor: 550, total: 800 }
+
+  - key: waterproofing
+    label: "Waterproofing and backer board"
+    kind: generator
+    trade: waterproofing
+    inputs:
+      showerSqft: 60
+    expected: { material: 1100, labor: 1500, total: 2600 }
+
+  - key: drywall
+    label: "Drywall and wall prep"
+    kind: generator
+    trade: drywall
+    inputs:
+      squareFeet: 200
+      projectType: remodel
+      rooms: 1
+      ceilingHeight: 8ft
+      finishLevel: level_4_smooth
+      damageExtent: minor
+    expected: { material: 300, labor: 900, total: 1200 }
+
+  - key: vanity
+    label: "Vanity and cabinetry"
+    kind: generator
+    trade: vanity
+    inputs:
+      vanityWidth: 36
+      vanityGrade: semi-custom
+      hardware: mid-range
+    expected: { material: 4200, labor: 1600, total: 5800 }
+
+  - key: countertops
+    label: "Countertops"
+    kind: generator
+    trade: countertops
+    inputs:
+      countertopMaterial: quartz
+      countertopSqft: 8
+      sinkCutout: true
+    expected: { material: 1400, labor: 550, total: 1950 }
+
+  - key: shower_system
+    label: "Shower system"
+    kind: generator
+    trade: shower
+    inputs:
+      tier: standard
+    expected: { material: 2300, labor: 1800, total: 4100 }
+
+  - key: glass_enclosure
+    label: "Glass enclosure"
+    kind: generator
+    trade: glass
+    inputs:
+      enclosureType: frameless
+    expected: { material: 1800, labor: 700, total: 2500 }
+
+  - key: tile
+    label: "Tile installation"
+    kind: generator
+    trade: tile
+    inputs:
+      tileSqft: 90
+      tileTier: mid
+      pattern: stack
+    expected: { material: 2200, labor: 4300, total: 6500 }
+
+  - key: toilet_fixtures
+    label: "Toilet / sink / faucet fixtures"
+    kind: generator
+    trade: plumbing
+    inputs:
+      serviceType: fixture_swap
+      toilets: 1
+      sinks: 1
+      faucets: 1
+    expected: { material: 1200, labor: 700, total: 1900 }
+
+  - key: accessories
+    label: "Trim, mirrors, and accessories"
+    kind: allowance
+    expected: { material: 650, labor: 650, total: 1300 }
+
+  - key: painting
+    label: "Painting"
+    kind: generator
+    trade: painting
+    inputs:
+      squareFeet: 60
+      paintType: interior
+      coats: 2
+      includeCeilings: true
+      wallCondition: smooth
+      patchingNeeded: minor
+    expected: { material: 250, labor: 700, total: 950 }
+
+  - key: plumbing_finish
+    label: "Plumbing rough and finish"
+    kind: generator
+    trade: plumbing
+    inputs:
+      serviceType: rough_in
+      sinks: 1
+      faucets: 1
+      tub_shower: 1
+    expected: { material: 1400, labor: 3600, total: 5000 }
+
+  - key: electrical
+    label: "Electrical rough and finish"
+    kind: generator
+    trade: electrical
+    inputs:
+      squareFeet: 60
+      remodelType: bathroom
+      receptacles: 3
+      gfciCount: 3
+      switches: 2
+      recessedLights: 3
+    expected: { material: 950, labor: 2150, total: 3100 }
+
+  - key: cleanup
+    label: "Cleanup and punch list"
+    kind: allowance
+    expected: { material: 100, labor: 400, total: 500 }

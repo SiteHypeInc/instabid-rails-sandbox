@@ -1,0 +1,243 @@
+---
+# TEA-319 acceptance scenario: Denver kitchen, Full Gut Same Layout.
+# Truth source: example_kitchen_trade_breakdown.csv attached on TEA-319.
+# Reconciles to TEA-238's worked example: $61,600 material / $54,800 labor /
+# $116,400 direct / $142,008 grand total (10% GC, 10% contingency).
+#
+# Trade-level rollups only — per-line-item formula coverage is owned by
+# material_list_generator_kitchen_test.rb (TEA-240 cluster tests).
+#
+# Inputs are best-guess scaffolds. Iteration loop: tune inputs and pricing
+# snapshot per trade until generator output matches Material/Labor/Total
+# within the $5/rollup tolerance. Each FAIL in the runner output names the
+# trade that needs tuning.
+
+name: "Denver Kitchen — Full Gut Same Layout"
+type: kitchen
+preset: full_gut
+hourly_rate: 65
+gc_pct: 0.10
+contingency_pct: 0.10
+tolerance: 5
+expected_grand_total: 142008
+
+trades:
+  - key: preconstruction
+    label: "Preconstruction / design"
+    kind: allowance
+    expected: { material: 0, labor: 3000, total: 3000 }
+
+  - key: permits
+    label: "Engineering / permits"
+    kind: generator
+    trade: permits
+    inputs: {}
+    expected: { material: 900, labor: 2600, total: 3500 }
+
+  - key: site_prep
+    label: "Temporary protection and setup"
+    kind: generator
+    trade: site_prep
+    inputs:
+      squareFeet: 180
+    expected: { material: 700, labor: 1100, total: 1800 }
+
+  - key: demolition
+    label: "Demolition"
+    kind: generator
+    trade: demolition
+    inputs:
+      squareFeet: 200
+      remodelType: kitchen
+      scopePreset: "full-gut"
+    expected: { material: 900, labor: 3600, total: 4500 }
+
+  - key: foundation
+    label: "Foundation / slab work"
+    kind: generator
+    trade: foundation
+    inputs:
+      squareFeet: 120
+    expected: { material: 4000, labor: 3000, total: 7000 }
+
+  - key: framing
+    label: "Framing and structural carpentry"
+    kind: generator
+    trade: framing
+    inputs:
+      squareFeet: 180
+    expected: { material: 5200, labor: 4800, total: 10000 }
+
+  - key: roofing
+    label: "Roofing and exterior weatherproofing"
+    kind: generator
+    trade: roofing
+    inputs:
+      squareFeet: 180
+      pitch: "5/12"
+      materialType: "architectural-asphalt"
+    expected: { material: 1800, labor: 1700, total: 3500 }
+
+  - key: siding
+    label: "Siding, exterior trim, and paint"
+    kind: generator
+    trade: siding
+    inputs:
+      squareFeet: 180
+    expected: { material: 1700, labor: 1700, total: 3400 }
+
+  - key: windows_doors
+    label: "Window and exterior opening work"
+    kind: generator
+    trade: windows_doors
+    inputs:
+      windowCount: 1
+      windowGrade: "mid"
+    expected: { material: 1000, labor: 1200, total: 2200 }
+
+  - key: insulation
+    label: "Insulation and air sealing"
+    kind: generator
+    trade: insulation
+    inputs:
+      squareFeet: 180
+    expected: { material: 700, labor: 800, total: 1500 }
+
+  - key: drywall
+    label: "Drywall and wall prep"
+    kind: generator
+    trade: drywall
+    inputs:
+      squareFeet: 450
+      projectType: remodel
+      rooms: 1
+      ceilingHeight: 8ft
+      finishLevel: level_4_smooth
+      damageExtent: moderate
+    expected: { material: 1300, labor: 2500, total: 3800 }
+
+  - key: cabinets
+    label: "Cabinets"
+    kind: generator
+    trade: cabinets
+    inputs:
+      cabinetGrade: semi-custom
+      baseCabinetLf: 22
+      wallCabinetLf: 18
+      tallCabinets: 2
+      island: standard
+      cabinetHardware: mid-range
+      softCloseHinges: true
+      softCloseDrawerSlides: true
+      crownMolding: true
+      accessories:
+        - "Lazy Susan"
+        - "Pull-out Shelves"
+    expected: { material: 19000, labor: 7000, total: 26000 }
+
+  - key: countertops
+    label: "Countertops"
+    kind: generator
+    trade: countertops
+    inputs:
+      countertopMaterial: quartz
+      baseCabinetLf: 22
+      edgeProfile: standard
+      sinkCutout: true
+      cooktopCutout: true
+    expected: { material: 4800, labor: 1700, total: 6500 }
+
+  - key: backsplash
+    label: "Backsplash tile"
+    kind: generator
+    trade: backsplash
+    inputs:
+      backsplashSqft: 30
+      tileTier: mid
+    expected: { material: 800, labor: 1600, total: 2400 }
+
+  - key: flooring
+    label: "Flooring"
+    kind: generator
+    trade: flooring
+    inputs:
+      squareFeet: 180
+      flooringType: tile
+      complexity: standard
+    expected: { material: 1500, labor: 2500, total: 4000 }
+
+  - key: trim
+    label: "Interior trim and finish carpentry"
+    kind: generator
+    trade: trim
+    inputs:
+      remodelType: kitchen
+      baseLf: 50
+      casingLf: 40
+    expected: { material: 800, labor: 1400, total: 2200 }
+
+  - key: painting
+    label: "Painting"
+    kind: generator
+    trade: painting
+    inputs:
+      squareFeet: 180
+      paintType: interior
+      coats: 2
+      includeCeilings: true
+      wallCondition: smooth
+      patchingNeeded: minor
+    expected: { material: 700, labor: 1700, total: 2400 }
+
+  - key: plumbing
+    label: "Plumbing rough and finish"
+    kind: generator
+    trade: plumbing
+    inputs:
+      serviceType: rough_in
+      sinks: 1
+      faucets: 1
+      garbageDisposal: 1
+    expected: { material: 2800, labor: 4200, total: 7000 }
+
+  - key: electrical
+    label: "Electrical rough and finish"
+    kind: generator
+    trade: electrical
+    inputs:
+      squareFeet: 180
+      remodelType: kitchen
+      receptacles: 8
+      gfciCount: 6
+      switches: 4
+      recessedLights: 6
+      pendantLights: 3
+      undercabinetLighting: true
+    expected: { material: 3000, labor: 5500, total: 8500 }
+
+  - key: hvac
+    label: "HVAC"
+    kind: generator
+    trade: hvac
+    inputs:
+      squareFeet: 180
+      remodelType: kitchen
+    expected: { material: 1000, labor: 1800, total: 2800 }
+
+  - key: appliances
+    label: "Appliances"
+    kind: generator
+    trade: appliances
+    inputs:
+      tier: mid-range
+      refrigerator: true
+      range: true
+      hood: true
+      dishwasher: true
+      microwave: true
+    expected: { material: 8800, labor: 700, total: 9500 }
+
+  - key: cleanup
+    label: "Cleanup and punch list"
+    kind: allowance
+    expected: { material: 200, labor: 700, total: 900 }
