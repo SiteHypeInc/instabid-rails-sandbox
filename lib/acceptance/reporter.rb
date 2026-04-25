@@ -38,7 +38,9 @@ module Acceptance
       detail << "expected M=$#{exp[:material].to_i} L=$#{exp[:labor].to_i} T=$#{exp[:total].to_i}"
       detail << " — got M=$#{act[:material].to_i} L=$#{act[:labor].to_i} T=$#{act[:total].to_i}"
       detail << " — #{result.status.to_s.upcase}"
-      detail << " (#{result.reason})" if result.status == :fail && !result.reason.to_s.empty?
+      if !result.reason.to_s.empty? && result.reason != "allowance"
+        detail << " (#{result.reason})"
+      end
       ["#{head}: #{detail}"]
     end
 

@@ -20,10 +20,11 @@ module Acceptance
   class Scenario
     Result = Struct.new(:trade_key, :label, :kind, :expected, :actual, :status, :reason, keyword_init: true)
 
-    DEFAULT_TOLERANCE = 5 # dollars per rollup
+    DEFAULT_TOLERANCE       = 5  # per-trade rollup tolerance, dollars
+    DEFAULT_GRAND_TOLERANCE = 25 # grand-total tolerance, dollars (wider so per-trade rounding doesn't compound into a false FAIL)
 
     attr_reader :name, :type, :preset, :hourly_rate, :gc_pct, :contingency_pct,
-                :tolerance, :trades, :expected_grand_total
+                :tolerance, :grand_tolerance, :trades, :expected_grand_total
 
     def self.load(path)
       raw = YAML.safe_load_file(path, permitted_classes: [Symbol], aliases: true)
@@ -39,6 +40,7 @@ module Acceptance
       @gc_pct                = raw.fetch("gc_pct", 0.10).to_f
       @contingency_pct       = raw.fetch("contingency_pct", 0.10).to_f
       @tolerance             = raw.fetch("tolerance", DEFAULT_TOLERANCE).to_f
+      @grand_tolerance       = raw.fetch("grand_tolerance", DEFAULT_GRAND_TOLERANCE).to_f
       @trades                = raw.fetch("trades")
       @expected_grand_total  = raw.fetch("expected_grand_total").to_f
     end
@@ -58,10 +60,12 @@ module Acceptance
       expected = symbolize(trade_def.fetch("expected"))
 
       if kind == :allowance
+        note = trade_def["note"]
+        reason = note ? "allowance — #{note}" : "allowance"
         return Result.new(
           trade_key: key, label: label, kind: kind,
           expected: expected, actual: expected.dup,
-          status: :pass, reason: "allowance"
+          status: :pass, reason: reason
         )
       end
 
@@ -115,7 +119,7 @@ module Acceptance
       contingency     = (direct_total * contingency_pct).round
       grand_total     = direct_total + overhead + contingency
       grand_delta     = (grand_total - expected_grand_total).abs
-      grand_status    = grand_delta > tolerance ? :fail : :pass
+      grand_status    = grand_delta > grand_tolerance ? :fail : :pass
 
       {
         direct_material:      direct_material,
