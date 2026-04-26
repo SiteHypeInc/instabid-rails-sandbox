@@ -44,3 +44,4 @@
 
 /coverage/
 vendor/bundle/
+.DS_Store
