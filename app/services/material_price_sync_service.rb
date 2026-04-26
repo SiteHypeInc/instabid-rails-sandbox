@@ -86,16 +86,18 @@ class MaterialPriceSyncService
   end
 
   # Maps the raw MaterialPrice.source values used for this sync into a single
-  # canonical default_pricings.source tag. Sources currently emitted by the
-  # rails-sandbox loaders all start with "bigbox" or "web_search".
+  # canonical default_pricings.source tag. The HD cohort includes sandbox_seed
+  # (Apr 17 hand-load of real HD SKUs/prices) so a sync that pulls from any
+  # mix of bigbox*/sandbox_seed rows lands as "bigbox_hd", not "mixed_sync".
   def source_tag_for(sources)
-    return "bigbox_hd" if sources.empty? # sync ran with no rows — keep prior bigbox-led convention
-    prefixes = sources.map { |s| s.to_s.split("_").first }.uniq
-    case prefixes
-    when ["bigbox"]     then "bigbox_hd"
-    when ["web"]        then "web_search"
-    else                     "mixed_sync"
-    end
+    return "bigbox_hd" if sources.empty?
+    hd      = sources.select { |s| MaterialPrice.hd_live_source?(s) }
+    non_hd  = sources - hd
+    web     = non_hd.select { |s| s.to_s.start_with?("web") }
+    other   = non_hd - web
+    return "bigbox_hd"  if hd.any?  && web.empty? && other.empty?
+    return "web_search" if web.any? && hd.empty?  && other.empty?
+    "mixed_sync"
   end
 
   def aggregate(prices, method)
