@@ -43,6 +43,7 @@ Rails.application.routes.draw do
       post "seed_all",           to: "pricing_syncs#seed_all",          as: :pricing_seed_all          # TEA-198: seed all 8 trades from YAML
       post "sync",               to: "pricing_syncs#sync",              as: :pricing_sync              # step 2b: run BigBox→default_pricings sync
       get  "status",             to: "pricing_syncs#status",            as: :pricing_status            # step 3: inspect results
+      get  "probe",              to: "pricing_syncs#probe",             as: :pricing_probe             # TEA-327: per-key source + material_price rows (read-only diag)
       post "collection",         to: "bigbox_collections#create",       as: :pricing_collection_create # create 89-SKU BigBox collection
       get  "collection/status",  to: "bigbox_collections#status",       as: :pricing_collection_status # list BigBox collections
       post "collection/ingest",  to: "bigbox_collections#ingest",       as: :pricing_collection_ingest # pull results → material_prices

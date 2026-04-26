@@ -83,11 +83,42 @@ module Admin
           pricing_key:    r.pricing_key,
           value:          r.value.to_f,
           description:    r.description,
+          source:         r.source,
           last_synced_at: r.last_synced_at
         }
       end
 
       render json: { count: rows.size, rows: rows }
+    end
+
+    # GET /admin/pricing/probe?keys=trade:pricing_key,trade:pricing_key
+    # TEA-327 diagnostic: dumps default_pricings.source + the actual
+    # material_prices rows (sku, source, price, fetched_at) the sync would aggregate.
+    # Read-only — no writes. Sandbox-only debug surface.
+    def probe
+      mappings = YAML.load_file(MaterialPriceSyncService::MAPPINGS_FILE).with_indifferent_access
+      requested = params[:keys].to_s.split(",").map { |s| s.strip.split(":", 2) }.reject { |a| a.size != 2 }
+
+      out = requested.map do |trade, key|
+        dp     = DefaultPricing.find_by(trade: trade, pricing_key: key)
+        cfg    = mappings.dig(trade, key) || {}
+        skus   = Array(cfg[:skus]).map(&:to_s)
+        rows   = MaterialPrice.where(sku: skus).map do |mp|
+          { sku: mp.sku, source: mp.source, price: mp.price&.to_f, fetched_at: mp.fetched_at, name: mp.name }
+        end
+        {
+          trade: trade, pricing_key: key,
+          default_pricing: dp && {
+            value:          dp.value.to_f,
+            source:         dp.source,
+            last_synced_at: dp.last_synced_at
+          },
+          mapped_skus:        skus,
+          material_price_rows: rows
+        }
+      end
+
+      render json: { count: out.size, results: out }
     end
   end
 end
