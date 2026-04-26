@@ -45,7 +45,6 @@ module Admin
     def source_and_name(item, prices_by_sku)
       if item[:bigbox_live]
         rows = (item[:hd_skus] || []).flat_map { |sku| prices_by_sku[sku.to_s] || [] }
-                                     .select { |mp| MaterialPrice.hd_live_source?(mp.source) }
         names = rows.map(&:name).compact.uniq
         ["HD Live", names.first || "(unnamed BigBox row)"]
       elsif item[:web_search_live]
