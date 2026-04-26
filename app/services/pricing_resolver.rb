@@ -44,7 +44,15 @@ module PricingResolver
 
     if defined?(DefaultPricing) && DefaultPricing.table_exists?
       dp = DefaultPricing.find_by(trade: trade.to_s, pricing_key: key.to_s)
-      return { price: dp.value.to_f, price_low: nil, price_high: nil, source: "Manual", confidence: "high" } if dp&.value
+      if dp&.value
+        return {
+          price:      dp.value.to_f,
+          price_low:  nil,
+          price_high: nil,
+          source:     source_label_for(dp.try(:source)),
+          confidence: "high"
+        }
+      end
     end
 
     { price: default, price_low: nil, price_high: nil, source: "Manual", confidence: "high" }

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_23_210000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_26_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -19,9 +19,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_23_210000) do
     t.string "description"
     t.datetime "last_synced_at"
     t.string "pricing_key", null: false
+    t.string "source"
     t.string "trade", null: false
     t.datetime "updated_at", null: false
     t.decimal "value", precision: 10, scale: 2, null: false
+    t.index ["source"], name: "index_default_pricings_on_source"
     t.index ["trade", "pricing_key"], name: "index_default_pricings_on_trade_and_pricing_key", unique: true
     t.index ["trade"], name: "index_default_pricings_on_trade"
   end

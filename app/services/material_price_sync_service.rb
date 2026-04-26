@@ -62,6 +62,7 @@ class MaterialPriceSyncService
     material_value = aggregate(prices, aggregation).round(2)
     new_value      = (material_value + labor_adder).round(2)
     skus           = scope.pluck(:sku)
+    sources        = scope.pluck(:source).compact.uniq
 
     record = DefaultPricing.find_or_initialize_by(trade: trade, pricing_key: pricing_key)
     before = record.persisted? ? record.value : nil
@@ -69,6 +70,7 @@ class MaterialPriceSyncService
     record.description  ||= config[:description]
     record.value          = new_value
     record.last_synced_at = Time.current
+    record.source         = source_tag_for(sources)
     record.save!
 
     SyncResult.new(
@@ -81,6 +83,19 @@ class MaterialPriceSyncService
 
   def current_value(trade, pricing_key)
     DefaultPricing.find_by(trade: trade, pricing_key: pricing_key)&.value
+  end
+
+  # Maps the raw MaterialPrice.source values used for this sync into a single
+  # canonical default_pricings.source tag. Sources currently emitted by the
+  # rails-sandbox loaders all start with "bigbox" or "web_search".
+  def source_tag_for(sources)
+    return "bigbox_hd" if sources.empty? # sync ran with no rows — keep prior bigbox-led convention
+    prefixes = sources.map { |s| s.to_s.split("_").first }.uniq
+    case prefixes
+    when ["bigbox"]     then "bigbox_hd"
+    when ["web"]        then "web_search"
+    else                     "mixed_sync"
+    end
   end
 
   def aggregate(prices, method)

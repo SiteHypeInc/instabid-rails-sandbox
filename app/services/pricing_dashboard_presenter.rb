@@ -115,6 +115,7 @@ class PricingDashboardPresenter
       bigbox_live:        bigbox_live,
       web_search_live:    web_search_live,
       price_source:       price_source,
+      source_tag:         dp&.source,
       fetched_at:         fetched_at,
       hd_skus:            skus,
       web_search_sku:     web_search_live ? key.to_s : nil
