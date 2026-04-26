@@ -62,7 +62,7 @@ class PricingDashboardPresenter
     mapping  = @mappings.dig(trade, key)
     skus     = (mapping&.dig(:skus) || []).map(&:to_s)
     hd_rows  = skus.flat_map { |s| @prices_by_sku[s] || [] }
-                   .select { |mp| mp.price.present? && mp.source.to_s.start_with?("bigbox") }
+                   .select { |mp| mp.price.present? && MaterialPrice.hd_live_source?(mp.source) }
 
     # TEA-203: web_search rows use pricing_key as sku (no HD item_id). Surface
     # them as a fallback when BigBox has no match for this key. Same lookup
