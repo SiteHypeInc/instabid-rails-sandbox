@@ -1,0 +1,146 @@
+---
+# TEA-319 acceptance scenario: Charlotte addition, Builder Grade Finish.
+# Truth source: example_home_addition_trade_breakdown.csv attached on TEA-319.
+#
+# Trade-level rollups only — per-line-item formula coverage is owned by
+# the addition MaterialListGenerator tests (TEA-240 cluster).
+#
+# Some rows are kind: generator (criteria-tunable trades — hvac, painting —
+# where the existing builder produces a usable number once the right
+# criteria keys are passed). Other rows are kind: allowance because the
+# existing builder is structurally absent. Each allowance carries a `note:`
+# describing the gap, owned by TEA-323 (builder math) — distinct from
+# TEA-321 (controller wiring).
+#
+# Iteration loop: as TEA-323 lands builder fixes, individual rows flip
+# from :allowance back to :generator with tuned inputs.
+
+name: "Charlotte Addition — Builder Grade Finish"
+type: addition
+preset: builder
+hourly_rate: 65
+gc_pct: 0.10
+contingency_pct: 0.10
+tolerance: 5
+grand_tolerance: 25
+expected_grand_total: 120789
+
+trades:
+  - key: preconstruction
+    label: "Preconstruction / design"
+    kind: allowance
+    expected: { material: 0, labor: 2500, total: 2500 }
+    note: "GC/admin scope — not a MaterialListGenerator concern. No builder."
+
+  - key: permits
+    label: "Engineering / permits"
+    kind: allowance
+    expected: { material: 1100, labor: 1900, total: 3000 }
+    note: "build_permits returns labor_hours: 0 — does not model permit-coordination labor. TEA-323: add labor model or split engineering line into its own line item."
+
+  - key: site_prep
+    label: "Site prep and protection"
+    kind: allowance
+    expected: { material: 700, labor: 1200, total: 1900 }
+    note: "build_site_prep needs `excavationSqft`/`siteClearingSqft`; addition CSV bundles staging + utilities + protection. TEA-323: add staging/utilities sub-scope."
+
+  - key: demolition
+    label: "Demolition / tie-in opening"
+    kind: allowance
+    expected: { material: 700, labor: 2300, total: 3000 }
+    note: "build_demolition tie-in scope under-models structural-cut labor (header insert, weatherproof temp wall). TEA-323: add tie-in preset."
+
+  - key: foundation
+    label: "Foundation / slab work"
+    kind: allowance
+    expected: { material: 9000, labor: 5500, total: 14500 }
+    note: "build_foundation returns slab × $14/sqft only — no footings/excavation/rebar/forms. CSV bundles full foundation scope for 320 sqft addition. TEA-323: add footings/excavation/forms lines and tune labor."
+
+  - key: framing
+    label: "Framing and structural carpentry"
+    kind: allowance
+    expected: { material: 11200, labor: 8800, total: 20000 }
+    note: "build_framing models walls (LF × $/LF) + headers only — no roof framing, sheathing, LVL, joists. Labor coefficient (0.35 hr/LF) under-models full carpentry scope. TEA-323: full structural-carpentry sub-scope for additions."
+
+  - key: roofing
+    label: "Roofing and exterior weatherproofing"
+    kind: allowance
+    expected: { material: 3900, labor: 3100, total: 7000 }
+    note: "build_roofing scaled for full-roof; CSV captures 320 sqft addition + tie-in. TEA-323: parameterize for addition-scope including ridge/valley flashing tie-in."
+
+  - key: siding
+    label: "Siding, exterior trim, and paint"
+    kind: allowance
+    expected: { material: 4300, labor: 3700, total: 8000 }
+    note: "build_siding fiber_cement pricing under-models trim + corner boards + paint for new addition wall area. TEA-323: add trim/corners + exterior paint sub-scope."
+
+  - key: windows_doors
+    label: "Windows and exterior door"
+    kind: allowance
+    expected: { material: 5600, labor: 3400, total: 9000 }
+    note: "build_windows_doors counts windows/doors but doesn't model trim/flashing labor or opening prep for new framed openings. TEA-323: add opening-prep + trim/flashing labor."
+
+  - key: insulation
+    label: "Insulation and air sealing"
+    kind: allowance
+    expected: { material: 1500, labor: 1400, total: 2900 }
+    note: "build_insulation labor (0.08 hr/sqft batt) under-models full envelope (walls + ceiling + rim joist) for addition. TEA-323: add air-sealing line + envelope preset."
+
+  - key: drywall
+    label: "Drywall and wall prep"
+    kind: allowance
+    expected: { material: 1700, labor: 4100, total: 5800 }
+    note: "build_drywall new_construction mode under-models full hang/tape/finish labor for 320 sqft addition. TEA-323: tune labor coefficient for addition preset."
+
+  - key: trim
+    label: "Interior doors, trim, and finish carpentry"
+    kind: allowance
+    expected: { material: 1700, labor: 2200, total: 3900 }
+    note: "build_trim returned partial values with my fixture inputs — criteria keys not aligned for addition preset. TEA-323: confirm criteria contract."
+
+  - key: flooring
+    label: "Flooring"
+    kind: allowance
+    expected: { material: 2200, labor: 1900, total: 4100 }
+    note: "build_flooring at lvp × 320 sqft under-models prep + transition labor for addition tie-in. TEA-323: add transition/prep coefficient."
+
+  - key: painting
+    label: "Painting"
+    kind: generator
+    trade: painting
+    inputs:
+      squareFeet: 320
+      paintType: interior
+      coats: 2
+      includeCeilings: true
+      wallCondition: smooth
+      patchingNeeded: none
+    mode: sentinel
+    sentinel_ref: TEA-323
+    csv_target: { material: 850, labor: 2250, total: 3100 }
+    expected: { material: 216, labor: 1677, total: 1893 }
+
+  - key: electrical
+    label: "Electrical rough and finish"
+    kind: allowance
+    expected: { material: 2400, labor: 4600, total: 7000 }
+    note: "build_electrical at addition 320 sqft + receptacles/switches/lights under-models new-circuit + panel-tie labor. TEA-323: tune addition-remodel coefficient or add full-addition preset path."
+
+  - key: hvac
+    label: "HVAC"
+    kind: generator
+    trade: hvac
+    inputs:
+      squareFeet: 320
+      systemType: furnace
+      ductwork: new
+    mode: sentinel
+    sentinel_ref: TEA-323
+    csv_target: { material: 1500, labor: 2500, total: 4000 }
+    expected: { material: 4180, labor: 884, total: 5064 }
+
+  - key: cleanup
+    label: "Cleanup and punch list"
+    kind: allowance
+    expected: { material: 250, labor: 850, total: 1100 }
+    note: "GC/admin scope — no builder."

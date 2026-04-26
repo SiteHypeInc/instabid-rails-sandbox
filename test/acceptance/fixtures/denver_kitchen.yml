@@ -1,0 +1,181 @@
+---
+# TEA-319 acceptance scenario: Denver kitchen, Full Gut Same Layout.
+# Truth source: example_kitchen_trade_breakdown.csv attached on TEA-319.
+# CSV direct totals: $61,600 material / $54,800 labor / $116,400 direct.
+#
+# Markup convention: runner uses flat 10% GC + 10% contingency (D × 1.20),
+# matching the 3 truth-source CSVs. NOTE: TEA-238's worked example used
+# 12% GC + 10% contingency for a $142,008 grand total; we default to the
+# CSV-consistent 10/10 across all 3 scenarios. Pending Johnny override.
+#
+# Trade-level rollups only — per-line-item formula coverage is owned by
+# material_list_generator_kitchen_test.rb (TEA-240 cluster tests).
+#
+# Some rows are kind: generator (criteria-tunable trades — backsplash,
+# trim — where the existing MaterialListGenerator builder produces a
+# usable number once the right criteria keys are passed). Other rows are
+# kind: allowance because the existing builder is structurally absent
+# (no labor model, missing sub-scope, formula caps below CSV). Each
+# allowance carries a `note:` describing the gap, owned by TEA-323
+# (builder math) — distinct from TEA-321 (controller wiring).
+#
+# Iteration loop: as TEA-323 lands builder fixes, individual rows flip
+# from :allowance back to :generator with tuned inputs and shrink the punt
+# list until the suite is fully generator-driven.
+
+name: "Denver Kitchen — Full Gut Same Layout"
+type: kitchen
+preset: full_gut
+hourly_rate: 65
+gc_pct: 0.10
+contingency_pct: 0.10
+tolerance: 5
+grand_tolerance: 25
+expected_grand_total: 139849
+
+trades:
+  - key: preconstruction
+    label: "Preconstruction / design"
+    kind: allowance
+    expected: { material: 0, labor: 3000, total: 3000 }
+    note: "GC/admin scope — not a MaterialListGenerator concern. No builder."
+
+  - key: permits
+    label: "Engineering / permits"
+    kind: allowance
+    expected: { material: 900, labor: 2600, total: 3500 }
+    note: "build_permits returns labor_hours: 0 — does not model permit-coordination labor. TEA-323: add labor model or split engineering line into its own line item."
+
+  - key: site_prep
+    label: "Temporary protection and setup"
+    kind: allowance
+    expected: { material: 700, labor: 1100, total: 1800 }
+    note: "build_site_prep models excavation/clearing only; CSV scope is dust barriers/floor protection/temp utilities (different inputs, no current builder)."
+
+  - key: demolition
+    label: "Demolition"
+    kind: allowance
+    expected: { material: 900, labor: 3600, total: 4500 }
+    note: "build_demolition labor severely undershoots remodel scope (returned $65 labor on 200 sqft full-gut). TEA-323: rework demo labor coefficient for remodel presets."
+
+  - key: foundation
+    label: "Foundation / slab work"
+    kind: allowance
+    expected: { material: 4000, labor: 3000, total: 7000 }
+    note: "build_foundation returns slab × $14/sqft × 120 sqft = $1680, no footings/excavation/rebar lines. CSV bundles full foundation scope. TEA-323: add footings + excavation lines and tune labor."
+
+  - key: framing
+    label: "Framing and structural carpentry"
+    kind: allowance
+    expected: { material: 5200, labor: 4800, total: 10000 }
+    note: "build_framing models walls (LF × $/LF) + headers only — no roof tie-in, sheathing, LVL allowance. Labor coefficient (0.35 hr/LF) under-models the carpentry scope. TEA-323."
+
+  - key: roofing
+    label: "Roofing and exterior weatherproofing"
+    kind: allowance
+    expected: { material: 1800, labor: 1700, total: 3500 }
+    note: "build_roofing scaled for full-roof (66 bundles + accessories); CSV captures kitchen-area tie-in only. TEA-323: parameterize roofing for tie-in scope."
+
+  - key: siding
+    label: "Siding, exterior trim, and paint"
+    kind: allowance
+    expected: { material: 1700, labor: 1700, total: 3400 }
+    note: "build_siding overshoots material at full-house sqft and undershoots labor for tie-in/trim. TEA-323: add tie-in mode."
+
+  - key: windows_doors
+    label: "Window and exterior opening work"
+    kind: allowance
+    expected: { material: 1000, labor: 1200, total: 2200 }
+    note: "Single mid window + flashing/trim allowance. build_windows_doors counts windows but doesn't model trim/flashing labor or opening prep. TEA-323."
+
+  - key: insulation
+    label: "Insulation and air sealing"
+    kind: allowance
+    expected: { material: 700, labor: 800, total: 1500 }
+    note: "build_insulation labor (0.08 hr/sqft batt) overshoots when sqft is set to room area; material under-models air sealing. TEA-323: add air-sealing line."
+
+  - key: drywall
+    label: "Drywall and wall prep"
+    kind: allowance
+    expected: { material: 1300, labor: 2500, total: 3800 }
+    note: "build_drywall labor undershoots remodel demo/patch scope. TEA-323: tune `damageExtent: moderate` coefficient for kitchen full-gut."
+
+  - key: cabinets
+    label: "Cabinets"
+    kind: allowance
+    expected: { material: 19000, labor: 7000, total: 26000 }
+    note: "build_cabinets material gap (~$2,823) is pricing-seed tunable; labor gap (~$3,093) is structural — formula tops at ~60 hrs vs CSV's ~108 hrs. TEA-323: lift labor coefficient and tune semi-custom material seed, then flip back to :generator with the inputs from material_list_generator_kitchen_test.rb."
+
+  - key: countertops
+    label: "Countertops"
+    kind: allowance
+    expected: { material: 4800, labor: 1700, total: 6500 }
+    note: "build_countertops at quartz × 44 sqft (auto from baseLf:22) = $3,801 material; expected scope implies ~64 sqft + waterfall/edge upgrades. TEA-323: add scrap/waste coefficient and verify labor formula."
+
+  - key: backsplash
+    label: "Backsplash tile"
+    kind: generator
+    trade: backsplash
+    inputs:
+      backsplashType: mosaic
+      backsplashArea: 35.1
+    mode: csv-match
+    csv_target: { material: 800, labor: 1600, total: 2400 }
+    expected: { material: 802, labor: 1599, total: 2401 }
+
+  - key: flooring
+    label: "Flooring"
+    kind: allowance
+    expected: { material: 1500, labor: 2500, total: 4000 }
+    note: "build_flooring at tile × 180 sqft = $783 material, $650 labor — under both. TEA-323: tile pricing seed and labor coefficient need uplift."
+
+  - key: trim
+    label: "Interior trim and finish carpentry"
+    kind: generator
+    trade: trim
+    inputs:
+      trimAction: all
+      baseboardLf: 80
+      crownMoldingLf: 55
+      interiorDoorCount: 3
+      windowCasingCount: 4
+    mode: sentinel
+    sentinel_ref: TEA-323
+    csv_target: { material: 800, labor: 1400, total: 2200 }
+    expected: { material: 890, labor: 1450, total: 2340 }
+
+  - key: painting
+    label: "Painting"
+    kind: allowance
+    expected: { material: 700, labor: 1700, total: 2400 }
+    note: "build_painting at 180 sqft kitchen = $172 material / $1047 labor; expected scope includes trim and adjacent-room touch-up. TEA-323: add patching/touch-up coefficient."
+
+  - key: plumbing
+    label: "Plumbing rough and finish"
+    kind: allowance
+    expected: { material: 2800, labor: 4200, total: 7000 }
+    note: "build_plumbing fixtures-only model; CSV bundles relocation + finish + hookups. TEA-323: add remodel-relocation labor model."
+
+  - key: electrical
+    label: "Electrical rough and finish"
+    kind: allowance
+    expected: { material: 3000, labor: 5500, total: 8500 }
+    note: "build_electrical at kitchen 180 sqft + receptacles/switches/lights = $710 material / $390 labor — far below CSV scope (new circuits, code upgrades, undercabinet, pendants). TEA-323: tune kitchen-remodel coefficient or add full-gut preset path."
+
+  - key: hvac
+    label: "HVAC"
+    kind: allowance
+    expected: { material: 1000, labor: 1800, total: 2800 }
+    note: "build_hvac default flat package returns ~$3,700 material — overshoots; CSV scope is duct-relocation only. TEA-323: parameterize sub-scope (duct-relocation vs full-system)."
+
+  - key: appliances
+    label: "Appliances"
+    kind: allowance
+    expected: { material: 8800, labor: 700, total: 9500 }
+    note: "APPLIANCE_PACKAGE_ALLOWANCE has 'mid' = $6500 and 'premium' = $11000 — no $8,800 tier. CSV is mid-range refrigerator+range+hood+dishwasher+microwave. TEA-323: add custom-allowance path or new tier."
+
+  - key: cleanup
+    label: "Cleanup and punch list"
+    kind: allowance
+    expected: { material: 200, labor: 700, total: 900 }
+    note: "GC/admin scope — no builder."

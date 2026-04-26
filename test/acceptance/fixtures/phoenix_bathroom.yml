@@ -1,0 +1,146 @@
+---
+# TEA-319 acceptance scenario: Phoenix bathroom, Standard Full Bath.
+# Truth source: example_bathroom_trade_breakdown.csv attached on TEA-319.
+#
+# Trade-level rollups only — per-line-item formula coverage is owned by
+# the bathroom MaterialListGenerator tests (TEA-240 cluster).
+#
+# Some rows are kind: generator (criteria-tunable trades — waterproofing —
+# where the existing builder produces a usable number once the right
+# criteria keys are passed). Other rows are kind: allowance because the
+# existing builder is structurally absent. Each allowance carries a `note:`
+# describing the gap, owned by TEA-323 (builder math) — distinct from
+# TEA-321 (controller wiring).
+#
+# Iteration loop: as TEA-323 lands builder fixes, individual rows flip
+# from :allowance back to :generator with tuned inputs.
+
+name: "Phoenix Bathroom — Standard Full Bath"
+type: bathroom
+preset: standard
+hourly_rate: 65
+gc_pct: 0.08
+contingency_pct: 0.10
+tolerance: 5
+grand_tolerance: 25
+expected_grand_total: 52891
+
+trades:
+  - key: preconstruction
+    label: "Preconstruction / design"
+    kind: allowance
+    expected: { material: 0, labor: 1200, total: 1200 }
+    note: "GC/admin scope — not a MaterialListGenerator concern. No builder."
+
+  - key: permits
+    label: "Permits / administration"
+    kind: allowance
+    expected: { material: 300, labor: 700, total: 1000 }
+    note: "build_permits returns labor_hours: 0 — does not model permit-coordination labor. TEA-323: add labor model."
+
+  - key: site_prep
+    label: "Protection and setup"
+    kind: allowance
+    expected: { material: 250, labor: 450, total: 700 }
+    note: "build_site_prep models excavation/clearing only; CSV scope is bathroom dust barriers/floor protection. TEA-323: add interior-protection sub-scope."
+
+  - key: demolition
+    label: "Demolition"
+    kind: allowance
+    expected: { material: 450, labor: 1900, total: 2350 }
+    note: "build_demolition labor severely undershoots remodel scope. TEA-323: rework demo labor coefficient for bathroom remodel preset."
+
+  - key: framing
+    label: "Framing / blocking / subfloor repair"
+    kind: allowance
+    expected: { material: 500, labor: 1100, total: 1600 }
+    note: "build_framing models walls (LF × $/LF) + headers only — no blocking/subfloor-repair lines. TEA-323: add blocking + subfloor-repair sub-scope."
+
+  - key: ventilation
+    label: "Window / ventilation adjustments"
+    kind: allowance
+    expected: { material: 250, labor: 550, total: 800 }
+    note: "build_hvac default flat package overshoots; CSV scope is bath fan / vent only. TEA-323: parameterize bath-vent sub-scope."
+
+  - key: waterproofing
+    label: "Waterproofing and backer board"
+    kind: generator
+    trade: waterproofing
+    inputs:
+      squareFeet: 130
+    mode: sentinel
+    sentinel_ref: TEA-323
+    csv_target: { material: 1100, labor: 1500, total: 2600 }
+    expected: { material: 1105, labor: 1268, total: 2373 }
+
+  - key: drywall
+    label: "Drywall and wall prep"
+    kind: allowance
+    expected: { material: 300, labor: 900, total: 1200 }
+    note: "build_drywall labor coefficient under-models bathroom remodel patch/cut scope. TEA-323: tune `damageExtent: minor` coefficient for bathroom preset."
+
+  - key: vanity
+    label: "Vanity and cabinetry"
+    kind: allowance
+    expected: { material: 4200, labor: 1600, total: 5800 }
+    note: "build_vanity scaled for limited grade tiers; semi-custom 36in does not match CSV pricing. TEA-323: add semi-custom tier with proper labor model."
+
+  - key: countertops
+    label: "Countertops"
+    kind: allowance
+    expected: { material: 1400, labor: 550, total: 1950 }
+    note: "build_countertops at quartz × 8 sqft under-models edge work + sink cutout labor for bathroom scope. TEA-323: tune small-sqft labor floor."
+
+  - key: shower_system
+    label: "Shower system"
+    kind: allowance
+    expected: { material: 2300, labor: 1800, total: 4100 }
+    note: "build_shower tier model present but CSV bundles valve+head+pan+drain+trim — generator doesn't itemize all components. TEA-323: expand component coverage."
+
+  - key: glass_enclosure
+    label: "Glass enclosure"
+    kind: allowance
+    expected: { material: 1800, labor: 700, total: 2500 }
+    note: "build_glass produces flat allowance; frameless tier under-prices the CSV scope. TEA-323: add frameless premium tier with installation labor."
+
+  - key: tile
+    label: "Tile installation"
+    kind: allowance
+    expected: { material: 2200, labor: 4300, total: 6500 }
+    note: "build_tile labor coefficient (per-sqft) under-models stack-pattern bathroom installation. TEA-323: tune pattern-complexity multiplier."
+
+  - key: toilet_fixtures
+    label: "Toilet / sink / faucet fixtures"
+    kind: allowance
+    expected: { material: 1200, labor: 700, total: 1900 }
+    note: "build_plumbing fixture_swap mode does not model finish-trim labor distinct from rough-in. TEA-323: split fixture-install labor from rough-in."
+
+  - key: accessories
+    label: "Trim, mirrors, and accessories"
+    kind: allowance
+    expected: { material: 650, labor: 650, total: 1300 }
+    note: "GC/admin allowance scope — no builder."
+
+  - key: painting
+    label: "Painting"
+    kind: allowance
+    expected: { material: 250, labor: 700, total: 950 }
+    note: "build_painting at 60 sqft bathroom under-models trim + ceiling work. TEA-323: add ceiling/trim labor lines."
+
+  - key: plumbing_finish
+    label: "Plumbing rough and finish"
+    kind: allowance
+    expected: { material: 1400, labor: 3600, total: 5000 }
+    note: "build_plumbing rough_in mode does not model relocation labor; CSV bundles relocation + rough + finish hookups. TEA-323: add remodel-relocation labor."
+
+  - key: electrical
+    label: "Electrical rough and finish"
+    kind: allowance
+    expected: { material: 950, labor: 2150, total: 3100 }
+    note: "build_electrical at bathroom 60 sqft + receptacles/GFCI/switches/lights under-models bathroom code-upgrade scope. TEA-323: tune bathroom-remodel coefficient."
+
+  - key: cleanup
+    label: "Cleanup and punch list"
+    kind: allowance
+    expected: { material: 100, labor: 400, total: 500 }
+    note: "GC/admin scope — no builder."
