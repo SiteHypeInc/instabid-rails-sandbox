@@ -53,6 +53,10 @@ module Admin
         names = rows.map(&:name).compact.uniq
         label = item[:price_source] == "web_search_range" ? "Web Search Range" : "Web Search"
         [label, names.first || "(no product name)"]
+      elsif item[:source_tag] == "bigbox_hd"
+        ["HD Cached", "(live BigBox row missing — value cached from prior sync)"]
+      elsif item[:source_tag].to_s.start_with?("web_search")
+        ["Web Cached", "(live web search row missing — value cached from prior sync)"]
       else
         ["Manual", "(no product mapped)"]
       end

@@ -312,6 +312,14 @@
                 <span class="web-search-badge" title="Tavily + Haiku extract; pricing_key: <%= item[:web_search_sku] %>">
                   <span class="web-search-dot"></span>Web Search
                 </span>
+              <% elsif item[:source_tag] == "bigbox_hd" %>
+                <span class="live-badge" title="Cached BigBox value (last_synced_at <%= item[:last_synced_at] %>); live SKU rows missing.">
+                  HD Cached
+                </span>
+              <% elsif item[:source_tag].to_s.start_with?("web_search") %>
+                <span class="web-search-badge" title="Cached Web Search value (last_synced_at <%= item[:last_synced_at] %>); live row missing.">
+                  Web Cached
+                </span>
               <% else %>
                 <span class="manual-badge">Manual</span>
               <% end %>
