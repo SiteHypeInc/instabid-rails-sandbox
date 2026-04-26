@@ -17,6 +17,10 @@ Rails.application.routes.draw do
     # grouped by trade/section with TYPE badges and BigBox live indicator.
     get "pricing_dashboard", to: "pricing_dashboards#index", as: :pricing_dashboard
 
+    # TEA-324: per-trade product review CSV export. One row per pricing key with
+    # product name + source so John can mark wrong mappings with a Y/N column.
+    get "pricing_review.csv", to: "pricing_reviews#export", as: :pricing_review_csv
+
     # TEA-236: internal test estimate form (operator sandbox). GET renders the
     # form; POST re-renders the same page with rendered MaterialListGenerator
     # results. Read-only. NOT customer-facing.
