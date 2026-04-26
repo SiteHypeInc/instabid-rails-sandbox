@@ -68,9 +68,9 @@ trades:
     trade: waterproofing
     inputs:
       squareFeet: 130
-    # Generator output pinned to actual; CSV bundle target was 1100/1500/2600,
-    # generator at 130 sqft × $8.50 + 19.5 hr × $65 lands at 1105/1268/2373
-    # — within $5/rollup of pinned expected.
+    mode: sentinel
+    sentinel_ref: TEA-323
+    csv_target: { material: 1100, labor: 1500, total: 2600 }
     expected: { material: 1105, labor: 1268, total: 2373 }
 
   - key: drywall

@@ -18,7 +18,8 @@ module Acceptance
   # Todd fixes the generator, the trade builder, the pricing snapshot, or the
   # fixture inputs until all rollups match.
   class Scenario
-    Result = Struct.new(:trade_key, :label, :kind, :expected, :actual, :status, :reason, keyword_init: true)
+    Result = Struct.new(:trade_key, :label, :kind, :expected, :actual, :status, :reason,
+                        :mode, :sentinel_ref, :csv_target, keyword_init: true)
 
     DEFAULT_TOLERANCE       = 5  # per-trade rollup tolerance, dollars
     DEFAULT_GRAND_TOLERANCE = 25 # grand-total tolerance, dollars (wider so per-trade rounding doesn't compound into a false FAIL)
@@ -58,6 +59,9 @@ module Acceptance
       label = trade_def.fetch("label")
       kind  = trade_def.fetch("kind").to_sym
       expected = symbolize(trade_def.fetch("expected"))
+      mode         = trade_def["mode"]&.to_sym
+      sentinel_ref = trade_def["sentinel_ref"]
+      csv_target   = trade_def["csv_target"] ? symbolize(trade_def["csv_target"]) : nil
 
       if kind == :allowance
         note = trade_def["note"]
@@ -65,7 +69,8 @@ module Acceptance
         return Result.new(
           trade_key: key, label: label, kind: kind,
           expected: expected, actual: expected.dup,
-          status: :pass, reason: reason
+          status: :pass, reason: reason,
+          mode: mode, sentinel_ref: sentinel_ref, csv_target: csv_target
         )
       end
 
@@ -83,17 +88,18 @@ module Acceptance
       total    = material + labor
       actual   = { material: material, labor: labor, total: total }
 
-      diff_status(key, label, kind, expected, actual)
+      diff_status(key, label, kind, expected, actual, mode: mode, sentinel_ref: sentinel_ref, csv_target: csv_target)
     rescue MaterialListGenerator::UnsupportedTrade,
            MaterialListGenerator::InvalidCriteria => e
       Result.new(
         trade_key: key, label: label, kind: kind,
         expected: expected, actual: { material: 0, labor: 0, total: 0 },
-        status: :fail, reason: "generator error: #{e.message}"
+        status: :fail, reason: "generator error: #{e.message}",
+        mode: mode, sentinel_ref: sentinel_ref, csv_target: csv_target
       )
     end
 
-    def diff_status(key, label, kind, expected, actual)
+    def diff_status(key, label, kind, expected, actual, mode: nil, sentinel_ref: nil, csv_target: nil)
       mat_delta   = (actual[:material] - expected[:material]).abs
       labor_delta = (actual[:labor]    - expected[:labor]).abs
       total_delta = (actual[:total]    - expected[:total]).abs
@@ -107,7 +113,8 @@ module Acceptance
       Result.new(
         trade_key: key, label: label, kind: kind,
         expected: expected, actual: actual,
-        status: status, reason: mismatches.join(", ")
+        status: status, reason: mismatches.join(", "),
+        mode: mode, sentinel_ref: sentinel_ref, csv_target: csv_target
       )
     end
 

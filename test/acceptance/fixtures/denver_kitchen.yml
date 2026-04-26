@@ -119,9 +119,8 @@ trades:
     inputs:
       backsplashType: mosaic
       backsplashArea: 35.1
-    # Generator output pinned to actual; CSV bundle target was 800/1600/2400,
-    # generator at mosaic × 35.1 sqft + thinset/grout + 24.6 hr labor lands
-    # within $5/rollup tolerance.
+    mode: csv-match
+    csv_target: { material: 800, labor: 1600, total: 2400 }
     expected: { material: 802, labor: 1599, total: 2401 }
 
   - key: flooring
@@ -140,9 +139,9 @@ trades:
       crownMoldingLf: 55
       interiorDoorCount: 3
       windowCasingCount: 4
-    # Generator output pinned to actual; CSV bundle target was 800/1400/2200,
-    # generator with full kitchen-trim package (baseboard + crown + door + window
-    # casing) lands at 890/1450/2340 — within $5/rollup of pinned expected.
+    mode: sentinel
+    sentinel_ref: TEA-323
+    csv_target: { material: 800, labor: 1400, total: 2200 }
     expected: { material: 890, labor: 1450, total: 2340 }
 
   - key: painting

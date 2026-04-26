@@ -115,11 +115,9 @@ trades:
       includeCeilings: true
       wallCondition: smooth
       patchingNeeded: none
-    # Generator output pinned to actual; CSV bundle target was 850/2250/3100,
-    # generator at 320 sqft interior 2-coat with ceilings + smooth wall + no
-    # patching lands at 216/1677/1893 — within $5/rollup of pinned expected.
-    # Material undershoot is structural (no trim/exterior touch-up coefficient)
-    # — flagged in TEA-323 but the trade is generator-tested here.
+    mode: sentinel
+    sentinel_ref: TEA-323
+    csv_target: { material: 850, labor: 2250, total: 3100 }
     expected: { material: 216, labor: 1677, total: 1893 }
 
   - key: electrical
@@ -136,11 +134,9 @@ trades:
       squareFeet: 320
       systemType: furnace
       ductwork: new
-    # Generator output pinned to actual; CSV bundle target was 1500/2500/4000,
-    # generator at 320 sqft furnace + new ductwork lands at 4180/884/5064
-    # — within $5/rollup of pinned expected. Material overshoot is structural
-    # (build_hvac equipment package floors at $3,150 even at smallest size_mult);
-    # flagged in TEA-323 but the trade is generator-tested here.
+    mode: sentinel
+    sentinel_ref: TEA-323
+    csv_target: { material: 1500, labor: 2500, total: 4000 }
     expected: { material: 4180, labor: 884, total: 5064 }
 
   - key: cleanup
