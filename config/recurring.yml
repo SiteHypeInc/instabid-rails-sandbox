@@ -2,4 +2,7 @@ production:
   clear_solid_queue_finished_jobs:
     command: "SolidQueue::Job.clear_finished_in_batches(sleep_between_batches: 0.3)"
     schedule: "12 * * * *"         # every hour at minute 12
-  # Pricing scraper jobs will be added here as Part C is implemented
+  refresh_material_prices:
+    class: "MaterialPriceRefreshJob"
+    schedule: "0 9 * * *"          # daily 09:00 UTC (~04:00 ET) — TEA-328
+    queue: "default"
