@@ -13,8 +13,8 @@ require "json"
 class MaterialPriceRefreshJob < ApplicationJob
   queue_as :default
 
-  # TEA-334: refreshed for siding SKU sweep (recreated with updated material_skus.json).
-  COLLECTION_ID  = "B13BE287"
+  # TEA-334: refreshed for HVAC SKU sweep (recreated with updated material_skus.json).
+  COLLECTION_ID  = "11B5E214"
   ZIP_CODE       = "10001"
   POLL_INTERVAL  = 10.seconds
   POLL_TIMEOUT   = 8.minutes

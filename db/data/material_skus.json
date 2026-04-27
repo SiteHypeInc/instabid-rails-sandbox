@@ -25,15 +25,7 @@
   ],
 
   "hvac": [
-    {"name": "Gas Furnace 80% 80K BTU", "sku": "311467636", "category": "furnace", "unit": "each"},
-    {"name": "Gas Furnace 95% 80K BTU", "sku": "312558692", "category": "furnace_higheff", "unit": "each"},
-    {"name": "Central AC 2.5 Ton 14 SEER", "sku": "312299847", "category": "ac", "unit": "each"},
-    {"name": "Central AC 3 Ton 18 SEER", "sku": "313847562", "category": "ac_higheff", "unit": "each"},
-    {"name": "Heat Pump 2.5 Ton 14 SEER", "sku": "314562893", "category": "heatpump", "unit": "each"},
-    {"name": "Heat Pump 3 Ton 18 SEER", "sku": "315847291", "category": "heatpump_higheff", "unit": "each"},
-    {"name": "Mini Split 12K BTU", "sku": "309501994", "category": "minisplit", "unit": "each"},
-    {"name": "Programmable Thermostat", "sku": "202532598", "category": "thermostat", "unit": "each"},
-    {"name": "Smart Thermostat", "sku": "301668865", "category": "thermostat_smart", "unit": "each"},
+    {"name": "Google Nest Programmable Wi-Fi Thermostat - Snow", "sku": "314573006", "category": "thermostat", "unit": "each"},
     {"name": "6 in. x 25 ft. Insulated Flexible Duct R6 Silver Jacket", "sku": "100396935", "category": "hvac_flex_duct_6", "unit": "each"},
     {"name": "Master Flow - 8 in. x 25 ft. Insulated Flexible Duct R8 Silver Jacket", "sku": "202562741", "category": "hvac_flex_duct_8", "unit": "each"},
     {"name": "Master Flow 6 in. x 5 ft. Round Metal Duct Pipe CP6X60", "sku": "100125106", "category": "hvac_rigid_duct_lf", "unit": "lf"},

@@ -157,59 +157,14 @@ roofing:
 # ─── HVAC ────────────────────────────────────────────────────────────────────
 
 hvac:
-  hvac_furnace_standard:
-    description: "Gas furnace 80% AFUE 80K BTU — equipment + standard install"
-    skus:
-      - "311467636"
-    aggregation: average
-    labor_adder: 1800.00
-
-  hvac_furnace_high:
-    description: "Gas furnace 95% AFUE 80K BTU — equipment + install"
-    skus:
-      - "312558692"
-    aggregation: average
-    labor_adder: 2000.00
-
-  hvac_ac_standard:
-    description: "Central AC 2.5T 14 SEER — equipment + standard install"
-    skus:
-      - "312299847"
-    aggregation: average
-    labor_adder: 1800.00
-
-  hvac_ac_high:
-    description: "Central AC 3T 18 SEER — equipment + install"
-    skus:
-      - "313847562"
-    aggregation: average
-    labor_adder: 2000.00
-
-  hvac_heatpump_standard:
-    description: "Heat pump 2.5T 14 SEER — equipment + install"
-    skus:
-      - "314562893"
-    aggregation: average
-    labor_adder: 2000.00
-
-  hvac_heatpump_high:
-    description: "Heat pump 3T 18 SEER — equipment + install"
-    skus:
-      - "315847291"
-    aggregation: average
-    labor_adder: 2500.00
-
-  hvac_minisplit:
-    description: "Mini split 12K BTU — equipment + lineset + electrical"
-    skus:
-      - "309501994"
-    aggregation: average
-    labor_adder: 800.00
+  # TEA-334: hvac_furnace_standard/high, hvac_ac_standard/high, hvac_heatpump_standard/high,
+  # hvac_minisplit DROPPED 2026-04-27 — HD does not retail HVAC equipment online with
+  # reliable item-level pricing; estimator falls back to default_pricings_seed.yml.
 
   hvac_thermostat:
-    description: "Programmable thermostat — hardware + install"
+    description: "Programmable Wi-Fi thermostat — hardware + install"
     skus:
-      - "202532598"
+      - "314573006"
     aggregation: average
     labor_adder: 150.00
 
