@@ -249,60 +249,60 @@ hvac:
 # ─── ELECTRICAL ──────────────────────────────────────────────────────────────
 
 electrical:
+  # TEA-334: 9 SKUs replaced 2026-04-27 (8 dead + 1 wrong/wallplate-not-subpanel).
   elec_panel_200:
-    description: "200A main panel — hardware + install"
+    description: "200A main panel — Square D Homeline 30-space + install"
     skus:
-      - "100209329"
+      - "204836369"
     aggregation: average
     labor_adder: 200.00
 
   elec_panel_100:
-    description: "100A sub-panel — hardware + install"
+    description: "100A-class sub-panel — Square D Homeline 125A main lug + install"
     skus:
-      - "202077679"
+      - "339307998"
     aggregation: average
     labor_adder: 175.00
 
   elec_outlet:
-    description: "Duplex outlet 15A (material per outlet)"
+    description: "Duplex outlet 15A — Leviton Decora 10-pack (material per outlet)"
     skus:
-      - "202077282"
+      - "100684055"
     aggregation: average
     labor_adder: 0.00
 
   elec_outlet_gfci:
-    description: "GFCI outlet 20A (material per outlet)"
+    description: "GFCI outlet 20A — Leviton self-test 4-pack (material per outlet)"
     skus:
-      - "202532847"
+      - "305340194"
     aggregation: average
     labor_adder: 0.00
 
   elec_switch:
-    description: "Switch — avg of single-pole and 3-way (material per switch)"
+    description: "Switch single-pole 15A — Leviton Decora (material per switch)"
     skus:
-      - "100356672"
-      - "203674458"
+      - "322083349"
     aggregation: average
     labor_adder: 0.00
 
   elec_ceiling_fan_install:
-    description: "Ceiling fan 52in — hardware + install"
+    description: "Ceiling fan 52in — Home Decorators Merwry LED + install"
     skus:
-      - "304743041"
+      - "301231214"
     aggregation: average
     labor_adder: 100.00
 
   elec_light_install:
-    description: "LED light fixture — hardware + install"
+    description: "LED light fixture — Hampton Bay Flaxmere 12in flush mount + install"
     skus:
-      - "310502467"
+      - "336030843"
     aggregation: average
     labor_adder: 15.00
 
   elec_circuit_20a:
-    description: "20A circuit breaker (material per breaker)"
+    description: "20A circuit breaker — Square D Homeline (material per breaker)"
     skus:
-      - "202532156"
+      - "100045009"
     aggregation: average
     labor_adder: 75.00
 
