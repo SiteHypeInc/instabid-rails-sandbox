@@ -1,0 +1,35 @@
+# TEA-345: 5-zip starter set for BigBox per-region price sourcing.
+#
+# Spans US Census regions so BigBox returns region-distinct HD pricing
+# instead of a single Florida-default tagged "10001":
+#
+#   - Pacific NW (Seattle, WA)
+#   - Mountain   (Denver, CO)
+#   - Midwest    (Chicago, IL)
+#   - Southeast  (Atlanta, GA)
+#   - Northeast  (Boston, MA)
+#
+# This list is replaceable in one place — change the file, redeploy, and
+# the next BigBox collection picks them up. Add/remove zips here only;
+# code reads everything via ServiceAreaZip.
+zips:
+  - zip: "98101"
+    city: "Seattle"
+    state: "WA"
+    region: "pacific_nw"
+  - zip: "80202"
+    city: "Denver"
+    state: "CO"
+    region: "mountain"
+  - zip: "60601"
+    city: "Chicago"
+    state: "IL"
+    region: "midwest"
+  - zip: "30303"
+    city: "Atlanta"
+    state: "GA"
+    region: "southeast"
+  - zip: "02108"
+    city: "Boston"
+    state: "MA"
+    region: "northeast"

@@ -3,7 +3,11 @@ module Admin
     layout false
 
     def index
-      presenter = PricingDashboardPresenter.new
+      requested_zip = params[:zip].to_s.presence
+      @selected_zip = ServiceAreaZip.find(requested_zip)&.zip if requested_zip
+      @available_zips = ServiceAreaZip.zips
+
+      presenter = PricingDashboardPresenter.new(zip_code: @selected_zip)
       @trades = presenter.trades
       requested = params[:trade].to_s.downcase
       selected_key = @trades.any? { |t| t[:key] == requested } ? requested : @trades.first&.dig(:key)

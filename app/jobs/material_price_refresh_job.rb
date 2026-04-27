@@ -13,9 +13,11 @@ require "json"
 class MaterialPriceRefreshJob < ApplicationJob
   queue_as :default
 
-  # TEA-334: post-sweep collection (8 trades complete; created from current material_skus.json).
-  COLLECTION_ID  = "7C53A981"
-  ZIP_CODE       = "10001"
+  # TEA-345: collection ID is now ENV-driven so swapping in a per-zip
+  # collection (built via BigboxCollectionService.create_production_collection)
+  # is a redeploy, not a code change. Falls back to the post-sweep single-zip
+  # collection 7C53A981 only if BIGBOX_COLLECTION_ID isn't set.
+  DEFAULT_COLLECTION_ID = "7C53A981"
   POLL_INTERVAL  = 10.seconds
   POLL_TIMEOUT   = 8.minutes
   TRANSIENT_FAILURE_BUDGET = 0.40 # > 40% transient = stop and report
@@ -26,14 +28,14 @@ class MaterialPriceRefreshJob < ApplicationJob
     api_key = ENV["BIGBOX_API_KEY"].to_s.strip
     raise "BIGBOX_API_KEY not set" if api_key.blank?
 
-    log "Starting BigBox collection #{COLLECTION_ID}"
+    log "Starting BigBox collection #{collection_id}"
     start_collection(api_key)
 
     log "Polling for completion (timeout: #{POLL_TIMEOUT.inspect})"
     wait_for_completion(api_key)
 
-    log "Ingesting results into material_prices"
-    ingest = BigboxCollectionService.ingest_results(collection_id: COLLECTION_ID, zip_code: ZIP_CODE)
+    log "Ingesting results into material_prices (per-zip from request echo)"
+    ingest = BigboxCollectionService.ingest_results(collection_id: collection_id)
     by_status = ingest.group_by(&:status).transform_values(&:count)
     log "Ingest summary: #{by_status.inspect}"
 
@@ -51,8 +53,12 @@ class MaterialPriceRefreshJob < ApplicationJob
 
   private
 
+  def collection_id
+    @collection_id ||= ENV["BIGBOX_COLLECTION_ID"].presence || DEFAULT_COLLECTION_ID
+  end
+
   def start_collection(api_key)
-    uri = URI("#{BIGBOX_BASE}/#{COLLECTION_ID}/start")
+    uri = URI("#{BIGBOX_BASE}/#{collection_id}/start")
     uri.query = URI.encode_www_form(api_key: api_key)
     response = http(uri).request(Net::HTTP::Get.new(uri.request_uri))
     unless response.is_a?(Net::HTTPSuccess)
@@ -66,7 +72,7 @@ class MaterialPriceRefreshJob < ApplicationJob
 
     loop do
       if Time.current > deadline
-        raise "BigBox collection #{COLLECTION_ID} did not complete within #{POLL_TIMEOUT.inspect}"
+        raise "BigBox collection #{collection_id} did not complete within #{POLL_TIMEOUT.inspect}"
       end
 
       sleep POLL_INTERVAL
@@ -82,7 +88,7 @@ class MaterialPriceRefreshJob < ApplicationJob
   end
 
   def collection_data(api_key)
-    uri = URI("#{BIGBOX_BASE}/#{COLLECTION_ID}")
+    uri = URI("#{BIGBOX_BASE}/#{collection_id}")
     uri.query = URI.encode_www_form(api_key: api_key)
     response = http(uri).request(Net::HTTP::Get.new(uri.request_uri))
     raise "BigBox collection fetch failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)

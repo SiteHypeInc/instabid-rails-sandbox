@@ -231,7 +231,7 @@ module Admin
       request_type = params[:request_type].presence || "product"
       item_id      = params[:item_id].presence || params[:sku].presence
       term         = params[:term].presence || "Asphalt Shingles"
-      zip          = params[:zip_code].presence || "10001"
+      zip          = params[:zip_code].presence || ServiceAreaZip.codes.first
 
       query_params = { api_key: api_key, type: request_type }
 
