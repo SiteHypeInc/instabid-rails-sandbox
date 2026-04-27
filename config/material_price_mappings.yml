@@ -670,76 +670,15 @@ plumbing:
 # Labor is tracked separately in Jesse's floor_labor_* keys — labor_adder: 0 here.
 
 flooring:
+  # TEA-334: 9 dead /sqft keys (vinyl, lvp, laminate, hardwood_eng/solid,
+  # tile_ceramic/porcelain, underlay) + dead floor_baseboard DROPPED
+  # 2026-04-27. HD retails these per-case/per-box only — mapping case-priced
+  # SKUs to /sqft estimator keys is the same silent unit-class bug as
+  # mat_metal (TEA-335). Estimator falls back to default_pricings_seed.yml.
   floor_carpet:
-    description: "Carpet — avg of builder/mid/premium grades (per sqft)"
+    description: "Carpet — TrafficMaster Elevations 12ft cut-to-length (per sqft)"
     skus:
-      - "305847291"
-      - "306562847"
-      - "307847562"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_vinyl:
-    description: "Vinyl plank basic (per sqft)"
-    skus:
-      - "308562941"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_lvp:
-    description: "Luxury vinyl plank (per sqft)"
-    skus:
-      - "309847625"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_laminate:
-    description: "Laminate — avg of AC3 and AC4 grades (per sqft)"
-    skus:
-      - "310562847"
-      - "311847562"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_hardwood_eng:
-    description: "Engineered hardwood oak (per sqft)"
-    skus:
-      - "312562941"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_hardwood_solid:
-    description: "Solid hardwood oak (per sqft)"
-    skus:
-      - "313847625"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_tile_ceramic:
-    description: "Ceramic tile 12x12 (per sqft)"
-    skus:
-      - "100138864"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_tile_porcelain:
-    description: "Porcelain tile 18x18 (per sqft)"
-    skus:
-      - "203456789"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_underlay:
-    description: "Flooring underlayment (per sqft)"
-    skus:
-      - "202084892"
-    aggregation: average
-    labor_adder: 0.00
-
-  floor_baseboard:
-    description: "Baseboard 3.5in 8ft piece (per piece)"
-    skus:
-      - "202316892"
+      - "203240740"
     aggregation: average
     labor_adder: 0.00
 
