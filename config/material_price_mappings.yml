@@ -38,13 +38,9 @@ roofing:
     aggregation: average
     labor_adder: 0.00
 
-  mat_metal:
-    description: "Metal roofing panel — Gibraltar 8ft corrugated galvanized"
-    skus:
-      - "202092961"
-    aggregation: average
-    labor_adder: 0.00
-
+  # mat_metal: DROPPED 2026-04-27 (TEA-334) — HD sells metal roofing per-panel/per-lf only;
+  # no per-sqft SKU exists. Estimator unit is /sqft (see pricing_key_reference.yml + material_list_generator.rb),
+  # so a per-panel SKU here produces silently wrong totals. Falls back to default_pricings_seed (9.50/sqft).
   # mat_tile: DROPPED 2026-04-26 (TEA-327) — no clean concrete/clay tile HD match
   # mat_wood_shake: DROPPED 2026-04-26 (TEA-327) — no real wood shake on HD
 
