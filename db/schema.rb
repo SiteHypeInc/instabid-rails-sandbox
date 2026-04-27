@@ -10,9 +10,28 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_26_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_27_070100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "catalog_skus", force: :cascade do |t|
+    t.datetime "bigbox_locked_at"
+    t.string "bigbox_locked_by"
+    t.string "bigbox_omsid"
+    t.string "bigbox_url"
+    t.string "category"
+    t.datetime "created_at", null: false
+    t.string "fallback_source"
+    t.string "name", null: false
+    t.string "sku", null: false
+    t.string "trade", null: false
+    t.boolean "unavailable_at_hd", default: false, null: false
+    t.string "unit"
+    t.datetime "updated_at", null: false
+    t.index ["bigbox_locked_at"], name: "index_catalog_skus_on_bigbox_locked_at"
+    t.index ["sku"], name: "index_catalog_skus_on_sku", unique: true
+    t.index ["trade"], name: "index_catalog_skus_on_trade"
+  end
 
   create_table "default_pricings", force: :cascade do |t|
     t.datetime "created_at", null: false
