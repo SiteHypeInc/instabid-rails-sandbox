@@ -1,7 +1,6 @@
 {
   "roofing": [
     {"name": "Architectural Shingles", "sku": "203003641", "category": "shingles_arch", "unit": "bundle"},
-    {"name": "Metal Roofing Panel", "sku": "202091274", "category": "metal_roofing", "unit": "panel"},
     {"name": "Concrete Tile", "sku": "100144419", "category": "roof_tile", "unit": "each"},
     {"name": "Roofing Underlayment", "sku": "202084288", "category": "roof_underlayment", "unit": "roll"},
     {"name": "Plywood 1/2in 4x8", "sku": "100056707", "category": "roof_plywood", "unit": "sheet"},
@@ -18,7 +17,6 @@
     {"name": "2 in. x 3 in. x 10 ft. White Aluminum Downspout", "sku": "100016183", "category": "gutter_downspout", "unit": "each"},
     {"name": "GAF Royal Sovereign Charcoal 3-Tab Shingles", "sku": "100040028", "category": "shingles_3tab", "unit": "bundle"},
     {"name": "GAF Timberline HDZ Architectural Shingles", "sku": "309755006", "category": "shingles_arch", "unit": "bundle"},
-    {"name": "Gibraltar 8 ft Corrugated Galvanized Steel Roof Panel", "sku": "202092961", "category": "metal_roofing", "unit": "panel"},
     {"name": "APOC #15 Felt Roofing Underlayment", "sku": "318297739", "category": "roof_underlayment", "unit": "roll"},
     {"name": "Grip-Rite Roofing Nails 1.25in", "sku": "100394342", "category": "roofing_nails", "unit": "box"},
     {"name": "Gibraltar 1-7/8 Galvanized Steel Drip Edge (10ft piece)", "sku": "326400442", "category": "drip_edge", "unit": "10ft"},
