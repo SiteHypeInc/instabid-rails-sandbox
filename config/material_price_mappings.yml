@@ -56,7 +56,11 @@ roofing:
     labor_adder: 0.00
 
   drip_edge_lf:
-    description: "Drip edge 1.5x1.5 (per lf) — Gibraltar galvanized"
+    # NOTE: SKU 326400442 sells per 10ft piece at HD; material_prices stores price/unit as
+    # "$X / 10ft" (see material_skus.json). Consumers of drip_edge_lf must divide by 10
+    # to get per-LF cost. Closest off-the-shelf Gibraltar drip edge is 1-7/8"x1-7/8";
+    # spec'd 1.5"x1.5" not currently available on HD (TEA-327 dimension drift).
+    description: "Drip edge 1-7/8x1-7/8 — Gibraltar galvanized (priced per 10ft piece)"
     skus:
       - "326400442"
     aggregation: average

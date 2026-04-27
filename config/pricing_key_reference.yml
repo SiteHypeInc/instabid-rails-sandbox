@@ -44,7 +44,7 @@ roofing:
         - { key: nails_box,         label: "Roofing Nails",          unit: "/box" }
         - { key: starter_lf,        label: "Starter Strip",          unit: "/lf" }
         - { key: ridge_lf,          label: "Ridge Cap",              unit: "/lf" }
-        - { key: drip_edge_lf,      label: "Drip Edge",              unit: "/lf" }
+        - { key: drip_edge_lf,      label: "Drip Edge (10ft piece)", unit: "/10ft" }
         - { key: ice_shield_lf,     label: "Ice & Water Shield",     unit: "/lf" }
         - { key: vent_unit,         label: "Box Vent",               unit: "each" }
         - { key: ridge_vent_lf,     label: "Ridge Vent",             unit: "/lf" }
