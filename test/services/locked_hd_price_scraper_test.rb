@@ -63,15 +63,63 @@ class LockedHdPriceScraperTest < ActiveSupport::TestCase
     end
   end
 
-  test "marks transient on non-2xx" do
-    fake = OpenStruct.new(code: "503", body: "upstream busy")
-    def fake.is_a?(klass); klass == Net::HTTPSuccess ? false : super; end
+  test "marks transient on non-2xx after exhausting retries" do
+    scraper = LockedHdPriceScraper.new(api_key: "k")
+    scraper.stub :sleep, nil do
+      scraper.stub :bigbox_get, http_5xx("503", "upstream busy") do
+        result = scraper.scrape(@row)
+        assert_equal "transient", result.status
+        assert_match(/HTTP 503/, result.error)
+        assert_equal LockedHdPriceScraper::MAX_ATTEMPTS, result.attempts
+      end
+    end
+  end
+
+  test "retries on transient 5xx and succeeds on later attempt" do
+    success_body = {
+      "request_info" => { "success" => true },
+      "product"      => { "title" => "x", "buybox_winner" => { "price" => 9.99 } }
+    }.to_json
+    responses = [
+      http_5xx("502", "bad gateway"),
+      http_5xx("503", "still busy"),
+      http_ok(success_body)
+    ]
 
     scraper = LockedHdPriceScraper.new(api_key: "k")
-    scraper.stub :bigbox_get, fake do
+    scraper.define_singleton_method(:bigbox_get) { |_id| responses.shift }
+    scraper.stub :sleep, nil do
+      result = scraper.scrape(@row)
+      assert_equal "success", result.status
+      assert_equal 3, result.attempts
+      assert_equal 9.99.to_d, result.price
+    end
+  end
+
+  test "does not retry on 4xx" do
+    calls = 0
+    scraper = LockedHdPriceScraper.new(api_key: "k")
+    scraper.define_singleton_method(:bigbox_get) do |_id|
+      calls += 1
+      fake = OpenStruct.new(code: "404", body: "not found")
+      def fake.is_a?(klass); klass == Net::HTTPSuccess ? false : super; end
+      fake
+    end
+    scraper.stub :sleep, nil do
       result = scraper.scrape(@row)
       assert_equal "transient", result.status
-      assert_match(/HTTP 503/, result.error)
+      assert_equal 1, calls
+      assert_equal 1, result.attempts
+    end
+  end
+
+  test "retries on connection timeout and surfaces transient on exhaustion" do
+    scraper = LockedHdPriceScraper.new(api_key: "k")
+    scraper.define_singleton_method(:bigbox_get) { |_id| raise Net::OpenTimeout, "boom" }
+    scraper.stub :sleep, nil do
+      result = scraper.scrape(@row)
+      assert_equal "transient", result.status
+      assert_match(/timeout/, result.error)
     end
   end
 
@@ -102,6 +150,12 @@ class LockedHdPriceScraperTest < ActiveSupport::TestCase
   def http_ok(body)
     fake = OpenStruct.new(code: "200", body: body)
     def fake.is_a?(klass); klass == Net::HTTPSuccess ? true : super; end
+    fake
+  end
+
+  def http_5xx(code, body)
+    fake = OpenStruct.new(code: code, body: body)
+    def fake.is_a?(klass); klass == Net::HTTPSuccess ? false : super; end
     fake
   end
 end

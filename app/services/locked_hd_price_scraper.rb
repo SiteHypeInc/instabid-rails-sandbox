@@ -20,9 +20,16 @@ class LockedHdPriceScraper
   OPEN_TIMEOUT_SEC = 12
   READ_TIMEOUT_SEC = 30
 
+  # TEA-341 retry pass: BigBox returns "unable to fulfil... please retry (G)"
+  # under load. The General's call: 3 attempts, exponential backoff 1s/3s/9s
+  # for HTTP 5xx and connection timeouts. 4xx and JSON-level "not_found" are
+  # not retried — those are deterministic per-SKU outcomes.
+  MAX_ATTEMPTS    = 3
+  BACKOFF_SECONDS = [1, 3, 9].freeze
+
   ScrapeResult = Struct.new(
     :sku, :price, :price_low, :price_high, :title,
-    :status, :error, :latency_ms,
+    :status, :error, :latency_ms, :attempts,
     keyword_init: true
   )
 
@@ -40,16 +47,18 @@ class LockedHdPriceScraper
     started_at = monotonic_ms
     sku        = catalog_sku.sku.to_s
 
-    response = bigbox_get(sku)
+    response, attempts = bigbox_get_with_retry(sku)
     latency  = (monotonic_ms - started_at).round
 
-    return transient_result(sku, response, latency) unless response.is_a?(Net::HTTPSuccess)
+    unless response.is_a?(Net::HTTPSuccess)
+      return transient_result(sku, response, latency, attempts)
+    end
 
     data = JSON.parse(response.body)
     unless data.dig("request_info", "success")
       msg = data.dig("request_info", "message").to_s
       status = msg.match?(/not found/i) ? "not_found" : "transient"
-      return ScrapeResult.new(sku: sku, status: status, error: msg.presence, latency_ms: latency)
+      return ScrapeResult.new(sku: sku, status: status, error: msg.presence, latency_ms: latency, attempts: attempts)
     end
 
     product = data["product"] || {}
@@ -59,7 +68,7 @@ class LockedHdPriceScraper
     if price.nil?
       return ScrapeResult.new(
         sku: sku, title: title, status: "no_price",
-        error: "Product returned but no usable price", latency_ms: latency
+        error: "Product returned but no usable price", latency_ms: latency, attempts: attempts
       )
     end
 
@@ -70,18 +79,47 @@ class LockedHdPriceScraper
       price_high: high,
       title:      title,
       status:     "success",
-      latency_ms: latency
+      latency_ms: latency,
+      attempts:   attempts
     )
 
   rescue JSON::ParserError => e
-    ScrapeResult.new(sku: sku, status: "error", error: "json: #{e.message}", latency_ms: (monotonic_ms - started_at).round)
+    ScrapeResult.new(sku: sku, status: "error", error: "json: #{e.message}", latency_ms: (monotonic_ms - started_at).round, attempts: MAX_ATTEMPTS)
   rescue Net::OpenTimeout, Net::ReadTimeout => e
-    ScrapeResult.new(sku: sku, status: "transient", error: "timeout: #{e.message}", latency_ms: (monotonic_ms - started_at).round)
+    ScrapeResult.new(sku: sku, status: "transient", error: "timeout: #{e.message}", latency_ms: (monotonic_ms - started_at).round, attempts: MAX_ATTEMPTS)
   rescue => e
-    ScrapeResult.new(sku: sku, status: "error", error: e.message, latency_ms: (monotonic_ms - started_at).round)
+    ScrapeResult.new(sku: sku, status: "error", error: e.message, latency_ms: (monotonic_ms - started_at).round, attempts: MAX_ATTEMPTS)
   end
 
   private
+
+  # Retries on connection timeouts and HTTP 5xx. Returns [final_response, attempt_count].
+  # On exhausted retries, the last response (or a synthesized one for repeated timeouts)
+  # is returned so the caller can record the final failure status.
+  def bigbox_get_with_retry(item_id)
+    last_response = nil
+    last_error    = nil
+
+    MAX_ATTEMPTS.times do |i|
+      attempt = i + 1
+      begin
+        response = bigbox_get(item_id)
+        return [response, attempt] if response.is_a?(Net::HTTPSuccess)
+        return [response, attempt] unless response.code.to_s.start_with?("5")
+
+        last_response = response
+      rescue Net::OpenTimeout, Net::ReadTimeout => e
+        last_error = e
+      end
+
+      sleep BACKOFF_SECONDS[i] if attempt < MAX_ATTEMPTS
+    end
+
+    return [last_response, MAX_ATTEMPTS] if last_response
+    raise last_error if last_error
+
+    [last_response, MAX_ATTEMPTS]
+  end
 
   def bigbox_get(item_id)
     uri       = URI(BIGBOX_BASE_URL)
@@ -94,11 +132,11 @@ class LockedHdPriceScraper
     http.request(Net::HTTP::Get.new(uri.request_uri))
   end
 
-  def transient_result(sku, response, latency)
+  def transient_result(sku, response, latency, attempts)
     body = response.respond_to?(:body) ? response.body.to_s[0, 200] : ""
     ScrapeResult.new(
       sku: sku, status: "transient",
-      error: "HTTP #{response.code} #{body}", latency_ms: latency
+      error: "HTTP #{response.code} #{body}", latency_ms: latency, attempts: attempts
     )
   end
 
