@@ -6,6 +6,10 @@ production:
     class: "MaterialPriceRefreshJob"
     schedule: "0 9 * * *"          # daily 09:00 UTC (~04:00 ET) — TEA-328
     queue: "default"
+  refresh_locked_hd_prices:
+    class: "LockedPriceRefreshJob"
+    schedule: "30 9 * * *"         # daily 09:30 UTC, after collection refresh — TEA-341
+    queue: "default"
   stale_feed_watchdog:
     class: "StaleFeedWatchdogJob"
     schedule: "30 10 * * *"        # daily 10:30 UTC, ~90min after refresh — TEA-329 D3
