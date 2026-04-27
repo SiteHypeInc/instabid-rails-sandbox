@@ -443,10 +443,11 @@ electrical:
 # ─── PLUMBING ────────────────────────────────────────────────────────────────
 
 plumbing:
+  # TEA-334: 8 dead big-ticket fixture/heater SKUs replaced 2026-04-27.
   plumb_faucet_kitchen:
-    description: "Kitchen faucet — hardware + install"
+    description: "Kitchen faucet — MOEN Adler single-handle pull-down + install"
     skus:
-      - "309847251"
+      - "311445581"
     aggregation: average
     labor_adder: 125.00
 
@@ -458,30 +459,30 @@ plumbing:
     labor_adder: 100.00
 
   plumb_sink_kitchen:
-    description: "Kitchen sink stainless — hardware + install"
+    description: "Kitchen sink stainless — Glacier Bay 33in single bowl + install"
     skus:
-      - "202084619"
+      - "328548123"
     aggregation: average
     labor_adder: 150.00
 
   plumb_sink_bath:
-    description: "Bathroom sink — hardware + install"
+    description: "Bathroom sink — Glacier Bay 19in drop-in vitreous china + install"
     skus:
-      - "304845716"
+      - "100090789"
     aggregation: average
     labor_adder: 150.00
 
   plumb_toilet:
-    description: "Toilet comfort height — hardware + install"
+    description: "Toilet comfort height — KOHLER Highline Arc 12in 1.28 GPF + install"
     skus:
-      - "301469892"
+      - "307908571"
     aggregation: average
     labor_adder: 125.00
 
   plumb_shower_valve:
-    description: "Shower valve kit — hardware + install"
+    description: "Shower valve rough-in — Delta MultiChoice Universal + install"
     skus:
-      - "304562981"
+      - "204082131"
     aggregation: average
     labor_adder: 200.00
 
@@ -493,23 +494,23 @@ plumbing:
     labor_adder: 150.00
 
   plumb_heater_tank_40:
-    description: "Water heater 40 gal tank — hardware + install"
+    description: "Water heater 40 gal tank — Rheem Performance 36K BTU NG + install"
     skus:
-      - "311467890"
+      - "326590302"
     aggregation: average
     labor_adder: 400.00
 
   plumb_heater_tank_50:
-    description: "Water heater 50 gal tank — hardware + install"
+    description: "Water heater 50 gal tank — Rheem Performance 38K BTU NG + install"
     skus:
-      - "312558947"
+      - "326590285"
     aggregation: average
     labor_adder: 500.00
 
   plumb_heater_tankless_gas:
-    description: "Tankless water heater gas — hardware + install"
+    description: "Tankless water heater gas — Rinnai Sensei 11 GPM 199K BTU + install"
     skus:
-      - "313847629"
+      - "329104960"
     aggregation: average
     labor_adder: 1500.00
 
