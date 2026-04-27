@@ -4,9 +4,9 @@ module Admin
   # Fetches all SKUs from BigBox API and upserts into material_prices.
   # Run this before POST /admin/pricing/sync so the sync has live data to work with.
   #
-  # Params (all optional):
-  #   trade:    limit to one trade (e.g. "roofing")
-  #   zip_code: HD regional pricing ZIP (default "10001")
+  # Params:
+  #   trade:    optional — limit to one trade (e.g. "roofing")
+  #   zip_code: required (TEA-345) — pick one of ServiceAreaZip.codes
   #
   # Requires BIGBOX_API_KEY env var.
   #
@@ -22,7 +22,14 @@ module Admin
 
     def create
       trade    = params[:trade].presence
-      zip_code = params[:zip_code].presence || "10001"
+      zip_code = params[:zip_code].presence
+
+      if zip_code.blank?
+        return render json: {
+          error: "zip_code param required",
+          hint:  "Pick one of #{ServiceAreaZip.codes.inspect}"
+        }, status: :bad_request
+      end
 
       results = BigboxDataLoaderService.load(trade: trade, zip_code: zip_code)
 

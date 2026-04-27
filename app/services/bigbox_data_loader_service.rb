@@ -9,9 +9,8 @@ require "json"
 # via webhook or this loader.
 #
 # Usage (admin endpoint or console):
-#   BigboxDataLoaderService.load                        # all trades
-#   BigboxDataLoaderService.load(trade: "roofing")      # one trade
-#   BigboxDataLoaderService.load(zip_code: "90210")     # regional pricing
+#   BigboxDataLoaderService.load(zip_code: "98101")                   # all trades
+#   BigboxDataLoaderService.load(trade: "roofing", zip_code: "98101") # one trade
 #
 # === DISABLED BY DEFAULT (TEA-157) ===
 # This on-demand path was superseded by the BigBox Collections webhook pipeline
@@ -19,15 +18,18 @@ require "json"
 # into `material_prices` (rows with price IS NULL and miscategorized trades —
 # see admin /admin/material_prices, 2026-04-19) because it upserts the BigBox
 # API's returned title under our own trade/category metadata even when no price
-# is found, and writes at zip_code "10001" which is not our blessed "national"
-# partition.
+# is found.
+#
+# TEA-345: zip_code is now required — no "10001" default. The blessed writer
+# (BigboxCollectionService) sources zips from ServiceAreaZip; if you're
+# debugging through this service, pick one of those zips explicitly.
 #
 # The service now refuses to run unless ENV["ALLOW_BIGBOX_ONDEMAND"] == "true".
 # When disabled it raises OnDemandDisabledError loudly so no rake task, console
 # invocation, or admin endpoint can silently re-poison the table.
 #
 # To re-enable (only for one-off recon with John's explicit go-ahead):
-#   ALLOW_BIGBOX_ONDEMAND=true bin/rails runner 'BigboxDataLoaderService.load(trade: "roofing")'
+#   ALLOW_BIGBOX_ONDEMAND=true bin/rails runner 'BigboxDataLoaderService.load(trade: "roofing", zip_code: "98101")'
 #
 # Long-term: prefer BigBox Collections (batch webhook) — it's the blessed writer.
 class BigboxDataLoaderService
@@ -50,7 +52,7 @@ class BigboxDataLoaderService
     ENV["ALLOW_BIGBOX_ONDEMAND"].to_s.strip.downcase == "true"
   end
 
-  def self.load(trade: nil, zip_code: "10001")
+  def self.load(trade: nil, zip_code:)
     ensure_enabled!
     new(trade: trade, zip_code: zip_code).load
   end
@@ -64,13 +66,15 @@ class BigboxDataLoaderService
     raise OnDemandDisabledError, msg
   end
 
-  def initialize(trade: nil, zip_code: "10001")
+  def initialize(trade: nil, zip_code:)
     self.class.ensure_enabled!
 
     @trade_filter = trade&.to_s
     @zip_code     = zip_code.to_s
-    @api_key      = ENV["BIGBOX_API_KEY"].to_s.strip
 
+    raise ArgumentError, "zip_code is required" if @zip_code.blank?
+
+    @api_key = ENV["BIGBOX_API_KEY"].to_s.strip
     raise ArgumentError, "BIGBOX_API_KEY env var not set" if @api_key.blank?
 
     @skus_data = JSON.parse(File.read(SKUS_FILE))
@@ -138,9 +142,10 @@ class BigboxDataLoaderService
   def fetch_product_by_id(item_id)
     uri       = URI(BIGBOX_BASE_URL)
     uri.query = URI.encode_www_form(
-      api_key: @api_key,
-      type:    "product",
-      item_id: item_id
+      api_key:          @api_key,
+      type:             "product",
+      item_id:          item_id,
+      customer_zipcode: @zip_code
     )
 
     http             = Net::HTTP.new(uri.host, uri.port)

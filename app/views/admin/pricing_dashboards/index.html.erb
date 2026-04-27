@@ -234,6 +234,16 @@
   </div>
   <h1>⚙️ Pricing Dashboard</h1>
   <p>Read-only view of <span class="mono">default_pricings</span> + <span class="mono">material_prices</span>. Every key, grouped by TYPE — verify the data makes sense.</p>
+
+  <div class="region-tabs" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:6px;">
+    <span style="font-size:12px; color:#64748b; padding:6px 8px;">REGION:</span>
+    <a class="trade-tab <%= "active" unless @selected_zip %>" href="<%= admin_pricing_dashboard_path(trade: @selected_trade_key) %>">All zips</a>
+    <% @available_zips.each do |z| %>
+      <a class="trade-tab <%= "active" if @selected_zip == z.zip %>" href="<%= admin_pricing_dashboard_path(trade: @selected_trade_key, zip: z.zip) %>" title="<%= z.region %>">
+        <%= z.city %>, <%= z.state %> · <%= z.zip %>
+      </a>
+    <% end %>
+  </div>
 </div>
 
 <% if @trade %>
@@ -263,7 +273,7 @@
 
 <div class="trade-tabs">
   <% @trades.each do |t| %>
-    <a class="trade-tab <%= "active" if t[:key] == @selected_trade_key %>" href="<%= admin_pricing_dashboard_path(trade: t[:key]) %>">
+    <a class="trade-tab <%= "active" if t[:key] == @selected_trade_key %>" href="<%= admin_pricing_dashboard_path(trade: t[:key], zip: @selected_zip) %>">
       <%= t[:icon] %> <%= t[:name] %>
     </a>
   <% end %>

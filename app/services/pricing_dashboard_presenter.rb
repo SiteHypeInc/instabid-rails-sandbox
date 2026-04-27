@@ -5,12 +5,22 @@ class PricingDashboardPresenter
   TRADE_ORDER = %w[roofing siding electrical plumbing hvac painting drywall flooring].freeze
   TRADE_DISPLAY_NAMES = { "hvac" => "HVAC" }.freeze
 
-  def initialize
+  # TEA-345: optional zip_code filter scopes material_prices rows to a
+  # single service-area zip. When nil, all rows participate in aggregation
+  # (legacy behavior — fine for single-zip data sets, ambiguous for
+  # multi-zip ones).
+  def initialize(zip_code: nil)
+    @zip_code      = zip_code.presence
     @reference     = YAML.load_file(REFERENCE_FILE).with_indifferent_access
     @mappings      = File.exist?(MAPPINGS_FILE) ? YAML.load_file(MAPPINGS_FILE).with_indifferent_access : {}.with_indifferent_access
     @defaults      = DefaultPricing.all.index_by { |dp| [ dp.trade, dp.pricing_key ] }
-    @prices_by_sku = MaterialPrice.all.group_by(&:sku)
+
+    scope = MaterialPrice.all
+    scope = scope.where(zip_code: @zip_code) if @zip_code
+    @prices_by_sku = scope.group_by(&:sku)
   end
+
+  attr_reader :zip_code
 
   def trades
     TRADE_ORDER.filter_map do |key|

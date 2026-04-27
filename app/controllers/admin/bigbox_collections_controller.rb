@@ -54,17 +54,16 @@ module Admin
       render json: { error: e.class.to_s, message: e.message }, status: :unprocessable_entity
     end
 
-    # POST /admin/pricing/collection/ingest?collection_id=XXXX&zip_code=10001
+    # POST /admin/pricing/collection/ingest?collection_id=XXXX
     # Pulls results from a completed collection and upserts to material_prices.
+    # Each row's zip_code comes from the BigBox request echo (TEA-345); no
+    # zip_code param is needed or accepted.
     def ingest
       collection_id = params[:collection_id].presence
       return render json: { error: "collection_id param required" }, status: :bad_request if collection_id.blank?
 
-      zip_code = params[:zip_code].presence || "10001"
-
       results = BigboxCollectionService.ingest_results(
-        collection_id: collection_id,
-        zip_code:      zip_code
+        collection_id: collection_id
       )
 
       by_status = results.group_by(&:status)
@@ -74,9 +73,11 @@ module Admin
       transient = by_status["transient"] || []
       errors    = by_status["error"] || []
 
+      zips = results.map(&:zip_code).compact.uniq.sort
+
       render json: {
         collection_id: collection_id,
-        zip_code:      zip_code,
+        zips:          zips,
         summary: {
           loaded:      loaded.count,
           no_price:    no_price.count,
