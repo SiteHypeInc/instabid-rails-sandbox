@@ -14,9 +14,14 @@ module Admin
     protect_from_forgery with: :null_session
 
     def create
-      if ActiveModel::Type::Boolean.new.cast(params[:sync])
-        report = LockedPriceRefreshJob.new.perform
-        render json: sync_payload(report)
+      trade = params[:trade].presence
+
+      if ActiveModel::Type::Boolean.new.cast(params[:sync]) || trade
+        # ?trade= is sync-only — slicing per trade keeps each call under
+        # Railway's HTTP request window so the full run can be done in 8
+        # sequential calls without solid_queue infrastructure.
+        report = LockedPriceRefreshJob.new.perform(trade: trade)
+        render json: sync_payload(report).merge(trade: trade)
       else
         job = LockedPriceRefreshJob.perform_later
         render json: {
