@@ -13,8 +13,8 @@ require "json"
 class MaterialPriceRefreshJob < ApplicationJob
   queue_as :default
 
-  # TEA-334: refreshed for flooring SKU sweep (final per-trade rotation; full sweep complete).
-  COLLECTION_ID  = "1442275C"
+  # TEA-334: post-sweep collection (8 trades complete; created from current material_skus.json).
+  COLLECTION_ID  = "7C53A981"
   ZIP_CODE       = "10001"
   POLL_INTERVAL  = 10.seconds
   POLL_TIMEOUT   = 8.minutes
