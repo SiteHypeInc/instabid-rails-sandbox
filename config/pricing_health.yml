@@ -1,0 +1,22 @@
+# Pricing pipeline health thresholds for `rake pricing:gate`.
+# Tunable without code review — bump these when policy changes.
+#
+# - priced_coverage_min: minimum share of catalog_skus that must have a
+#   material_prices row newer than freshness_window_hours. 0.95 = 95%.
+# - median_freshness_hours_max: maximum allowed median age (in hours) of
+#   the newest material_prices row per SKU.
+# - freshness_window_hours: window used to count a SKU as "priced".
+
+default: &default
+  priced_coverage_min: 0.95
+  median_freshness_hours_max: 48
+  freshness_window_hours: 48
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default
