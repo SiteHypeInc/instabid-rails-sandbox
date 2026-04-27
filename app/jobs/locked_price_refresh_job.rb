@@ -16,12 +16,13 @@ class LockedPriceRefreshJob < ApplicationJob
 
   RunReport = Struct.new(:attempted, :succeeded, :failed, :median_latency_ms, :by_status, keyword_init: true)
 
-  def perform
+  def perform(trade: nil)
     api_key = ENV["BIGBOX_API_KEY"].to_s.strip
     raise "BIGBOX_API_KEY not set" if api_key.blank?
 
     scraper = LockedHdPriceScraper.new(api_key: api_key)
     rows    = CatalogSku.scrapable.order(:trade, :sku)
+    rows    = rows.where(trade: trade) if trade.present?
 
     if rows.empty?
       log "No scrapable catalog_skus rows — nothing to refresh"
