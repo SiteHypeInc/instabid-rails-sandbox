@@ -52,6 +52,9 @@ Rails.application.routes.draw do
       post "debug_collections",    to: "bigbox_debug#collections_create_test"                                  # test create collection
       post "debug_destinations",   to: "bigbox_debug#destinations_probe",     as: :pricing_debug_destinations  # probe webhook destination
       get  "collection_run",       to: "bigbox_debug#collection_run",         as: :pricing_collection_run      # trigger collection run
+
+      # TEA-341: synchronous trigger for the locked-URL daily refresh job.
+      post "locked_refresh",       to: "locked_price_refreshes#create",       as: :pricing_locked_refresh
     end
   end
 end
