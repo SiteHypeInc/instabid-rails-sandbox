@@ -174,12 +174,11 @@
   ],
 
   "drywall": [
-    {"name": "Drywall 1/2in 4x8 Sheet", "sku": "311562847", "category": "drywall_half", "unit": "sheet"},
-    {"name": "Drywall 5/8in 4x8 Sheet", "sku": "312562891", "category": "drywall_5_8", "unit": "sheet"},
-    {"name": "Joint Compound 4.5 Gal", "sku": "100158734", "category": "drywall_compound", "unit": "bucket"},
-    {"name": "Drywall Tape 300ft", "sku": "100067891", "category": "drywall_tape", "unit": "roll"},
-    {"name": "Drywall Screws 1.25in 5lb", "sku": "202532567", "category": "drywall_screws", "unit": "box"},
-    {"name": "Corner Bead 8ft", "sku": "202084391", "category": "drywall_corner_bead", "unit": "each"},
+    {"name": "USG Sheetrock 1/2 in. x 4 ft. x 8 ft. UltraLight Drywall", "sku": "202530243", "category": "drywall_half", "unit": "sheet"},
+    {"name": "USG Sheetrock Brand 4.5 gal. All Purpose Ready-Mixed Joint Compound", "sku": "100321605", "category": "drywall_compound", "unit": "bucket"},
+    {"name": "USG Sheetrock Brand 2-1/16 in. x 250 ft. Paper Drywall Joint Tape", "sku": "100321613", "category": "drywall_tape", "unit": "roll"},
+    {"name": "Grip-Rite #6 x 1-1/4 in. #2 Phillips Bugle Head Coarse Thread Drywall Screws (25 lb)", "sku": "100394340", "category": "drywall_screws", "unit": "box"},
+    {"name": "ClarkDietrich 1-1/4 in. x 8 ft. Quicksilver Metal Corner Bead", "sku": "203171469", "category": "drywall_corner_bead", "unit": "each"},
     {"name": "1/2 in. x 4 ft. x 8 ft. Mold and Moisture-Resistant Gypsum Board", "sku": "100322690", "category": "drywall_sheet_moisture", "unit": "sheet"},
     {"name": "5/8 in. x 4 ft. x 8 ft. Mold Tough Firecode X Drywall", "sku": "202263275", "category": "drywall_sheet_fire", "unit": "sheet"},
     {"name": "USG Sheetrock Brand 1/2 in x 4 ft x 8 ft Mold Tough Gypsum Board", "sku": "100321592", "category": "drywall_sheet_mold", "unit": "sheet"},

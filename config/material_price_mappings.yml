@@ -886,44 +886,41 @@ flooring:
 
 drywall:
   drywall_sheet_half:
-    description: "Drywall 1/2in 4x8 sheet (each)"
+    description: "Drywall 1/2in 4x8 sheet — USG Sheetrock UltraLight (each)"
     skus:
-      - "311562847"
+      - "202530243"
     aggregation: average
     labor_adder: 0.00
 
-  drywall_sheet_5_8:
-    description: "Drywall 5/8in 4x8 sheet (each)"
-    skus:
-      - "312562891"
-    aggregation: average
-    labor_adder: 0.00
+  # drywall_sheet_5_8: DROPPED 2026-04-27 (TEA-334) — HD doesn't stock a standard
+  # 5/8 in. 4x8 panel; the 5/8 use case (firecode requirements) is covered by
+  # drywall_sheet_fire (USG Mold Tough Firecode X).
 
   drywall_joint_compound:
-    description: "Joint compound 4.5 gal bucket"
+    description: "Joint compound 4.5 gal bucket — USG Sheetrock All Purpose"
     skus:
-      - "100158734"
+      - "100321605"
     aggregation: average
     labor_adder: 0.00
 
   drywall_tape:
-    description: "Drywall tape 300ft roll"
+    description: "Drywall paper joint tape 250ft — USG Sheetrock"
     skus:
-      - "100067891"
+      - "100321613"
     aggregation: average
     labor_adder: 0.00
 
   drywall_screws:
-    description: "Drywall screws 1.25in 5lb box"
+    description: "Drywall screws 1-1/4in coarse — Grip-Rite #6 bugle head 25lb box"
     skus:
-      - "202532567"
+      - "100394340"
     aggregation: average
     labor_adder: 0.00
 
   drywall_corner_bead:
-    description: "Corner bead 8ft (each)"
+    description: "Metal corner bead 8ft — ClarkDietrich Quicksilver"
     skus:
-      - "202084391"
+      - "203171469"
     aggregation: average
     labor_adder: 0.00
 
