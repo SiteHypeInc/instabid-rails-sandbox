@@ -1,6 +1,5 @@
 {
   "roofing": [
-    {"name": "Asphalt 3-Tab Shingles", "sku": "202534215", "category": "shingles_3tab", "unit": "bundle"},
     {"name": "Architectural Shingles", "sku": "203003641", "category": "shingles_arch", "unit": "bundle"},
     {"name": "Metal Roofing Panel", "sku": "202091274", "category": "metal_roofing", "unit": "panel"},
     {"name": "Concrete Tile", "sku": "100144419", "category": "roof_tile", "unit": "each"},
@@ -22,7 +21,7 @@
     {"name": "Gibraltar 8 ft Corrugated Galvanized Steel Roof Panel", "sku": "202092961", "category": "metal_roofing", "unit": "panel"},
     {"name": "APOC #15 Felt Roofing Underlayment", "sku": "318297739", "category": "roof_underlayment", "unit": "roll"},
     {"name": "Grip-Rite Roofing Nails 1.25in", "sku": "100394342", "category": "roofing_nails", "unit": "box"},
-    {"name": "Gibraltar 1.5x1.5 Galvanized Steel Drip Edge", "sku": "326400442", "category": "drip_edge", "unit": "lf"},
+    {"name": "Gibraltar 1-7/8 Galvanized Steel Drip Edge (10ft piece)", "sku": "326400442", "category": "drip_edge", "unit": "10ft"},
     {"name": "GAF StormGuard Ice and Water Shield 200 sqft", "sku": "100083515", "category": "ice_shield", "unit": "roll"},
     {"name": "GAF Cobra Rigid Vent 3 Ridge Vent 4ft", "sku": "202052410", "category": "ridge_vent", "unit": "each"}
   ],
