@@ -1000,44 +1000,40 @@ drywall:
 
 siding:
   siding_vinyl:
-    description: "Vinyl siding panel (per sqft)"
+    description: "Vinyl siding panel — Ply Gem PC4004H Double 4 White Lap (per carton)"
     skus:
-      - "100139847"
+      - "301738321"
     aggregation: average
     labor_adder: 0.00
 
   siding_fiber_cement:
-    description: "Fiber cement siding plank (per sqft)"
+    description: "Fiber cement siding plank — HardiePlank HZ10 7.25in (per plank, ~6 sqft coverage)"
     skus:
-      - "203847562"
+      - "305493847"
     aggregation: average
     labor_adder: 0.00
 
-  siding_wood:
-    description: "Cedar wood siding (per sqft)"
-    skus:
-      - "204562891"
-    aggregation: average
-    labor_adder: 0.00
+  # TEA-334: dropped siding_wood — no resolvable HD price for cedar bevel siding
+  # (Edge 10-pack 329447362: no_price; 1x6x192 202691705: transient on 2 retries).
 
   siding_metal:
-    description: "Steel metal siding panel (per sqft)"
+    description: "Steel metal siding panel — Gibraltar SM-Rib 12ft (per panel, ~36 sqft coverage)"
     skus:
-      - "205847234"
+      - "314709088"
     aggregation: average
     labor_adder: 0.00
 
   siding_housewrap_roll:
-    description: "House wrap 9x100ft roll"
+    description: "House wrap — Tyvek HomeWrap 9x150ft roll (1350 sqft)"
     skus:
-      - "202316824"
+      - "308793219"
     aggregation: average
     labor_adder: 0.00
 
   siding_j_channel:
-    description: "Vinyl J-channel 12ft (each)"
+    description: "Vinyl J-channel — Ply Gem 12.6ft white (each)"
     skus:
-      - "100179562"
+      - "202666289"
     aggregation: average
     labor_adder: 0.00
 
@@ -1048,39 +1044,23 @@ siding:
     aggregation: average
     labor_adder: 0.00
 
-  siding_window_trim:
-    description: "Window trim coil stock (each)"
-    skus:
-      - "202084417"
-    aggregation: average
-    labor_adder: 0.00
-
-  siding_door_trim:
-    description: "Door trim coil stock (each)"
-    skus:
-      - "202316856"
-    aggregation: average
-    labor_adder: 0.00
-
-  siding_fascia_lf:
-    description: "Fascia board 1x6 12ft (per piece)"
-    skus:
-      - "202316789"
-    aggregation: average
-    labor_adder: 0.00
+  # TEA-334: dropped siding_window_trim + siding_door_trim — no distinct HD product
+  # (HD only sells aluminum trim coil stock; covered by siding_metal_trim).
+  # TEA-334: dropped siding_fascia_lf — no resolvable HD price (4 SKUs tried, all
+  # returned "View Pricing in Store" / no_price via BigBox).
 
   siding_fastener_kit:
-    description: "Siding fastener kit"
+    description: "Siding fastener kit — Grip-Rite 8d hot-galv siding nails 5lb box"
     skus:
-      - "202532892"
+      - "202308593"
     aggregation: average
     labor_adder: 0.00
 
   # --- TEA-203 gap list additions (2026-04-22) ---
   siding_caulk:
-    description: "Exterior Caulk/Sealant (per tube)"
+    description: "Exterior Caulk/Sealant — DAP ALEX PLUS 10.1 oz (per single tube)"
     skus:
-      - "317803907"
+      - "100024624"
     aggregation: average
     labor_adder: 0.00
   siding_f_channel:
@@ -1107,12 +1087,8 @@ siding:
       - "100318465"
     aggregation: average
     labor_adder: 0.00
-  siding_stucco_finish:
-    description: "Stucco Finish Coat (per bag)"
-    skus:
-      - "100318472"
-    aggregation: average
-    labor_adder: 0.00
+  # TEA-334: dropped siding_stucco_finish — no resolvable HD price (Quikrete + Sakrete
+  # bags both returned no_price / "View Pricing in Store" via BigBox).
   siding_stucco_mesh:
     description: "Stucco Mesh/Lath (per sqft)"
     skus:

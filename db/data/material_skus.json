@@ -195,24 +195,19 @@
   ],
 
   "siding": [
-    {"name": "Vinyl Siding Panel", "sku": "100139847", "category": "siding_vinyl_panel", "unit": "sqft"},
-    {"name": "Fiber Cement Plank 7.25in", "sku": "203847562", "category": "siding_fiber_cement_plank", "unit": "sqft"},
-    {"name": "Cedar Wood Siding", "sku": "204562891", "category": "siding_wood_cedar", "unit": "sqft"},
-    {"name": "Steel Metal Siding Panel", "sku": "205847234", "category": "siding_metal_panel", "unit": "sqft"},
-    {"name": "House Wrap 9x100ft Roll", "sku": "202316824", "category": "siding_housewrap", "unit": "roll"},
-    {"name": "Vinyl J-Channel 12ft", "sku": "100179562", "category": "siding_j_channel", "unit": "each"},
+    {"name": "Ply Gem Double 4 in. x 150 in. White Lap Vinyl Siding PC4004H", "sku": "301738321", "category": "siding_vinyl_panel", "unit": "carton"},
+    {"name": "James Hardie HardiePlank HZ10 7.25in Primed Smooth Fiber Cement Lap Siding (per plank)", "sku": "305493847", "category": "siding_fiber_cement_plank", "unit": "plank"},
+    {"name": "Gibraltar SM-Rib 12 ft Galvalume Steel 29-Gauge Roof/Siding Panel", "sku": "314709088", "category": "siding_metal_panel", "unit": "panel"},
+    {"name": "Tyvek HomeWrap 9 ft x 150 ft Housewrap (1350 sqft)", "sku": "308793219", "category": "siding_housewrap", "unit": "roll"},
+    {"name": "Ply Gem 5/8 in x 1-1/2 in x 12.6 ft White J-Channel", "sku": "202666289", "category": "siding_j_channel", "unit": "each"},
     {"name": "Vinyl Corner Post 12ft", "sku": "202532789", "category": "siding_corner_post", "unit": "each"},
-    {"name": "Window Trim Coil Stock", "sku": "202084417", "category": "siding_window_trim", "unit": "each"},
-    {"name": "Door Trim Coil Stock", "sku": "202316856", "category": "siding_door_trim", "unit": "each"},
-    {"name": "Fascia Board 1x6 12ft", "sku": "202316789", "category": "siding_fascia", "unit": "each"},
-    {"name": "Siding Fastener Kit", "sku": "202532892", "category": "siding_fasteners", "unit": "kit"},
+    {"name": "Grip-Rite 8d Hot-Galvanized Spiral Shank Siding Nails 5 lb Box", "sku": "202308593", "category": "siding_fasteners", "unit": "box"},
     {"name": "Ply Gem 0.75 in. x 1/2 in. x 12.6 ft. White F-Channel VFCH04 04", "sku": "306278774", "category": "siding_f_channel", "unit": "12ft"},
     {"name": "Ply Gem Vinyl Starter Strip VS12 00", "sku": "306293860", "category": "siding_starter_strip", "unit": "12ft"},
     {"name": "Ply Gem 150 in. White Vinyl Finish Trim 638509", "sku": "309743869", "category": "siding_undersill_trim", "unit": "12ft"},
-    {"name": "Quikrete 80 lb. Stucco Finish Coat - White 120180", "sku": "100318472", "category": "siding_stucco_finish", "unit": "bag"},
     {"name": "38 in. x150 ft. EIFS Stucco Self Adhesive Mesh", "sku": "203611838", "category": "siding_stucco_mesh", "unit": "sqft"},
     {"name": "Quikrete 1 Gal. Concrete Bonding Adhesive", "sku": "100318465", "category": "siding_stucco_bond", "unit": "gallon"},
     {"name": "24 in. x 50 ft. Bright White Aluminum Trim Coil", "sku": "202091135", "category": "siding_metal_trim", "unit": "roll"},
-    {"name": "GE - Advanced Silicone 2 Caulk 10.1 oz. Window and Door Sealant White 12-pack", "sku": "317803907", "category": "siding_caulk", "unit": "tube"}
+    {"name": "DAP ALEX PLUS 10.1 oz Acrylic Latex Caulk Plus Silicone (per tube)", "sku": "100024624", "category": "siding_caulk", "unit": "tube"}
   ]
 }
