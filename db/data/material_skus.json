@@ -16,7 +16,15 @@
     {"name": "No-Calk 9-1/4 in. x 12-3/5 in. Black Plastic Vent Pipe Roof Flashing", "sku": "202078078", "category": "pipe_boot", "unit": "each"},
     {"name": "5 in. x 7 in. Mill Finish Aluminum Step Flashing", "sku": "100070084", "category": "step_flashing_lf", "unit": "piece"},
     {"name": "5 in. x 10 ft. White Aluminum K-Style Gutter", "sku": "100061750", "category": "gutter_lf", "unit": "lf"},
-    {"name": "2 in. x 3 in. x 10 ft. White Aluminum Downspout", "sku": "100016183", "category": "gutter_downspout", "unit": "each"}
+    {"name": "2 in. x 3 in. x 10 ft. White Aluminum Downspout", "sku": "100016183", "category": "gutter_downspout", "unit": "each"},
+    {"name": "GAF Royal Sovereign Charcoal 3-Tab Shingles", "sku": "100040028", "category": "shingles_3tab", "unit": "bundle"},
+    {"name": "GAF Timberline HDZ Architectural Shingles", "sku": "309755006", "category": "shingles_arch", "unit": "bundle"},
+    {"name": "Gibraltar 8 ft Corrugated Galvanized Steel Roof Panel", "sku": "202092961", "category": "metal_roofing", "unit": "panel"},
+    {"name": "APOC #15 Felt Roofing Underlayment", "sku": "318297739", "category": "roof_underlayment", "unit": "roll"},
+    {"name": "Grip-Rite Roofing Nails 1.25in", "sku": "100394342", "category": "roofing_nails", "unit": "box"},
+    {"name": "Gibraltar 1.5x1.5 Galvanized Steel Drip Edge", "sku": "326400442", "category": "drip_edge", "unit": "lf"},
+    {"name": "GAF StormGuard Ice and Water Shield 200 sqft", "sku": "100083515", "category": "ice_shield", "unit": "roll"},
+    {"name": "GAF Cobra Rigid Vent 3 Ridge Vent 4ft", "sku": "202052410", "category": "ridge_vent", "unit": "each"}
   ],
 
   "hvac": [
@@ -39,7 +47,8 @@
     {"name": "QO 60 Amp 240-Volt 7.4 kW Non-Fuse AC Disconnect(QO200TRCP)", "sku": "329864804", "category": "hvac_disconnect", "unit": "each"},
     {"name": "E-Lite 32 in. W x 32 in. D x 3 in. H Plastic HVAC Condensor Pad", "sku": "334530867", "category": "hvac_pad", "unit": "each"},
     {"name": "250 ft. 18/5 Brown Solid CU CL2 Thermostat Wire", "sku": "202316418", "category": "hvac_thermostat_wire", "unit": "roll"},
-    {"name": "Everbilt 4 in. x 8 ft. Dryer Vent Kit with Guard TD48PGKHD6", "sku": "203626523", "category": "hvac_dryer_vent", "unit": "kit"}
+    {"name": "Everbilt 4 in. x 8 ft. Dryer Vent Kit with Guard TD48PGKHD6", "sku": "203626523", "category": "hvac_dryer_vent", "unit": "kit"},
+    {"name": "HDX 20x25x1 Pleated Furnace Air Filter FPR 5", "sku": "314671256", "category": "hvac_filters", "unit": "each"}
   ],
 
   "electrical": [
@@ -71,7 +80,10 @@
     {"name": "2-Gang Extra Duty Metallic Weatherproof In-Use Outlet Cover (73-in-1 Configurations, Gray)", "sku": "300853022", "category": "elec_outlet_wp_cover", "unit": "each"},
     {"name": "TP-LINK Kasa Smart Wi-Fi Light Dimmer Switch, White HS220", "sku": "315518596", "category": "elec_smart_switch", "unit": "each"},
     {"name": "15 Amp 3-Way Toggle Switch, White 1453-2W", "sku": "100356976", "category": "elec_switch_3way", "unit": "each"},
-    {"name": "Decora 120/277-Volt AC White Occupancy PIR Sensor ODS10-IHW", "sku": "202721357", "category": "elec_occupancy_switch", "unit": "each"}
+    {"name": "Decora 120/277-Volt AC White Occupancy PIR Sensor ODS10-IHW", "sku": "202721357", "category": "elec_occupancy_switch", "unit": "each"},
+    {"name": "Lutron Diva LED+ Single-Pole Dimmer Switch", "sku": "203670402", "category": "elec_switch_dimmer", "unit": "each"},
+    {"name": "Commercial Electric 5/6in Integrated LED Recessed Retrofit Light", "sku": "314018779", "category": "elec_recessed", "unit": "each"},
+    {"name": "Home Flex Level 2 240V NEMA 14-50 EV Charger", "sku": "336574722", "category": "elec_ev_charger", "unit": "each"}
   ],
 
   "plumbing": [
@@ -108,7 +120,11 @@
     {"name": "ProLine Series 1/2 in. Brass Swing Check Valve 101-003NL", "sku": "203701787", "category": "plumb_check_valve", "unit": "each"},
     {"name": "Watts 3/4 in. Cast-Iron Water Pressure Safety Relief Valve 374A", "sku": "100532582", "category": "plumb_prv", "unit": "each"},
     {"name": "Oatey - 1-1/2 in. White Plastic Sink Drain P-Trap Kit", "sku": "205153744", "category": "plumb_p_trap", "unit": "each"},
-    {"name": "Toilet Wax Ring Kit, Toilet Gasket with Flange Universal Fit for 3 in or 4 in Toilet Bowl Waste Lines, Includes Bolts", "sku": "330415030", "category": "plumb_wax_ring", "unit": "each"}
+    {"name": "Toilet Wax Ring Kit, Toilet Gasket with Flange Universal Fit for 3 in or 4 in Toilet Bowl Waste Lines, Includes Bolts", "sku": "330415030", "category": "plumb_wax_ring", "unit": "each"},
+    {"name": "Glacier Bay Constructor 4in Centerset Bathroom Faucet", "sku": "309237979", "category": "plumb_faucet_bath", "unit": "each"},
+    {"name": "Delta Classic 500 Alcove 60in Bathtub", "sku": "321602829", "category": "plumb_tub", "unit": "each"},
+    {"name": "Frigidaire 24in Front Control Built-In Dishwasher", "sku": "314298606", "category": "plumb_dishwasher", "unit": "each"},
+    {"name": "AQUASURE Harmony 64K Grain Whole House Water Softener", "sku": "311395127", "category": "plumb_water_softener", "unit": "each"}
   ],
 
   "flooring": [

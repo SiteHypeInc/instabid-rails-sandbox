@@ -25,37 +25,40 @@
 
 roofing:
   mat_asphalt:
-    description: "3-tab asphalt shingles (per bundle)"
+    description: "3-tab asphalt shingles (per bundle) — GAF Royal Sovereign"
     skus:
-      - "202534215"
+      - "100040028"
     aggregation: average
     labor_adder: 0.00
 
   mat_arch:
-    description: "Architectural shingles (per bundle)"
+    description: "Architectural shingles (per bundle) — GAF Timberline HDZ"
     skus:
-      - "203003641"
+      - "309755006"
     aggregation: average
     labor_adder: 0.00
 
   mat_metal:
-    description: "Metal roofing panel"
+    description: "Metal roofing panel — Gibraltar 8ft corrugated galvanized"
     skus:
-      - "202091274"
+      - "202092961"
     aggregation: average
     labor_adder: 0.00
 
-  mat_tile:
-    description: "Concrete roofing tile (each)"
-    skus:
-      - "100144419"
-    aggregation: average
-    labor_adder: 0.00
+  # mat_tile: DROPPED 2026-04-26 (TEA-327) — no clean concrete/clay tile HD match
+  # mat_wood_shake: DROPPED 2026-04-26 (TEA-327) — no real wood shake on HD
 
   underlayment_roll:
-    description: "Roofing underlayment (per roll)"
+    description: "Roofing underlayment (per roll) — APOC #15 felt"
     skus:
-      - "202084288"
+      - "318297739"
+    aggregation: average
+    labor_adder: 0.00
+
+  drip_edge_lf:
+    description: "Drip edge 1.5x1.5 (per lf) — Gibraltar galvanized"
+    skus:
+      - "326400442"
     aggregation: average
     labor_adder: 0.00
 
@@ -89,9 +92,9 @@ roofing:
     labor_adder: 0.00
 
   nails_box:
-    description: "Roofing nails 1.25in (per box)"
+    description: "Roofing nails 1.25in (per box) — Grip-Rite"
     skus:
-      - "100115357"
+      - "100394342"
     aggregation: average
     labor_adder: 0.00
 
@@ -133,6 +136,22 @@ roofing:
       - "100070084"
     aggregation: average
     labor_adder: 0.00
+
+  # --- TEA-327 Manus closeout additions (2026-04-26) ---
+  ice_shield_lf:
+    description: "Ice & water shield (per roll, ~200 sqft) — GAF StormGuard"
+    skus:
+      - "100083515"
+    aggregation: average
+    labor_adder: 0.00
+  ridge_vent_lf:
+    description: "Ridge vent (per 4ft section) — GAF Cobra Rigid Vent 3"
+    skus:
+      - "202052410"
+    aggregation: average
+    labor_adder: 0.00
+  # starter_lf: DROPPED 2026-04-26 (TEA-327) — no clean Pro-Start strip match in HD search
+  # ridge_lf:   DROPPED 2026-04-26 (TEA-327) — no clean Seal-A-Ridge cap match
 
 
 # ─── HVAC ────────────────────────────────────────────────────────────────────
@@ -261,6 +280,15 @@ hvac:
       - "202316418"
     aggregation: average
     labor_adder: 0.00
+
+  # --- TEA-327 Manus closeout additions (2026-04-26) ---
+  hvac_filters:
+    description: "Furnace air filter 20x25x1 — HDX pleated"
+    skus:
+      - "314671256"
+    aggregation: average
+    labor_adder: 0.00
+  # hvac_refrigerant: DROPPED 2026-04-26 (TEA-327) — no clean R-410A bottle SKU on HD
 
 
 # ─── ELECTRICAL ──────────────────────────────────────────────────────────────
@@ -433,6 +461,29 @@ electrical:
     aggregation: average
     labor_adder: 0.00
 
+  # --- TEA-327 Manus closeout additions (2026-04-26) ---
+  elec_switch_dimmer:
+    description: "Dimmer switch single-pole — Lutron Diva LED+"
+    skus:
+      - "203670402"
+    aggregation: average
+    labor_adder: 0.00
+  elec_recessed:
+    description: "Recessed LED retrofit 5/6in — Commercial Electric"
+    skus:
+      - "314018779"
+    aggregation: average
+    labor_adder: 0.00
+  elec_ev_charger:
+    description: "Level 2 EV charger 240V NEMA 14-50 — Home Flex"
+    skus:
+      - "336574722"
+    aggregation: average
+    labor_adder: 0.00
+  # elec_panel_400:    DROPPED 2026-04-26 (TEA-327) — no clean 400A panel match in HD
+  # elec_circuit_30a:  DROPPED 2026-04-26 (TEA-327) — HD search returns 20A only
+  # elec_circuit_50a:  DROPPED 2026-04-26 (TEA-327) — HD search returns 20A only
+
 
 # ─── PLUMBING ────────────────────────────────────────────────────────────────
 
@@ -445,9 +496,9 @@ plumbing:
     labor_adder: 125.00
 
   plumb_faucet_bath:
-    description: "Bathroom faucet — hardware + install"
+    description: "Bathroom faucet — Glacier Bay Constructor 4in centerset"
     skus:
-      - "311847562"
+      - "309237979"
     aggregation: average
     labor_adder: 100.00
 
@@ -634,6 +685,29 @@ plumbing:
       - "330415030"
     aggregation: average
     labor_adder: 0.00
+
+  # --- TEA-327 Manus closeout additions (2026-04-26) ---
+  plumb_tub:
+    description: "Alcove bathtub 60in white — Delta Classic 500"
+    skus:
+      - "321602829"
+    aggregation: average
+    labor_adder: 400.00
+  plumb_dishwasher:
+    description: "Built-in dishwasher 24in — Frigidaire front control"
+    skus:
+      - "314298606"
+    aggregation: average
+    labor_adder: 0.00
+  plumb_water_softener:
+    description: "Whole house water softener — AQUASURE Harmony 64K grain"
+    skus:
+      - "311395127"
+    aggregation: average
+    labor_adder: 0.00
+  # plumb_heater_tankless_elec: DROPPED 2026-04-26 (TEA-327) — no clean Rheem electric tankless SKU
+  # plumb_sump_pump:            DROPPED 2026-04-26 (TEA-327) — no clean 1/3 HP cast iron sump SKU
+  # plumb_ice_maker:            DROPPED 2026-04-26 (TEA-327) — no clean ice maker kit (only line components)
 
 
 # ─── FLOORING ────────────────────────────────────────────────────────────────
